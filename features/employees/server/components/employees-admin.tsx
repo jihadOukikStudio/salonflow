@@ -8,6 +8,7 @@ import {
   updateEmployeeAction,
   setEmployeeActiveAction,
   saveEmployeeAccessAction,
+  saveEmployeeSkillsAction,
 } from "@/features/employees/server/actions";
 
 const inputClass =
@@ -21,6 +22,7 @@ type EmployeeRow = {
   lastName: string | null;
   phone: string | null;
   isActive: boolean;
+  skills: Array<{ serviceId: string }>;
   user: {
     id: string;
     email: string;
@@ -29,7 +31,18 @@ type EmployeeRow = {
   } | null;
 };
 
-export function EmployeesAdmin({ employees }: { employees: EmployeeRow[] }) {
+type SkillCategory = { id: string; name: string };
+type SkillService = { id: string; categoryId: string; name: string };
+
+export function EmployeesAdmin({
+  employees,
+  categories,
+  services,
+}: {
+  employees: EmployeeRow[];
+  categories: SkillCategory[];
+  services: SkillService[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -123,6 +136,8 @@ export function EmployeesAdmin({ employees }: { employees: EmployeeRow[] }) {
               employee={employee}
               pending={pending}
               run={run}
+              categories={categories}
+              services={services}
             />
           ))
         )}
@@ -135,6 +150,8 @@ function EmployeeCard({
   employee,
   pending,
   run,
+  categories,
+  services,
 }: {
   employee: EmployeeRow;
   pending: boolean;
@@ -144,6 +161,8 @@ function EmployeeCard({
     >,
     success: string,
   ) => void;
+  categories: SkillCategory[];
+  services: SkillService[];
 }) {
   const [firstName, setFirstName] = useState(employee.firstName);
   const [lastName, setLastName] = useState(employee.lastName ?? "");
@@ -156,6 +175,26 @@ function EmployeeCard({
   const [accessActive, setAccessActive] = useState(
     employee.user?.isActive ?? true,
   );
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>(
+    employee.skills.map((skill) => skill.serviceId),
+  );
+
+  const servicesByCategory = categories
+    .map((category) => ({
+      ...category,
+      services: services.filter(
+        (service) => service.categoryId === category.id,
+      ),
+    }))
+    .filter((category) => category.services.length > 0);
+
+  function toggleSkill(serviceId: string) {
+    setSelectedSkillIds((current) =>
+      current.includes(serviceId)
+        ? current.filter((id) => id !== serviceId)
+        : [...current, serviceId],
+    );
+  }
 
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -230,6 +269,77 @@ function EmployeeCard({
       >
         Enregistrer la fiche
       </button>
+
+      <div className="mt-6 border-t border-slate-200 pt-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h4 className="font-semibold text-slate-950">
+              Compétences prestations
+            </h4>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+              Cochez uniquement les prestations que cette employée sait
+              réellement réaliser. Ces compétences sont utilisées par
+              l’anti-surbooking avant chaque réservation. Dès qu’une première
+              compétence est enregistrée dans le salon, le contrôle devient
+              strict : une prestation sans employée compétente sera bloquée
+              jusqu’à configuration.
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold ${selectedSkillIds.length > 0 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}
+          >
+            {selectedSkillIds.length > 0
+              ? `${selectedSkillIds.length} compétence${selectedSkillIds.length > 1 ? "s" : ""}`
+              : "À configurer"}
+          </span>
+        </div>
+
+        <div className="mt-4 space-y-4">
+          {servicesByCategory.map((category) => (
+            <fieldset
+              key={category.id}
+              className="rounded-2xl border border-slate-200 p-4"
+            >
+              <legend className="px-2 text-sm font-bold text-slate-900">
+                {category.name}
+              </legend>
+              <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {category.services.map((service) => (
+                  <label
+                    key={service.id}
+                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 hover:border-violet-300 hover:bg-violet-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSkillIds.includes(service.id)}
+                      onChange={() => toggleSkill(service.id)}
+                    />
+                    <span>{service.name}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          disabled={pending}
+          className={`${buttonClass} mt-4 bg-violet-700 text-white hover:bg-violet-800`}
+          onClick={() =>
+            run(
+              () =>
+                saveEmployeeSkillsAction({
+                  employeeId: employee.id,
+                  serviceIds: selectedSkillIds,
+                }),
+              "Compétences enregistrées. La capacité du planning a été recalibrée.",
+            )
+          }
+        >
+          Enregistrer les compétences
+        </button>
+      </div>
 
       <div className="mt-6 border-t border-slate-200 pt-5">
         <h4 className="font-semibold text-slate-950">Compte de connexion</h4>

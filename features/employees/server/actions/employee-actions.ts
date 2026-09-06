@@ -8,16 +8,19 @@ import {
   updateEmployeeActionSchema,
   setEmployeeActiveActionSchema,
   saveEmployeeAccessActionSchema,
+  saveEmployeeSkillsActionSchema,
   type CreateEmployeeActionInput,
   type UpdateEmployeeActionInput,
   type SetEmployeeActiveActionInput,
   type SaveEmployeeAccessActionInput,
+  type SaveEmployeeSkillsActionInput,
 } from "@/features/employees/schemas";
 import {
   createEmployee,
   updateEmployee,
   setEmployeeActive,
   saveEmployeeAccess,
+  saveEmployeeSkills,
 } from "@/server/services/employees";
 
 function revalidateEmployeeViews() {
@@ -72,5 +75,18 @@ export async function saveEmployeeAccessAction(
     );
     revalidateEmployeeViews();
     return { userId: access.id };
+  });
+}
+
+export async function saveEmployeeSkillsAction(
+  input: SaveEmployeeSkillsActionInput,
+) {
+  return runAuthenticatedAction(async (currentUser) => {
+    const result = await saveEmployeeSkills(
+      currentUser,
+      saveEmployeeSkillsActionSchema.parse(input),
+    );
+    revalidateEmployeeViews();
+    return result;
   });
 }

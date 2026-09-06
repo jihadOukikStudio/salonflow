@@ -188,6 +188,7 @@ model EmployeeSkill {
   service  Service  @relation(fields: [serviceId], references: [id])
 
   @@id([employeeId, serviceId])
+  @@index([serviceId])
   @@map("employee_skills")
 }
 

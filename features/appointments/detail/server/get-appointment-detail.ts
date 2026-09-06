@@ -47,7 +47,9 @@ export type AppointmentDetail = {
     name: string;
     isAvailable: boolean;
     unavailableReason: string | null;
+    skillServiceIds: string[];
   }>;
+  skillsModeEnabled: boolean;
   rooms: Array<{ id: string; name: string; type: "HAMAM" | "TREATMENT_ROOM" }>;
   catalogServices: Array<{
     id: string;
@@ -164,8 +166,19 @@ export async function getAppointmentDetail(
   const employees = await prisma.employee.findMany({
     where: { salonId, isActive: true },
     orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
-    select: { id: true, firstName: true, lastName: true },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      skills: { select: { serviceId: true } },
+    },
   });
+
+  const skillsModeEnabled =
+    (await prisma.employeeSkill.findFirst({
+      where: { employee: { salonId } },
+      select: { employeeId: true },
+    })) !== null;
 
   const trackedEntityIds = [
     appointment.id,
@@ -394,8 +407,10 @@ export async function getAppointmentDetail(
           : hasAppointmentConflict
             ? "Déjà affectée à un autre rendez-vous"
             : null,
+        skillServiceIds: employee.skills.map((skill) => skill.serviceId),
       };
     }),
+    skillsModeEnabled,
     rooms,
     catalogServices: catalogServices.map((service) => ({
       id: service.id,

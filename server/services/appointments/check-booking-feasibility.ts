@@ -8,6 +8,10 @@ import {
   BusinessRuleError,
   ResourceNotFoundError,
 } from "@/server/services/errors";
+import {
+  checkEmployeeCapacityInDb,
+  type ServiceEmployeeCapacity,
+} from "@/server/services/appointments/check-employee-capacity";
 
 export type BookingFeasibilityLevel = "POSSIBLE" | "WARNING" | "BLOCKED";
 
@@ -23,6 +27,7 @@ export type BookingFeasibility = {
     reservedByAppointments: number;
     remaining: number;
   };
+  serviceEmployeeCapacity: ServiceEmployeeCapacity[];
   roomCapacity: Array<{
     type: "HAMAM" | "TREATMENT_ROOM";
     active: number;
@@ -206,8 +211,18 @@ export async function checkBookingFeasibilityInDb(
     availableEmployeeCount - employeeReserved,
   );
 
-  const blockers: string[] = [];
-  const warnings: string[] = [];
+  const employeeSkillCapacity = await checkEmployeeCapacityInDb(db, {
+    salonId: input.salonId,
+    scheduledStart: input.scheduledStart,
+    estimatedDurationMinutes: durationMinutes,
+    services: services.map((service) => ({
+      serviceId: service.id,
+      serviceName: service.name,
+    })),
+  });
+
+  const blockers: string[] = [...employeeSkillCapacity.blockers];
+  const warnings: string[] = [...employeeSkillCapacity.warnings];
 
   if (employees.length === 0) {
     blockers.push("Aucune employée active n'est configurée dans le salon.");
@@ -280,6 +295,7 @@ export async function checkBookingFeasibilityInDb(
       reservedByAppointments: employeeReserved,
       remaining: employeeRemaining,
     },
+    serviceEmployeeCapacity: employeeSkillCapacity.serviceCapacity,
     roomCapacity,
     blockers,
     warnings,

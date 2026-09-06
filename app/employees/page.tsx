@@ -14,7 +14,7 @@ export default async function EmployeesPage() {
     redirect("/planning");
   }
 
-  const employees = await getEmployees(user);
+  const employeeData = await getEmployees(user);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -46,7 +46,7 @@ export default async function EmployeesPage() {
             </Link>
           </div>
         </header>
-        <EmployeesAdmin employees={employees} />
+        <EmployeesAdmin {...employeeData} />
       </div>
     </main>
   );

@@ -9,20 +9,42 @@ export async function getEmployees(currentUser: CurrentUser) {
     throw new PermissionDeniedError("Seule la gérante peut gérer l'équipe.");
   }
 
-  const employees = await prisma.employee.findMany({
-    where: { salonId: user.salonId },
-    orderBy: [{ isActive: "desc" }, { firstName: "asc" }, { lastName: "asc" }],
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      isActive: true,
-      user: {
-        select: { id: true, email: true, canManageSalon: true, isActive: true },
+  const [employees, categories, services] = await Promise.all([
+    prisma.employee.findMany({
+      where: { salonId: user.salonId },
+      orderBy: [
+        { isActive: "desc" },
+        { firstName: "asc" },
+        { lastName: "asc" },
+      ],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        isActive: true,
+        skills: { select: { serviceId: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            canManageSalon: true,
+            isActive: true,
+          },
+        },
       },
-    },
-  });
+    }),
+    prisma.serviceCategory.findMany({
+      where: { salonId: user.salonId, isActive: true },
+      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+      select: { id: true, name: true },
+    }),
+    prisma.service.findMany({
+      where: { salonId: user.salonId, isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, categoryId: true, name: true },
+    }),
+  ]);
 
-  return employees;
+  return { employees, categories, services };
 }

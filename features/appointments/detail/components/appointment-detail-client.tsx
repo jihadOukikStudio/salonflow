@@ -383,16 +383,25 @@ export function AppointmentDetailClient({ detail }: Props) {
                           key={employee.id}
                           value={employee.id}
                           disabled={
-                            !employee.isAvailable &&
+                            (!employee.isAvailable ||
+                              (detail.skillsModeEnabled &&
+                                service.serviceId !== null &&
+                                !employee.skillServiceIds.includes(
+                                  service.serviceId,
+                                ))) &&
                             service.assignedEmployee?.id !== employee.id
                           }
                         >
                           {employee.name}
-                          {employee.isAvailable
-                            ? ""
-                            : ` — ${
-                                employee.unavailableReason ?? "Indisponible"
-                              }`}
+                          {detail.skillsModeEnabled &&
+                          service.serviceId !== null &&
+                          !employee.skillServiceIds.includes(service.serviceId)
+                            ? " — non compétente"
+                            : employee.isAvailable
+                              ? ""
+                              : ` — ${
+                                  employee.unavailableReason ?? "Indisponible"
+                                }`}
                         </option>
                       ))}
                     </select>

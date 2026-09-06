@@ -227,3 +227,65 @@ export async function saveEmployeeAccess(
     return linkedUser;
   });
 }
+
+export async function saveEmployeeSkills(
+  currentUser: CurrentUser,
+  input: { employeeId: string; serviceIds: string[] },
+) {
+  const admin = await requireAdmin(currentUser);
+
+  return prisma.$transaction(async (tx) => {
+    const employee = await tx.employee.findFirst({
+      where: { id: input.employeeId, salonId: admin.salonId },
+      select: { id: true },
+    });
+
+    if (!employee) throw new ResourceNotFoundError("Employée introuvable.");
+
+    const uniqueServiceIds = [...new Set(input.serviceIds)];
+    if (uniqueServiceIds.length !== input.serviceIds.length) {
+      throw new BusinessRuleError(
+        "Une compétence ne peut être sélectionnée qu'une seule fois.",
+      );
+    }
+
+    if (uniqueServiceIds.length > 0) {
+      const count = await tx.service.count({
+        where: {
+          salonId: admin.salonId,
+          id: { in: uniqueServiceIds },
+          isActive: true,
+        },
+      });
+      if (count !== uniqueServiceIds.length) {
+        throw new ResourceNotFoundError(
+          "Une ou plusieurs prestations sont introuvables ou inactives.",
+        );
+      }
+    }
+
+    await tx.employeeSkill.deleteMany({ where: { employeeId: employee.id } });
+
+    if (uniqueServiceIds.length > 0) {
+      await tx.employeeSkill.createMany({
+        data: uniqueServiceIds.map((serviceId) => ({
+          employeeId: employee.id,
+          serviceId,
+        })),
+      });
+    }
+
+    await tx.activityLog.create({
+      data: {
+        salonId: admin.salonId,
+        userId: admin.id,
+        action: "EMPLOYEE_SKILLS_SAVED",
+        entityType: "Employee",
+        entityId: employee.id,
+        metadata: { serviceIds: uniqueServiceIds },
+      },
+    });
+
+    return { employeeId: employee.id, serviceIds: uniqueServiceIds };
+  });
+}

@@ -17,9 +17,11 @@ import {
   intervalsOverlap,
 } from "@/server/services/resources/appointment-interval";
 import { validateEmployeeAvailability } from "@/server/services/resources/validate-employee-availability";
+import { assertEmployeeCanPerformServiceInDb } from "@/server/services/employees/skill-policy";
 import { validateRoomAvailability } from "@/server/services/resources/validate-room-availability";
 
 import { calculateAppointmentDuration } from "@/server/services/appointments/calculate-appointment-duration";
+import { checkEmployeeCapacityInDb } from "@/server/services/appointments/check-employee-capacity";
 
 import {
   BusinessRuleError,
@@ -150,6 +152,7 @@ export async function addAppointmentService(
           select: {
             id: true,
             serviceId: true,
+            serviceNameSnapshot: true,
             durationMinutes: true,
             assignedEmployeeId: true,
             roomId: true,
@@ -285,6 +288,13 @@ export async function addAppointmentService(
           "L'employée demandée est introuvable ou inactive.",
         );
       }
+
+      await assertEmployeeCanPerformServiceInDb(tx, {
+        salonId,
+        employeeId: selectedEmployee.id,
+        serviceId: service.id,
+        serviceName: service.name,
+      });
     }
 
     if (input.roomId) {
@@ -349,6 +359,36 @@ export async function addAppointmentService(
     if (newEstimatedDurationMinutes <= 0) {
       throw new BusinessRuleError(
         "La durée calculée du rendez-vous est invalide.",
+      );
+    }
+
+    const employeeCapacity = await checkEmployeeCapacityInDb(tx, {
+      salonId,
+      scheduledStart: appointment.scheduledStart,
+      estimatedDurationMinutes: newEstimatedDurationMinutes,
+      excludeAppointmentId: appointment.id,
+      services: [
+        ...appointment.services.map((appointmentService) => ({
+          serviceId: appointmentService.serviceId,
+          serviceName: appointmentService.serviceNameSnapshot,
+          assignedEmployeeId: appointmentService.assignedEmployeeId,
+          parallelGroupIds: appointmentService.parallelGroupLinks.map(
+            (link) => link.parallelGroupId,
+          ),
+        })),
+        {
+          serviceId: service.id,
+          serviceName: service.name,
+          assignedEmployeeId: input.employeeId ?? null,
+          parallelGroupIds: [],
+        },
+      ],
+    });
+
+    if (!employeeCapacity.feasible) {
+      throw new BusinessRuleError(
+        employeeCapacity.blockers[0] ??
+          "Aucune capacité d'employée compétente ne reste disponible sur cette plage.",
       );
     }
 

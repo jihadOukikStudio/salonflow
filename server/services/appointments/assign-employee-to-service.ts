@@ -11,6 +11,7 @@ import {
   appointmentServiceLockKey,
 } from "@/server/services/resources/resource-lock-keys";
 import { validateEmployeeAvailability } from "@/server/services/resources/validate-employee-availability";
+import { assertEmployeeCanPerformServiceInDb } from "@/server/services/employees/skill-policy";
 
 import {
   BusinessRuleError,
@@ -106,6 +107,13 @@ export async function assignEmployeeToService(
     }
 
     await lockResources(tx, employeeLockKeys);
+
+    await assertEmployeeCanPerformServiceInDb(tx, {
+      salonId,
+      employeeId: employee.id,
+      serviceId: appointmentService.serviceId,
+      serviceName: appointmentService.serviceNameSnapshot,
+    });
 
     await validateEmployeeAvailability(tx, {
       salonId,

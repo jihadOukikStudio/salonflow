@@ -423,7 +423,9 @@ describe("addAppointmentService", () => {
         appointmentId: context.appointment.id,
         serviceId: context.secondService.id,
       }),
-    ).rejects.toThrow("capacité employée");
+    ).rejects.toThrow(
+      "L’équipe disponible ne permet pas de réaliser toutes les prestations pendant toute cette plage horaire.",
+    );
 
     const stored = await testPrisma.appointment.findUnique({
       where: { id: context.appointment.id },
@@ -483,7 +485,9 @@ describe("addAppointmentService", () => {
         serviceId: context.secondService.id,
         durationMinutes: 45,
       }),
-    ).rejects.toThrow("capacité employée");
+    ).rejects.toThrow(
+      "L’équipe disponible ne permet pas de réaliser toutes les prestations pendant toute cette plage horaire.",
+    );
 
     const stored = await testPrisma.appointment.findUnique({
       where: { id: context.appointment.id },

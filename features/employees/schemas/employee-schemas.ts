@@ -44,3 +44,12 @@ export type SetEmployeeActiveActionInput = z.infer<
 export type SaveEmployeeAccessActionInput = z.infer<
   typeof saveEmployeeAccessActionSchema
 >;
+
+export const saveEmployeeSkillsActionSchema = z.object({
+  employeeId: z.string().uuid(),
+  serviceIds: z.array(z.string().uuid()).max(200),
+});
+
+export type SaveEmployeeSkillsActionInput = z.infer<
+  typeof saveEmployeeSkillsActionSchema
+>;

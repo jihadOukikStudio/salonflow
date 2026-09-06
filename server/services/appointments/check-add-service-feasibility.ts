@@ -192,6 +192,7 @@ export async function checkAddServiceFeasibility(
         id: true,
         firstName: true,
         lastName: true,
+        skills: { select: { serviceId: true } },
       },
     }),
     prisma.room.findMany({
@@ -348,8 +349,20 @@ export async function checkAddServiceFeasibility(
     }
   }
 
+  const skillsModeEnabled =
+    (await prisma.employeeSkill.findFirst({
+      where: { employee: { salonId } },
+      select: { employeeId: true },
+    })) !== null;
+
   const availableEmployees = employees
-    .filter((employee) => !unavailableEmployeeIds.has(employee.id))
+    .filter((employee) => {
+      if (unavailableEmployeeIds.has(employee.id)) return false;
+      if (!skillsModeEnabled) return true;
+      return employee.skills.some(
+        (skill) => skill.serviceId === catalogService.id,
+      );
+    })
     .map((employee) => ({
       id: employee.id,
       name: fullName(employee),
@@ -366,6 +379,12 @@ export async function checkAddServiceFeasibility(
 
   const blockers: string[] = [];
   const warnings: string[] = [];
+
+  if (!skillsModeEnabled) {
+    warnings.push(
+      "Les compétences de l’équipe ne sont pas encore configurées : SalonFlow utilise temporairement le mode généraliste.",
+    );
+  }
 
   /*
    * L'ajout rallonge potentiellement tout le rendez-vous.
@@ -405,7 +424,11 @@ export async function checkAddServiceFeasibility(
   }
 
   if (availableEmployees.length === 0) {
-    if (appointment.status !== "PLANNED") {
+    if (skillsModeEnabled) {
+      blockers.push(
+        `Aucune employée compétente pour « ${catalogService.name} » n'est disponible sur toute la nouvelle plage du rendez-vous.`,
+      );
+    } else if (appointment.status !== "PLANNED") {
       blockers.push(
         "Aucune employée n'est disponible sur toute la nouvelle plage du rendez-vous.",
       );

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   checkBookingFeasibilityAction,
   createAppointmentWithClientAction,
+  findNextAvailableSlotsAction,
 } from "@/features/appointments/server/actions/appointment-actions";
 import { searchClientsAction } from "@/features/clients/server/actions";
 import {
@@ -101,6 +102,8 @@ export function NewAppointmentForm({
   const [isCheckingCapacity, startCapacityTransition] = useTransition();
   const [isSearchingClients, startClientSearchTransition] = useTransition();
   const searchRequestId = useRef(0);
+  const slotSearchRequestId = useRef(0);
+  const formAlertRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState(1);
   const [clientPhoneSearch, setClientPhoneSearch] = useState("");
@@ -130,6 +133,35 @@ export function NewAppointmentForm({
     level: "POSSIBLE" | "WARNING" | "BLOCKED";
     text: string;
   } | null>(null);
+
+  const blockingCapacityMessage =
+    capacityMessage?.level === "BLOCKED" ? capacityMessage.text : null;
+  const [nextAvailableSlots, setNextAvailableSlots] = useState<
+    Array<{
+      scheduledStart: string;
+      scheduledEnd: string;
+      dateKey: string;
+      timeValue: string;
+    }>
+  >([]);
+  const [nextSlotServiceIds, setNextSlotServiceIds] = useState<string[]>([]);
+  const [isSearchingSlots, startSlotSearchTransition] = useTransition();
+
+  useEffect(() => {
+    if (!error && !blockingCapacityMessage) {
+      return;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      formAlertRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      formAlertRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [error, blockingCapacityMessage]);
 
   const phoneSearchLength = phoneDigits(clientPhoneSearch).length;
   const canSearchClients = phoneSearchLength >= 4;
@@ -256,6 +288,65 @@ export function NewAppointmentForm({
     setError(null);
   }
 
+  function employeeCapacitySummary(feasibility: {
+    serviceEmployeeCapacity: Array<{
+      serviceName: string;
+      skillConfigured: boolean;
+      qualifiedActive: number;
+      qualifiedAvailable: number;
+    }>;
+  }) {
+    const configured = feasibility.serviceEmployeeCapacity.filter(
+      (item) => item.skillConfigured,
+    );
+
+    if (configured.length === 0) return "";
+
+    return configured
+      .map(
+        (item) =>
+          `${item.serviceName} : ${item.qualifiedAvailable}/${item.qualifiedActive} employée${item.qualifiedActive > 1 ? "s" : ""} compétente${item.qualifiedActive > 1 ? "s" : ""} disponible${item.qualifiedAvailable > 1 ? "s" : ""}`,
+      )
+      .join(" · ");
+  }
+
+  function formatBlockedReason(blockers: string[]) {
+    const message = blockers.join(" ");
+
+    if (
+      message.includes(
+        "La capacité des employées compétentes est insuffisante",
+      ) ||
+      message.includes(
+        "Aucune combinaison d'employées compétentes et disponibles",
+      ) ||
+      message.includes("capacité équipe est déjà saturée")
+    ) {
+      return "L'équipe disponible ne permet pas de réaliser toutes les prestations pendant toute cette plage horaire.";
+    }
+
+    return message
+      .replace(
+        / Choisissez un autre horaire ou ajustez les prestations\.?/g,
+        "",
+      )
+      .replace(
+        / Choisissez un autre créneau ou réduisez les prestations\.?/g,
+        "",
+      )
+      .trim();
+  }
+
+  function formatRequestedRange(start: string, end: string) {
+    const formatter = new Intl.DateTimeFormat("fr-MA", {
+      timeZone: "Africa/Casablanca",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${formatter.format(new Date(start))} → ${formatter.format(new Date(end))}`;
+  }
+
   function toggleService(service: NewAppointmentServiceOption) {
     if (service.defaultDurationMinutes === null) {
       setError(
@@ -269,6 +360,7 @@ export function NewAppointmentForm({
         current.filter((id) => id !== service.id),
       );
       setCapacityMessage(null);
+      clearNextAvailableSlots();
       setError(null);
       return;
     }
@@ -294,6 +386,7 @@ export function NewAppointmentForm({
 
     setError(null);
     setCapacityMessage(null);
+    clearNextAvailableSlots();
 
     startCapacityTransition(async () => {
       try {
@@ -315,20 +408,31 @@ export function NewAppointmentForm({
         }).format(new Date(feasibility.scheduledEnd));
 
         if (!feasibility.canCreate) {
+          const candidateServiceIds = [...selectedServiceIds, service.id];
+
           setCapacityMessage({
             level: "BLOCKED",
-            text: `« ${service.name} » impossible sur ce créneau : ${feasibility.blockers.join(" ")} Fin estimée si ajoutée : ${end}.`,
+            text: `${service.name} · ${formatRequestedRange(
+              scheduledStart,
+              feasibility.scheduledEnd,
+            )}\n${formatBlockedReason(feasibility.blockers)}`,
           });
+
+          // Le contrôle d'ajout bloque volontairement la prestation, donc il
+          // faut rechercher les alternatives avec le panier CANDIDAT, pas avec
+          // selectedServiceIds qui ne contient pas encore cette prestation.
+          searchNextAvailableSlots(scheduledStart, candidateServiceIds);
           return;
         }
 
         setSelectedServiceIds((current) => [...current, service.id]);
+        const skillSummary = employeeCapacitySummary(feasibility);
         setCapacityMessage({
           level: feasibility.level,
           text:
             feasibility.level === "WARNING"
-              ? `Ajout possible. Fin estimée : ${end}. ${feasibility.warnings.join(" ")}`
-              : `Ajout possible. Capacité vérifiée jusqu'à ${end}.`,
+              ? `Ajout possible. Fin estimée : ${end}. ${skillSummary ? `${skillSummary}. ` : ""}${feasibility.warnings.join(" ")}`
+              : `Ajout possible. Capacité vérifiée jusqu'à ${end}.${skillSummary ? ` ${skillSummary}.` : ""}`,
         });
       } catch (capacityError) {
         console.error("Booking feasibility check failed", capacityError);
@@ -337,6 +441,94 @@ export function NewAppointmentForm({
         );
       }
     });
+  }
+
+  function formatAlternativeSlot(slot: {
+    scheduledStart: string;
+    dateKey: string;
+    timeValue: string;
+  }) {
+    // Si l'alternative reste le même jour que celui choisi dans le formulaire,
+    // l'heure seule est plus lisible et ne dépend d'aucune horloge pendant le rendu.
+    if (slot.dateKey === dateKey) {
+      return slot.timeValue;
+    }
+
+    const day = new Intl.DateTimeFormat("fr-MA", {
+      timeZone: "Africa/Casablanca",
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+    }).format(new Date(slot.scheduledStart));
+
+    return `${day} · ${slot.timeValue}`;
+  }
+
+  function clearNextAvailableSlots() {
+    // Invalide aussi une recherche encore en vol : elle ne doit jamais
+    // réafficher des créneaux calculés pour un ancien horaire / ancien panier.
+    slotSearchRequestId.current += 1;
+    setNextAvailableSlots([]);
+    setNextSlotServiceIds([]);
+  }
+
+  function searchNextAvailableSlots(
+    scheduledStart: string,
+    serviceIds: string[],
+  ) {
+    const candidateServiceIds = [...new Set(serviceIds)];
+
+    if (candidateServiceIds.length === 0) {
+      clearNextAvailableSlots();
+      return;
+    }
+
+    const requestId = slotSearchRequestId.current + 1;
+    slotSearchRequestId.current = requestId;
+
+    setNextAvailableSlots([]);
+    setNextSlotServiceIds(candidateServiceIds);
+
+    startSlotSearchTransition(async () => {
+      const result = await findNextAvailableSlotsAction({
+        scheduledStart,
+        serviceIds: candidateServiceIds,
+      });
+
+      // L'utilisatrice a pu modifier l'heure ou les prestations pendant
+      // la requête. Dans ce cas, on ignore volontairement cette réponse.
+      if (requestId !== slotSearchRequestId.current) {
+        return;
+      }
+
+      if (!result.ok) {
+        // Les alternatives restent une aide UX. Une erreur de recherche ne
+        // doit jamais masquer la vraie raison du refus déjà affichée.
+        setNextAvailableSlots([]);
+        return;
+      }
+
+      setNextAvailableSlots(result.data);
+    });
+  }
+
+  function chooseAlternativeSlot(slot: { dateKey: string; timeValue: string }) {
+    // Important : si le blocage est survenu pendant l'ajout d'une prestation,
+    // celle-ci n'était pas encore cochée. On restaure donc exactement le panier
+    // pour lequel le créneau alternatif a été validé par le serveur.
+    if (nextSlotServiceIds.length > 0) {
+      setSelectedServiceIds(nextSlotServiceIds);
+    }
+
+    setDateKey(slot.dateKey);
+    setTimeValue(slot.timeValue);
+    setError(null);
+    setCapacityMessage(null);
+    clearNextAvailableSlots();
+
+    // L'étape Détails revalidera encore le créneau avant le récapitulatif,
+    // puis la transaction finale le revalidera une dernière fois.
+    setStep(3);
   }
 
   function validateStep(currentStep: number): boolean {
@@ -410,7 +602,56 @@ export function NewAppointmentForm({
       return;
     }
 
-    setStep((current) => Math.min(4, current + 1));
+    if (step !== 3) {
+      setStep((current) => Math.min(4, current + 1));
+      return;
+    }
+
+    let scheduledStart: string;
+    try {
+      scheduledStart = casablancaLocalDateTimeToIso(dateKey, timeValue);
+    } catch (conversionError) {
+      setError(
+        conversionError instanceof Error
+          ? conversionError.message
+          : "La date et l'heure sont invalides.",
+      );
+      return;
+    }
+
+    startCapacityTransition(async () => {
+      const result = await checkBookingFeasibilityAction({
+        scheduledStart,
+        serviceIds: selectedServiceIds,
+      });
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      const feasibility = result.data;
+      const skillSummary = employeeCapacitySummary(feasibility);
+
+      if (!feasibility.canCreate) {
+        setCapacityMessage({
+          level: "BLOCKED",
+          text: `Rendez-vous · ${formatRequestedRange(
+            scheduledStart,
+            feasibility.scheduledEnd,
+          )}\n${formatBlockedReason(feasibility.blockers)}`,
+        });
+        setError(null);
+        searchNextAvailableSlots(scheduledStart, selectedServiceIds);
+        return;
+      }
+
+      setCapacityMessage({
+        level: feasibility.level,
+        text: `Capacité confirmée avant récapitulatif.${skillSummary ? ` ${skillSummary}.` : ""}${feasibility.warnings.length ? ` ${feasibility.warnings.join(" ")}` : ""}`,
+      });
+      setStep(4);
+    });
   }
 
   function previousStep() {
@@ -421,6 +662,8 @@ export function NewAppointmentForm({
   function handleDateChange(value: string) {
     setDateKey(value);
     setError(null);
+    setCapacityMessage(null);
+    clearNextAvailableSlots();
 
     if (
       value === minimumBooking.dateKey &&
@@ -513,6 +756,79 @@ export function NewAppointmentForm({
             })}
           </div>
         </div>
+
+        {error || blockingCapacityMessage ? (
+          <div className="px-5 pt-5 sm:px-7 sm:pt-6">
+            <div
+              ref={formAlertRef}
+              role="alert"
+              aria-live="assertive"
+              tabIndex={-1}
+              className="scroll-mt-24 rounded-2xl border border-red-300 bg-red-50 p-4 shadow-sm outline-none ring-red-200 focus:ring-4"
+            >
+              <p className="text-sm font-bold text-red-950">
+                {blockingCapacityMessage
+                  ? "Impossible de confirmer ce créneau"
+                  : "Vérification nécessaire"}
+              </p>
+
+              {blockingCapacityMessage ? (
+                <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-6 text-red-900">
+                  {blockingCapacityMessage}
+                </p>
+              ) : null}
+
+              {error &&
+              (!blockingCapacityMessage ||
+                !blockingCapacityMessage.includes(error)) ? (
+                <p className="mt-2 text-sm font-medium leading-6 text-red-800">
+                  {error}
+                </p>
+              ) : null}
+
+              {blockingCapacityMessage ? (
+                <>
+                  <p className="mt-3 text-xs font-semibold leading-5 text-red-800">
+                    Choisissez un autre horaire ou l’un des prochains créneaux
+                    disponibles. SalonFlow vérifiera automatiquement la
+                    disponibilité avant la création.
+                  </p>
+
+                  {isSearchingSlots ? (
+                    <p
+                      className="mt-4 text-sm font-semibold text-red-900"
+                      aria-live="polite"
+                    >
+                      Recherche des prochains créneaux disponibles…
+                    </p>
+                  ) : nextAvailableSlots.length > 0 ? (
+                    <div className="mt-4 border-t border-red-200 pt-4">
+                      <p className="text-sm font-bold text-red-950">
+                        Prochains créneaux disponibles actuellement
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {nextAvailableSlots.map((slot) => (
+                          <button
+                            key={slot.scheduledStart}
+                            type="button"
+                            onClick={() => chooseAlternativeSlot(slot)}
+                            className="min-h-11 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-bold text-red-950 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-200"
+                          >
+                            {formatAlternativeSlot(slot)}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="mt-3 text-xs font-medium leading-5 text-red-800">
+                        Disponibilité constatée actuellement. Elle sera vérifiée
+                        à nouveau lors de la confirmation du rendez-vous.
+                      </p>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         <div className="p-5 sm:p-7">
           {step === 1 ? (
@@ -689,7 +1005,6 @@ export function NewAppointmentForm({
                     min={minimumBooking.dateKey}
                     onChange={(event) => {
                       handleDateChange(event.target.value);
-                      setCapacityMessage(null);
                     }}
                     className={inputClassName}
                   />
@@ -705,20 +1020,20 @@ export function NewAppointmentForm({
                       setTimeValue(event.target.value);
                       setError(null);
                       setCapacityMessage(null);
+                      clearNextAvailableSlots();
                     }}
                     className={inputClassName}
                   />
                 </div>
               </div>
 
-              {capacityMessage ? (
+              {capacityMessage && capacityMessage.level !== "BLOCKED" ? (
                 <div
+                  aria-live="polite"
                   className={`mt-4 rounded-2xl border p-4 text-sm font-semibold ${
-                    capacityMessage.level === "BLOCKED"
-                      ? "border-red-300 bg-red-50 text-red-900"
-                      : capacityMessage.level === "WARNING"
-                        ? "border-amber-300 bg-amber-50 text-amber-900"
-                        : "border-emerald-300 bg-emerald-50 text-emerald-900"
+                    capacityMessage.level === "WARNING"
+                      ? "border-amber-300 bg-amber-50 text-amber-900"
+                      : "border-emerald-300 bg-emerald-50 text-emerald-900"
                   }`}
                 >
                   {capacityMessage.text}
@@ -903,6 +1218,18 @@ export function NewAppointmentForm({
                 sa fiche est créée dans la même transaction.
               </p>
 
+              {capacityMessage && capacityMessage.level !== "BLOCKED" ? (
+                <div
+                  className={`mt-4 rounded-2xl border p-4 text-sm font-semibold ${capacityMessage.level === "WARNING" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-emerald-300 bg-emerald-50 text-emerald-900"}`}
+                >
+                  {capacityMessage.text}
+                  <span className="mt-1 block text-xs font-medium">
+                    SalonFlow revalidera encore cette capacité dans la
+                    transaction finale avant création.
+                  </span>
+                </div>
+              ) : null}
+
               <div className="mt-5 space-y-4">
                 <div className="rounded-2xl border border-slate-300 bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
@@ -976,12 +1303,6 @@ export function NewAppointmentForm({
                   parcours d’encaissement.
                 </div>
               </div>
-            </div>
-          ) : null}
-
-          {error ? (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
-              {error}
             </div>
           ) : null}
 

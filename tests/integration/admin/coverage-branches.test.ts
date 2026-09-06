@@ -24,8 +24,8 @@ import {
   ResourceNotFoundError,
 } from "@/server/services/errors";
 
-import { cleanDatabase } from "../../helpers/database";
-import { testPrisma } from "../../helpers/prisma";
+import { cleanDatabase } from "../helpers/database";
+import { testPrisma } from "../helpers/prisma";
 
 async function createUser(
   salonId: string,

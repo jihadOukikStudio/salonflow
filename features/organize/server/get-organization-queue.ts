@@ -40,59 +40,71 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
   const now = new Date();
   const horizon = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
-  const [services, employees, rooms, currentEmployee] = await Promise.all([
-    prisma.appointmentService.findMany({
-      where: {
-        appointment: {
-          salonId: user.salonId,
-          status: { in: ["PLANNED", "IN_PROGRESS"] },
-          scheduledStart: { lte: horizon },
-        },
-        OR: [
-          { assignedEmployeeId: null },
-          {
-            AND: [
-              { requiredRoomTypeSnapshot: { not: null } },
-              { roomId: null },
-            ],
+  const [services, employees, rooms, currentEmployee, skillModeMarker] =
+    await Promise.all([
+      prisma.appointmentService.findMany({
+        where: {
+          appointment: {
+            salonId: user.salonId,
+            status: { in: ["PLANNED", "IN_PROGRESS"] },
+            scheduledStart: { lte: horizon },
           },
-        ],
-      },
-      orderBy: { appointment: { scheduledStart: "asc" } },
-      select: {
-        id: true,
-        serviceNameSnapshot: true,
-        requiredRoomTypeSnapshot: true,
-        assignedEmployeeId: true,
-        roomId: true,
-        appointment: {
-          select: {
-            id: true,
-            scheduledStart: true,
-            estimatedDurationMinutes: true,
-            client: { select: { name: true, phone: true } },
+          OR: [
+            { assignedEmployeeId: null },
+            {
+              AND: [
+                { requiredRoomTypeSnapshot: { not: null } },
+                { roomId: null },
+              ],
+            },
+          ],
+        },
+        orderBy: { appointment: { scheduledStart: "asc" } },
+        select: {
+          id: true,
+          serviceId: true,
+          serviceNameSnapshot: true,
+          requiredRoomTypeSnapshot: true,
+          assignedEmployeeId: true,
+          roomId: true,
+          appointment: {
+            select: {
+              id: true,
+              scheduledStart: true,
+              estimatedDurationMinutes: true,
+              client: { select: { name: true, phone: true } },
+            },
           },
         },
-      },
-    }),
+      }),
 
-    prisma.employee.findMany({
-      where: { salonId: user.salonId, isActive: true },
-      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
-      select: { id: true, firstName: true, lastName: true },
-    }),
+      prisma.employee.findMany({
+        where: { salonId: user.salonId, isActive: true },
+        orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          skills: { select: { serviceId: true } },
+        },
+      }),
 
-    prisma.room.findMany({
-      where: { salonId: user.salonId, isActive: true },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, type: true },
-    }),
+      prisma.room.findMany({
+        where: { salonId: user.salonId, isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, type: true },
+      }),
 
-    prisma.employee.findFirst({
-      where: { salonId: user.salonId, userId: user.id, isActive: true },
-      select: { id: true },
-    }),
-  ]);
+      prisma.employee.findFirst({
+        where: { salonId: user.salonId, userId: user.id, isActive: true },
+        select: { id: true },
+      }),
+
+      prisma.employeeSkill.findFirst({
+        where: { employee: { salonId: user.salonId } },
+        select: { employeeId: true },
+      }),
+    ]);
 
   if (services.length === 0) {
     return {
@@ -240,8 +252,16 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
       }
     }
 
+    const skillsModeEnabled = skillModeMarker !== null;
+
     const availableEmployees = employees
-      .filter((employee) => !unavailableEmployeeIds.has(employee.id))
+      .filter((employee) => {
+        if (unavailableEmployeeIds.has(employee.id)) return false;
+        if (!service.serviceId || !skillsModeEnabled) return true;
+        return employee.skills.some(
+          (skill) => skill.serviceId === service.serviceId,
+        );
+      })
       .map((employee) => ({
         id: employee.id,
         name: employeeNames.get(employee.id) ?? fullName(employee),

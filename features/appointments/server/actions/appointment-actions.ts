@@ -20,6 +20,7 @@ import {
 } from "@/features/appointments/schemas";
 
 import { checkBookingFeasibilityInDb } from "@/server/services/appointments/check-booking-feasibility";
+import { findNextAvailableSlotsInDb } from "@/server/services/appointments/find-next-available-slots";
 import { prisma } from "@/server/db/prisma";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { requirePermission } from "@/server/permissions";
@@ -44,6 +45,24 @@ export async function checkBookingFeasibilityAction(
 
     return prisma.$transaction((tx) =>
       checkBookingFeasibilityInDb(tx, {
+        salonId: authoritativeUser.salonId,
+        scheduledStart: data.scheduledStart,
+        serviceIds: data.serviceIds,
+      }),
+    );
+  });
+}
+
+export async function findNextAvailableSlotsAction(
+  input: CheckBookingFeasibilityActionInput,
+) {
+  return runAuthenticatedAction(async (currentUser) => {
+    const data = checkBookingFeasibilityActionSchema.parse(input);
+    const authoritativeUser = await getAuthoritativeCurrentUser(currentUser);
+    requirePermission(authoritativeUser, "appointments:create");
+
+    return prisma.$transaction((tx) =>
+      findNextAvailableSlotsInDb(tx, {
         salonId: authoritativeUser.salonId,
         scheduledStart: data.scheduledStart,
         serviceIds: data.serviceIds,
