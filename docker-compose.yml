@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: salonflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: salonflow
+      POSTGRES_PASSWORD: salonflow_local_password
+      POSTGRES_DB: salonflow
+    ports:
+      - "5457:5432"
+    volumes:
+      - salonflow_postgres_data:/var/lib/postgresql/data
+
+  postgres-test:
+    image: postgres:16
+    container_name: salonflow-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: salonflow_test
+      POSTGRES_PASSWORD: salonflow_test_password
+      POSTGRES_DB: salonflow_test
+    ports:
+      - "5458:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  salonflow_postgres_data:

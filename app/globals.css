@@ -1,8 +1,38 @@
 @import "tailwindcss";
 
+/*
+ * SalonFlow — Design System 12.5.1
+ * Direction: Rose Nude Luxury
+ *
+ * The existing screens intentionally keep using Tailwind semantic utility
+ * names (slate / violet / emerald / amber / red). We remap those tokens here
+ * so the whole application adopts the new identity without changing business
+ * components, permissions or selectors.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcf9f7;
+  --foreground: #302629;
+
+  --sf-ivory: #fcf9f7;
+  --sf-surface: #ffffff;
+  --sf-rose: #a65e70;
+  --sf-rose-deep: #874858;
+  --sf-rose-soft: #f6e9ed;
+  --sf-rose-mist: #fbf3f5;
+  --sf-nude: #e7d6cf;
+  --sf-champagne: #c1a06b;
+  --sf-ink: #302629;
+  --sf-muted: #76686c;
+  --sf-subtle: #a09295;
+  --sf-border: #eadfe0;
+  --sf-success: #557866;
+  --sf-warning: #b8864b;
+  --sf-danger: #b9505b;
+
+  --sf-shadow-sm: 0 1px 2px rgb(64 39 47 / 0.04),
+    0 8px 24px rgb(91 53 64 / 0.04);
+  --sf-shadow-card: 0 1px 2px rgb(64 39 47 / 0.04),
+    0 14px 38px rgb(91 53 64 / 0.055);
 }
 
 @theme inline {
@@ -10,17 +40,220 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Warm neutral scale — replaces the cold slate look throughout V1. */
+  --color-slate-50: #fcf9f7;
+  --color-slate-100: #f8f2f0;
+  --color-slate-200: #eadfe0;
+  --color-slate-300: #ddcecf;
+  --color-slate-400: #b9aaad;
+  --color-slate-500: #928487;
+  --color-slate-600: #76686c;
+  --color-slate-700: #5c4e52;
+  --color-slate-800: #44373b;
+  --color-slate-900: #382c30;
+  --color-slate-950: #302629;
+
+  /* SalonFlow signature — existing violet utilities become rose nude. */
+  --color-violet-50: #fbf3f5;
+  --color-violet-100: #f6e9ed;
+  --color-violet-200: #ebd1d8;
+  --color-violet-300: #d9adb9;
+  --color-violet-400: #c58495;
+  --color-violet-500: #b36b7e;
+  --color-violet-600: #a65e70;
+  --color-violet-700: #954f61;
+  --color-violet-800: #874858;
+  --color-violet-900: #743e4d;
+  --color-violet-950: #4d2731;
+
+  /* Semantic states softened to stay premium and readable. */
+  --color-emerald-50: #f2f7f4;
+  --color-emerald-100: #e3eee8;
+  --color-emerald-200: #c8ddd1;
+  --color-emerald-300: #a6c6b4;
+  --color-emerald-500: #668a75;
+  --color-emerald-600: #5c806c;
+  --color-emerald-700: #557866;
+  --color-emerald-800: #456453;
+  --color-emerald-900: #385245;
+  --color-emerald-950: #26392f;
+
+  --color-amber-50: #fcf7ee;
+  --color-amber-100: #f7ecd8;
+  --color-amber-200: #edd8ad;
+  --color-amber-300: #dfbd7c;
+  --color-amber-500: #c49a57;
+  --color-amber-600: #b8864b;
+  --color-amber-700: #996d3d;
+  --color-amber-800: #795632;
+  --color-amber-900: #62462c;
+  --color-amber-950: #3d2b1d;
+
+  --color-red-50: #fcf2f3;
+  --color-red-100: #f8e3e6;
+  --color-red-200: #f0c9ce;
+  --color-red-300: #e4a6ae;
+  --color-red-500: #c96470;
+  --color-red-600: #b9505b;
+  --color-red-700: #a3414c;
+  --color-red-800: #883843;
+  --color-red-900: #71333c;
+  --color-red-950: #471d24;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--sf-border);
+}
+
+html {
+  background: var(--background);
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 0%, rgb(166 94 112 / 0.055), transparent 28rem),
+    radial-gradient(circle at 100% 14%, rgb(193 160 107 / 0.045), transparent 24rem),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2 {
+  font-family: var(--font-salonflow-display), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+::selection {
+  background: #ebd1d8;
+  color: #4d2731;
+}
+
+/* Refined focus treatment, accessible but less "admin-dashboard". */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid rgb(166 94 112 / 0.7);
+  outline-offset: 2px;
+}
+
+/* Existing cards keep their utilities; these refinements make them feel richer. */
+.shadow-sm {
+  box-shadow: var(--sf-shadow-sm);
+}
+
+/* Inputs retain their current validation/disabled logic. */
+:where(input, select, textarea) {
+  accent-color: var(--sf-rose);
+}
+
+:where(input, select, textarea)::placeholder {
+  color: var(--sf-subtle);
+}
+
+/* No automatic dark theme in V1: the salon identity stays consistent. */
+
+/* -------------------------------------------------------------------------- */
+/* SalonFlow — Phase 12.5.3: motion, loading and mobile finishing             */
+/* -------------------------------------------------------------------------- */
+
+@keyframes sf-soft-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sf-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes sf-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.sf-loading-mark {
+  animation: sf-float 2.6s ease-in-out infinite;
+}
+
+.sf-loading-dot {
+  animation: sf-soft-pulse 1.5s ease-in-out infinite;
+}
+
+.sf-loading-dot:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.sf-loading-dot:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.sf-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(246 233 237 / 0.72) 0%,
+    rgb(255 255 255 / 0.95) 48%,
+    rgb(246 233 237 / 0.72) 100%
+  );
+  background-size: 200% 100%;
+  animation: sf-shimmer 1.8s ease-in-out infinite;
+}
+
+/* Slightly calmer transitions across interactive V1 controls. */
+:where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button):disabled {
+  cursor: not-allowed;
+}
+
+/* Keep horizontal navigation usable on narrow phones without showing a harsh scrollbar. */
+.sf-scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.sf-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  body {
+    background:
+      radial-gradient(circle at 0% 0%, rgb(166 94 112 / 0.045), transparent 18rem),
+      var(--background);
+  }
+
+  h1 {
+    line-height: 1.05;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

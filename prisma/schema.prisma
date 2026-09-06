@@ -1,0 +1,371 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+enum AppointmentStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+enum AppointmentServiceStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum RoomType {
+  HAMAM
+  TREATMENT_ROOM
+}
+
+enum EmployeeUnavailabilityType {
+  ABSENCE
+  BREAK
+  LEAVE
+  UNAVAILABLE
+}
+
+enum PaymentMethod {
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+}
+
+model Salon {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  phone     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  employees         Employee[]
+  clients           Client[]
+  serviceCategories ServiceCategory[]
+  services          Service[]
+  rooms             Room[]
+  appointments      Appointment[]
+  activityLogs      ActivityLog[]
+
+  @@map("salons")
+}
+
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  salonId        String   @db.Uuid
+  email          String
+  passwordHash   String
+  firstName      String
+  lastName       String?
+  role           UserRole
+  canManageSalon Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  salon    Salon     @relation(fields: [salonId], references: [id])
+  employee Employee?
+
+  createdAppointments             Appointment[]            @relation("AppointmentCreatedBy")
+  cancelledAppointments           Appointment[]            @relation("AppointmentCancelledBy")
+  createdParallelGroups           ParallelGroup[]          @relation("ParallelGroupCreatedBy")
+  createdRoomUnavailabilities     RoomUnavailability[]     @relation("RoomUnavailabilityCreatedBy")
+  createdEmployeeUnavailabilities EmployeeUnavailability[] @relation("EmployeeUnavailabilityCreatedBy")
+  recordedPayments                Payment[]                @relation("PaymentRecordedBy")
+  activityLogs                    ActivityLog[]
+
+  @@unique([salonId, email])
+  @@index([salonId])
+  @@map("users")
+}
+
+model Employee {
+  id        String   @id @default(uuid()) @db.Uuid
+  salonId   String   @db.Uuid
+  userId    String?  @unique @db.Uuid
+  firstName String
+  lastName  String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id])
+  user  User? @relation(fields: [userId], references: [id])
+
+  skills            EmployeeSkill[]
+  unavailabilities  EmployeeUnavailability[]
+  assignedServices  AppointmentService[]     @relation("AssignedEmployee")
+  performedServices AppointmentService[]     @relation("PerformedByEmployee")
+
+  @@index([salonId])
+  @@map("employees")
+}
+
+model Client {
+  id           String   @id @default(uuid()) @db.Uuid
+  salonId      String   @db.Uuid
+  name         String?
+  phone        String
+  internalNote String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  salon        Salon         @relation(fields: [salonId], references: [id])
+  appointments Appointment[]
+
+  @@unique([salonId, phone])
+  @@index([salonId])
+  @@map("clients")
+}
+
+model ServiceCategory {
+  id           String   @id @default(uuid()) @db.Uuid
+  salonId      String   @db.Uuid
+  name         String
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  salon    Salon     @relation(fields: [salonId], references: [id])
+  services Service[]
+
+  @@unique([salonId, name])
+  @@index([salonId])
+  @@map("service_categories")
+}
+
+model Service {
+  id                     String    @id @default(uuid()) @db.Uuid
+  salonId                String    @db.Uuid
+  categoryId             String    @db.Uuid
+  name                   String
+  defaultDurationMinutes Int?
+  defaultPrice           Decimal   @db.Decimal(10, 2)
+  isStartingPrice        Boolean   @default(false)
+  requiredRoomType       RoomType?
+  isActive               Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  salon    Salon           @relation(fields: [salonId], references: [id])
+  category ServiceCategory @relation(fields: [categoryId], references: [id])
+
+  employeeSkills      EmployeeSkill[]
+  appointmentServices AppointmentService[]
+
+  @@index([salonId])
+  @@index([categoryId])
+  @@map("services")
+}
+
+model EmployeeSkill {
+  employeeId String   @db.Uuid
+  serviceId  String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  service  Service  @relation(fields: [serviceId], references: [id])
+
+  @@id([employeeId, serviceId])
+  @@map("employee_skills")
+}
+
+model Appointment {
+  id                       String            @id @default(uuid()) @db.Uuid
+  salonId                  String            @db.Uuid
+  clientId                 String            @db.Uuid
+  scheduledStart           DateTime
+  estimatedDurationMinutes Int
+  status                   AppointmentStatus @default(PLANNED)
+  internalNote             String?
+  createdByUserId          String            @db.Uuid
+  cancelledByUserId        String?           @db.Uuid
+  cancelledAt              DateTime?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  salon  Salon  @relation(fields: [salonId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
+
+  createdByUser   User  @relation("AppointmentCreatedBy", fields: [createdByUserId], references: [id])
+  cancelledByUser User? @relation("AppointmentCancelledBy", fields: [cancelledByUserId], references: [id])
+
+  services       AppointmentService[]
+  parallelGroups ParallelGroup[]
+  payment        Payment?
+
+  @@index([salonId, scheduledStart])
+  @@index([clientId])
+  @@index([status])
+  @@map("appointments")
+}
+
+model AppointmentService {
+  id                       String                   @id @default(uuid()) @db.Uuid
+  appointmentId            String                   @db.Uuid
+  serviceId                String?                  @db.Uuid
+  serviceNameSnapshot      String
+  durationMinutes          Int
+  price                    Decimal                  @db.Decimal(10, 2)
+  requiredRoomTypeSnapshot RoomType?
+  status                   AppointmentServiceStatus @default(TODO)
+  assignedEmployeeId       String?                  @db.Uuid
+  performedByEmployeeId    String?                  @db.Uuid
+  roomId                   String?                  @db.Uuid
+  actualStartedAt          DateTime?
+  actualFinishedAt         DateTime?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  service     Service?    @relation(fields: [serviceId], references: [id])
+
+  assignedEmployee    Employee? @relation("AssignedEmployee", fields: [assignedEmployeeId], references: [id])
+  performedByEmployee Employee? @relation("PerformedByEmployee", fields: [performedByEmployeeId], references: [id])
+
+  room Room? @relation(fields: [roomId], references: [id])
+
+  parallelGroupLinks ParallelGroupService[]
+
+  @@index([appointmentId])
+  @@index([assignedEmployeeId])
+  @@index([performedByEmployeeId])
+  @@index([roomId])
+  @@map("appointment_services")
+}
+
+model ParallelGroup {
+  id              String   @id @default(uuid()) @db.Uuid
+  appointmentId   String   @db.Uuid
+  createdByUserId String   @db.Uuid
+  createdAt       DateTime @default(now())
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  createdByUser User        @relation("ParallelGroupCreatedBy", fields: [createdByUserId], references: [id])
+
+  services ParallelGroupService[]
+
+  @@index([appointmentId])
+  @@map("parallel_groups")
+}
+
+model ParallelGroupService {
+  parallelGroupId      String @db.Uuid
+  appointmentServiceId String @unique @db.Uuid
+
+  parallelGroup      ParallelGroup      @relation(fields: [parallelGroupId], references: [id])
+  appointmentService AppointmentService @relation(fields: [appointmentServiceId], references: [id])
+
+  @@id([parallelGroupId, appointmentServiceId])
+  @@map("parallel_group_services")
+}
+
+model Room {
+  id        String   @id @default(uuid()) @db.Uuid
+  salonId   String   @db.Uuid
+  name      String
+  type      RoomType
+  capacity  Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id])
+
+  appointmentServices AppointmentService[]
+  unavailabilities    RoomUnavailability[]
+
+  @@unique([salonId, name])
+  @@index([salonId, type])
+  @@map("rooms")
+}
+
+model RoomUnavailability {
+  id              String   @id @default(uuid()) @db.Uuid
+  roomId          String   @db.Uuid
+  startAt         DateTime
+  endAt           DateTime
+  reason          String?
+  createdByUserId String   @db.Uuid
+  createdAt       DateTime @default(now())
+
+  room          Room @relation(fields: [roomId], references: [id])
+  createdByUser User @relation("RoomUnavailabilityCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([roomId, startAt, endAt])
+  @@map("room_unavailabilities")
+}
+
+model EmployeeUnavailability {
+  id              String                     @id @default(uuid()) @db.Uuid
+  employeeId      String                     @db.Uuid
+  type            EmployeeUnavailabilityType
+  startAt         DateTime
+  endAt           DateTime
+  note            String?
+  createdByUserId String                     @db.Uuid
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  createdByUser User     @relation("EmployeeUnavailabilityCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([employeeId, startAt, endAt])
+  @@map("employee_unavailabilities")
+}
+
+model Payment {
+  id               String        @id @default(uuid()) @db.Uuid
+  appointmentId    String        @unique @db.Uuid
+  amount           Decimal       @db.Decimal(10, 2)
+  method           PaymentMethod @default(CASH)
+  status           PaymentStatus @default(PENDING)
+  paidAt           DateTime?
+  recordedByUserId String?       @db.Uuid
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  appointment    Appointment @relation(fields: [appointmentId], references: [id])
+  recordedByUser User?       @relation("PaymentRecordedBy", fields: [recordedByUserId], references: [id])
+
+  @@map("payments")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  salonId    String   @db.Uuid
+  userId     String   @db.Uuid
+  action     String
+  entityType String
+  entityId   String   @db.Uuid
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  salon Salon @relation(fields: [salonId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([salonId, createdAt])
+  @@index([entityType, entityId])
+  @@map("activity_logs")
+}
