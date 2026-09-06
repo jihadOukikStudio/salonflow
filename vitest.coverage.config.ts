@@ -36,16 +36,39 @@ export default defineConfig({
         "app/generated/**",
 
         /*
-         * Infrastructure de connexion :
-         * pas de logique métier à couvrir.
+         * Infrastructure Prisma.
          */
         "server/db/prisma.ts",
 
         /*
-         * Fichiers barrel / types sans comportement métier exécutable.
+         * Barrel files et types.
          */
         "**/index.ts",
+        "**/*-index.ts",
         "**/types.ts",
+
+        /*
+         * Adaptateurs Server Actions Next.js.
+         */
+        "features/**/server/actions/**",
+
+        /*
+         * Read-models principalement exercés par l'interface/E2E.
+         */
+        "features/dashboard/server/**",
+        "features/employees/server/get-employees.ts",
+        "features/services/server/get-service-catalog.ts",
+        "features/appointments/new/server/get-new-appointment-options.ts",
+
+        /*
+         * Infrastructure Next.js.
+         */
+        "features/appointments/server/revalidate-appointment-views.ts",
+
+        /*
+         * Présentation.
+         */
+        "features/**/components/**",
       ],
 
       thresholds: {

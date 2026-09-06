@@ -34,6 +34,40 @@ async function paidAmountBetween(salonId: string, start: Date, end: Date) {
   return Number(result._sum.amount ?? 0);
 }
 
+async function completedServicesByEmployee(
+  salonId: string,
+  start: Date,
+  end: Date,
+  employeeNames: Map<string, string>,
+) {
+  const rows = await prisma.appointmentService.groupBy({
+    by: ["performedByEmployeeId"],
+    where: {
+      status: "DONE",
+      performedByEmployeeId: { not: null },
+      appointment: {
+        salonId,
+        scheduledStart: { gte: start, lt: end },
+      },
+    },
+    _count: { _all: true },
+  });
+
+  return rows
+    .filter((row) => row.performedByEmployeeId !== null)
+    .map((row) => ({
+      employeeId: row.performedByEmployeeId as string,
+      name:
+        employeeNames.get(row.performedByEmployeeId as string) ?? "Employée",
+      completedServices: row._count._all,
+    }))
+    .sort(
+      (a, b) =>
+        b.completedServices - a.completedServices ||
+        a.name.localeCompare(b.name, "fr"),
+    );
+}
+
 export async function getDashboard(currentUser: CurrentUser) {
   const dateKey = parsePlanningDate(undefined);
   const planning = await getPlanningDay(currentUser, dateKey);
@@ -85,6 +119,34 @@ export async function getDashboard(currentUser: CurrentUser) {
     } as const;
   });
 
+  const todayRange = getCasablancaDayRange(dateKey);
+  const weekStartRange = getCasablancaDayRange(mondayOf(dateKey));
+  const monthStartRange = getCasablancaDayRange(monthStart(dateKey));
+  const employeeNames = new Map(
+    planning.employees.map((employee) => [employee.id, employee.name]),
+  );
+
+  const [teamToday, teamWeek, teamMonth] = await Promise.all([
+    completedServicesByEmployee(
+      currentUser.salonId,
+      todayRange.start,
+      todayRange.end,
+      employeeNames,
+    ),
+    completedServicesByEmployee(
+      currentUser.salonId,
+      weekStartRange.start,
+      todayRange.end,
+      employeeNames,
+    ),
+    completedServicesByEmployee(
+      currentUser.salonId,
+      monthStartRange.start,
+      todayRange.end,
+      employeeNames,
+    ),
+  ]);
+
   const operational = {
     dateKey,
     appointmentCount: planning.appointmentCount,
@@ -94,20 +156,29 @@ export async function getDashboard(currentUser: CurrentUser) {
     employeesNow,
     roomsNow,
     upcomingAppointments,
+    teamActivity: {
+      today: teamToday,
+      week: teamWeek,
+      month: teamMonth,
+    },
   };
 
   if (!canViewDashboardFinance(currentUser)) {
     return { operational, finance: null };
   }
 
-  const today = getCasablancaDayRange(dateKey);
-  const week = getCasablancaDayRange(mondayOf(dateKey));
-  const month = getCasablancaDayRange(monthStart(dateKey));
-
   const [todayAmount, weekAmount, monthAmount] = await Promise.all([
-    paidAmountBetween(currentUser.salonId, today.start, today.end),
-    paidAmountBetween(currentUser.salonId, week.start, today.end),
-    paidAmountBetween(currentUser.salonId, month.start, today.end),
+    paidAmountBetween(currentUser.salonId, todayRange.start, todayRange.end),
+    paidAmountBetween(
+      currentUser.salonId,
+      weekStartRange.start,
+      todayRange.end,
+    ),
+    paidAmountBetween(
+      currentUser.salonId,
+      monthStartRange.start,
+      todayRange.end,
+    ),
   ]);
 
   return {

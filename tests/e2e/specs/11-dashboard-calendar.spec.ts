@@ -7,26 +7,40 @@ test.describe("Phase 12.6 — dashboard et calendrier", () => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
     await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { name: /état du salon/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /activité financière/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /état du salon/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /activité financière/i }),
+    ).toBeVisible();
     await expect(page.getByText(/aujourd’hui/i).first()).toBeVisible();
   });
 
-  test("l'employée standard est redirigée vers le planning", async ({ page }) => {
+  test("l'employée standard est redirigée vers le planning", async ({
+    page,
+  }) => {
     await createAppointmentScenario();
     await loginAsEmployee(page);
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/planning/);
-    await expect(page.getByRole("heading", { name: /activité financière/i })).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: /activité financière/i }),
+    ).toHaveCount(0);
   });
 
   test("le planning expose les trois vues calendrier", async ({ page }) => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
     await page.goto("/planning");
-    await expect(page.getByRole("link", { name: /planning/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /planning/i }).first(),
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: /employées/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /salles/i }).first()).toBeVisible();
-    await expect(page.getByText(/la hauteur des blocs représente la durée/i)).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /salles/i }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/la hauteur des blocs représente la durée/i),
+    ).toBeVisible();
   });
 });

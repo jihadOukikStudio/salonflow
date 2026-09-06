@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { canAccessDashboard, canViewDashboardFinance } from "@/features/dashboard/lib/access";
+import {
+  canAccessDashboard,
+  canViewDashboardFinance,
+} from "@/features/dashboard/lib/access";
 
 describe("dashboard access", () => {
   it("autorise la gérante et affiche les finances", () => {

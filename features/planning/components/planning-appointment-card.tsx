@@ -81,16 +81,28 @@ export function PlanningAppointmentCard({
 
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock3 aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  <Clock3
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5"
+                    strokeWidth={1.8}
+                  />
                   {service.durationMinutes} min
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <UserRound aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  <UserRound
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5"
+                    strokeWidth={1.8}
+                  />
                   {service.assignedEmployee?.name ?? "Employée à affecter"}
                 </span>
                 {service.requiredRoomType ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <DoorOpen aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
+                    <DoorOpen
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5"
+                      strokeWidth={1.8}
+                    />
                     {service.room?.name ?? "Salle à affecter"}
                   </span>
                 ) : null}
@@ -125,11 +137,14 @@ export function PlanningAppointmentCard({
             className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-violet-700 hover:bg-violet-50"
           >
             Ouvrir
-            <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
+            <ArrowUpRight
+              aria-hidden="true"
+              className="h-3.5 w-3.5"
+              strokeWidth={1.8}
+            />
           </Link>
         </div>
       </div>
     </article>
   );
 }
-
