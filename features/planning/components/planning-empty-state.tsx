@@ -8,13 +8,12 @@ export function PlanningEmptyState() {
       </h2>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-        Le planning est vide. Vous pouvez créer un nouveau rendez-vous lorsque
-        le formulaire sera branché.
+        Aucun rendez-vous n’est prévu pour cette journée.
       </p>
 
       <Link
         href="/appointments/new"
-        className="mt-6 inline-flex rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
       >
         Nouveau rendez-vous
       </Link>

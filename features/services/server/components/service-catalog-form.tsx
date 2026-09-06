@@ -164,6 +164,19 @@ function ServiceRow({ service }: { service: ServiceItem }) {
 }
 
 export function ServiceCatalogForm({ categories }: Props) {
+  if (categories.length === 0) {
+    return (
+      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <p className="font-semibold text-slate-900">
+          Aucune prestation configurée
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          Le catalogue doit contenir les prestations proposées par le salon.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {categories.map((category) => (

@@ -10,6 +10,17 @@ import {
   deleteRoomUnavailabilityAction,
 } from "@/features/unavailability/server/actions/unavailability-actions";
 import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
+function formatCasablancaDateTime(value: Date | string) {
+  return new Intl.DateTimeFormat("fr-MA", {
+    timeZone: "Africa/Casablanca",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 const inputClass =
   "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200";
 type Room = {
@@ -70,12 +81,14 @@ export function RoomsAdmin({
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <input
+              aria-label="Nom de la salle"
               className={inputClass}
-              placeholder="Nom"
+              placeholder="Nom de la salle"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <select
+              aria-label="Type de salle"
               className={inputClass}
               value={type}
               onChange={(e) => setType(e.target.value as typeof type)}
@@ -84,6 +97,7 @@ export function RoomsAdmin({
               <option value="TREATMENT_ROOM">Salle de soins</option>
             </select>
             <input
+              aria-label="Capacité de la salle"
               className={inputClass}
               type="number"
               min={1}
@@ -106,16 +120,27 @@ export function RoomsAdmin({
         </section>
       ) : null}
       <section className="space-y-4">
-        {rooms.map((room) => (
-          <RoomCard
-            key={room.id}
-            room={room}
-            isAdmin={isAdmin}
-            canManage={canManage}
-            pending={pending}
-            run={run}
-          />
-        ))}
+        {rooms.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+            <p className="font-semibold text-slate-900">
+              Aucune salle configurée
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              Ajoutez les Hamam et salles de soins utilisés par le salon.
+            </p>
+          </div>
+        ) : (
+          rooms.map((room) => (
+            <RoomCard
+              key={room.id}
+              room={room}
+              isAdmin={isAdmin}
+              canManage={canManage}
+              pending={pending}
+              run={run}
+            />
+          ))
+        )}
       </section>
     </div>
   );
@@ -158,11 +183,13 @@ function RoomCard({
       {isAdmin ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <input
+            aria-label={`Nom de ${room.name}`}
             className={inputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
+            aria-label={`Capacité de ${room.name}`}
             className={inputClass}
             type="number"
             min={1}
@@ -201,24 +228,39 @@ function RoomCard({
         <div className="mt-5 border-t border-slate-200 pt-4">
           <h4 className="font-semibold text-slate-950">Indisponibilité</h4>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            <input
-              type="datetime-local"
-              className={inputClass}
-              value={startAt}
-              onChange={(e) => setStartAt(e.target.value)}
-            />
-            <input
-              type="datetime-local"
-              className={inputClass}
-              value={endAt}
-              onChange={(e) => setEndAt(e.target.value)}
-            />
-            <input
-              className={inputClass}
-              placeholder="Raison"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+                Début
+              </span>
+              <input
+                type="datetime-local"
+                className={inputClass}
+                value={startAt}
+                onChange={(e) => setStartAt(e.target.value)}
+              />
+            </label>
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+                Fin
+              </span>
+              <input
+                type="datetime-local"
+                className={inputClass}
+                value={endAt}
+                onChange={(e) => setEndAt(e.target.value)}
+              />
+            </label>
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+                Raison
+              </span>
+              <input
+                className={inputClass}
+                placeholder="Optionnelle"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </label>
           </div>
           <button
             disabled={pending || !startAt || !endAt}
@@ -253,8 +295,8 @@ function RoomCard({
             className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2"
           >
             <span className="text-xs text-slate-700">
-              {new Date(u.startAt).toLocaleString("fr-FR")} →{" "}
-              {new Date(u.endAt).toLocaleString("fr-FR")}
+              {formatCasablancaDateTime(u.startAt)} →{" "}
+              {formatCasablancaDateTime(u.endAt)}
               {u.reason ? ` · ${u.reason}` : ""}
             </span>
             {canManage ? (

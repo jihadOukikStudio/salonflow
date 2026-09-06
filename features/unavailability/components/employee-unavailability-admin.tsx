@@ -6,6 +6,17 @@ import {
   deleteEmployeeUnavailabilityAction,
 } from "@/features/unavailability/server/actions/unavailability-actions";
 import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
+function formatCasablancaDateTime(value: Date | string) {
+  return new Intl.DateTimeFormat("fr-MA", {
+    timeZone: "Africa/Casablanca",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 const inputClass =
   "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200";
 const labels: Record<string, string> = {
@@ -101,18 +112,28 @@ export function EmployeeUnavailabilityAdmin({
               </option>
             ))}
           </select>
-          <input
-            type="datetime-local"
-            className={inputClass}
-            value={startAt}
-            onChange={(e) => setStartAt(e.target.value)}
-          />
-          <input
-            type="datetime-local"
-            className={inputClass}
-            value={endAt}
-            onChange={(e) => setEndAt(e.target.value)}
-          />
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Début
+            </span>
+            <input
+              type="datetime-local"
+              className={inputClass}
+              value={startAt}
+              onChange={(e) => setStartAt(e.target.value)}
+            />
+          </label>
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Fin
+            </span>
+            <input
+              type="datetime-local"
+              className={inputClass}
+              value={endAt}
+              onChange={(e) => setEndAt(e.target.value)}
+            />
+          </label>
           <input
             className={`${inputClass} sm:col-span-2`}
             placeholder="Note optionnelle"
@@ -173,8 +194,8 @@ export function EmployeeUnavailabilityAdmin({
                           {labels[u.type] ?? u.type}
                         </p>
                         <p className="text-xs text-slate-600">
-                          {new Date(u.startAt).toLocaleString("fr-FR")} →{" "}
-                          {new Date(u.endAt).toLocaleString("fr-FR")}
+                          {formatCasablancaDateTime(u.startAt)} →{" "}
+                          {formatCasablancaDateTime(u.endAt)}
                           {u.note ? ` · ${u.note}` : ""}
                         </p>
                       </div>

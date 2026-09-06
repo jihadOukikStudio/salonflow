@@ -17,7 +17,7 @@ export default async function EmployeeUnavailabilityPage() {
   const data = await getEmployeeUnavailabilityPage(user);
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-[#fcf9f7]">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <header className="mb-6">
           <Link

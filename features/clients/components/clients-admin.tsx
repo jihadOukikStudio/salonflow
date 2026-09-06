@@ -11,6 +11,25 @@ import {
 const inputClass =
   "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200";
 
+const appointmentStatusLabels: Record<string, string> = {
+  PLANNED: "Prévu",
+  IN_PROGRESS: "En cours",
+  COMPLETED: "Terminé",
+  CLOSED: "Clôturé",
+  CANCELLED: "Annulé",
+};
+
+function formatAppointmentDate(value: Date | string) {
+  return new Intl.DateTimeFormat("fr-MA", {
+    timeZone: "Africa/Casablanca",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 type ClientRow = {
   id: string;
   name: string | null;
@@ -164,8 +183,8 @@ function ClientCard({
                 href={`/appointments/${a.id}`}
                 className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
               >
-                {new Date(a.scheduledStart).toLocaleDateString("fr-FR")} ·{" "}
-                {a.status}
+                {formatAppointmentDate(a.scheduledStart)} ·{" "}
+                {appointmentStatusLabels[a.status] ?? a.status}
               </Link>
             ))}
           </div>
