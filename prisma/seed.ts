@@ -49,6 +49,36 @@ type SeedService = {
   requiredRoomType?: "HAMAM" | "TREATMENT_ROOM";
 };
 
+const employeeFirstNames = [
+  "Ahlam",
+  "Khawla",
+  "Salima",
+  "Fatimazahrae",
+  "Hasna",
+  "Sabah",
+  "Atika",
+] as const;
+
+const hairCategories = new Set([
+  "Coiffure",
+  "Soins capillaires",
+  "Coloration",
+  "Coloration sans ammoniaque",
+  "Balayages",
+  "Lissages",
+]);
+
+const generalCategories = new Set([
+  "Cils & Sourcils",
+  "Épilation à la cire",
+  "Beauté des mains et des pieds",
+  "Soins du visage",
+]);
+
+function normalizedName(value: string) {
+  return value.trim().toLocaleLowerCase("fr");
+}
+
 const categories = [
   "Coiffure",
   "Soins capillaires",
@@ -607,6 +637,22 @@ async function upsertService({
 async function main() {
   console.log("🌱 Starting SalonFlow seed...");
 
+  if (process.env.NODE_ENV === "production") {
+    const existingSalons = await prisma.salon.findMany({
+      select: { id: true, name: true },
+    });
+
+    const unexpectedSalons = existingSalons.filter(
+      (existingSalon) => existingSalon.name !== "Le 7ème Sens Marrakech",
+    );
+
+    if (unexpectedSalons.length > 0) {
+      throw new Error(
+        "SECURITY: production bootstrap refused because another salon already exists in this database.",
+      );
+    }
+  }
+
   let salon = await prisma.salon.findFirst({
     where: {
       name: "Le 7ème Sens Marrakech",
@@ -623,6 +669,19 @@ async function main() {
   }
 
   console.log(`✓ Salon: ${salon.name}`);
+
+  if (process.env.NODE_ENV === "production") {
+    const [clientCount, appointmentCount] = await Promise.all([
+      prisma.client.count({ where: { salonId: salon.id } }),
+      prisma.appointment.count({ where: { salonId: salon.id } }),
+    ]);
+
+    if (clientCount > 0 || appointmentCount > 0) {
+      throw new Error(
+        "SECURITY: production bootstrap refused because client/appointment business data already exists.",
+      );
+    }
+  }
 
   const passwordHash = await hash(adminPassword, 12);
 
@@ -744,6 +803,82 @@ async function main() {
   }
 
   console.log(`✓ ${services.length} prestations`);
+
+  const activeServices = await prisma.service.findMany({
+    where: { salonId: salon.id, isActive: true },
+    include: { category: true },
+  });
+
+  const skillProfileByEmployee = new Map<
+    string,
+    (service: (typeof activeServices)[number]) => boolean
+  >([
+    ["fatimazahrae", (service) => hairCategories.has(service.category.name)],
+    ["hasna", (service) => service.category.name === "Massages"],
+    ["sabah", (service) => service.category.name === "Hamam oriental"],
+    ["atika", (service) => service.category.name === "Hamam oriental"],
+    ["ahlam", (service) => generalCategories.has(service.category.name)],
+    ["khawla", (service) => generalCategories.has(service.category.name)],
+    ["salima", (service) => generalCategories.has(service.category.name)],
+  ]);
+
+  for (const firstName of employeeFirstNames) {
+    const existingEmployees = await prisma.employee.findMany({
+      where: { salonId: salon.id, firstName },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (existingEmployees.length > 1) {
+      throw new Error(
+        `Bootstrap refused: plusieurs employées portent déjà le prénom ${firstName}.`,
+      );
+    }
+
+    const employee = existingEmployees[0]
+      ? await prisma.employee.update({
+          where: { id: existingEmployees[0].id },
+          data: { isActive: true },
+        })
+      : await prisma.employee.create({
+          data: {
+            salonId: salon.id,
+            firstName,
+            phone: null,
+            isActive: true,
+          },
+        });
+
+    const profile = skillProfileByEmployee.get(normalizedName(firstName));
+
+    if (!profile) {
+      throw new Error(
+        `Aucun profil de compétences configuré pour ${firstName}.`,
+      );
+    }
+
+    const allowedServices = activeServices.filter(profile);
+
+    if (allowedServices.length === 0) {
+      throw new Error(
+        `Aucune prestation compatible trouvée pour ${firstName}.`,
+      );
+    }
+
+    await prisma.employeeSkill.deleteMany({
+      where: { employeeId: employee.id },
+    });
+
+    await prisma.employeeSkill.createMany({
+      data: allowedServices.map((service) => ({
+        employeeId: employee.id,
+        serviceId: service.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  console.log(`✓ ${employeeFirstNames.length} employées réelles`);
+  console.log("✓ Compétences employées configurées");
   console.log("✅ SalonFlow seed completed.");
 }
 
