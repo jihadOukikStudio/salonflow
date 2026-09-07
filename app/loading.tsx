@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { SalonFlowLogo } from "@/features/brand/components/salonflow-logo";
 
 export default function Loading() {
   return (
@@ -9,22 +9,17 @@ export default function Loading() {
       aria-label="Chargement de SalonFlow"
     >
       <div className="flex max-w-sm flex-col items-center text-center">
-        <div className="sf-loading-mark relative flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-violet-200 bg-white shadow-sm">
-          <div className="absolute inset-2 rounded-[1rem] border border-[color:var(--sf-champagne)]/35" />
-          <Sparkles
-            aria-hidden="true"
-            className="relative h-6 w-6 text-violet-700"
-            strokeWidth={1.55}
-          />
+        <div className="sf-loading-mark rounded-[1.75rem] bg-white p-2 shadow-sm ring-1 ring-slate-200/80">
+          <SalonFlowLogo size={72} showName={false} />
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
+        <p className="mt-6 font-[family-name:var(--font-salonflow-display)] text-3xl font-semibold text-slate-950">
           SalonFlow
         </p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-950">
-          Le salon s&apos;organise
-        </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
+        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-violet-700">
+          Le 7ème Sens Marrakech
+        </p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
           Préparation de votre espace de travail…
         </p>
 

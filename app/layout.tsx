@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
+import { PwaRegister } from "@/features/pwa/components/pwa-register";
 import { AppShell } from "@/features/shell/components/app-shell";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { getCurrentUser } from "@/server/auth/get-current-user";
@@ -21,8 +22,26 @@ const salonFlowDisplay = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "SalonFlow",
-  description: "Planning et organisation du salon",
+  applicationName: "SalonFlow",
+  title: {
+    default: "SalonFlow",
+    template: "%s · SalonFlow",
+  },
+  description: "Planning et organisation du salon Le 7ème Sens Marrakech",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SalonFlow",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#a65e70",
+  colorScheme: "light",
 };
 
 export default async function RootLayout({
@@ -47,6 +66,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${salonFlowDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <PwaRegister />
         {shellUser ? (
           <AppShell user={shellUser}>{children}</AppShell>
         ) : (

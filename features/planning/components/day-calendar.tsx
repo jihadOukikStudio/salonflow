@@ -350,42 +350,44 @@ function AppointmentsCalendar({
   );
 
   return (
-    <div className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm md:block">
-      <div className="grid grid-cols-[82px_minmax(0,1fr)] border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="border-r border-slate-200 px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Heure
-        </div>
-        <div className="flex flex-col gap-2 px-4 py-3 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <p className="font-semibold text-slate-950">Rendez-vous</p>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Vue chronologique de la journée · les chevauchements sont affichés
-              côte à côte
-            </p>
+    <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="min-w-[680px] md:min-w-0">
+        <div className="grid grid-cols-[82px_minmax(0,1fr)] border-b border-slate-200 bg-white/95 backdrop-blur">
+          <div className="border-r border-slate-200 px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Heure
           </div>
-          <AppointmentStatusLegend />
+          <div className="flex flex-col gap-2 px-4 py-3 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <p className="font-semibold text-slate-950">Rendez-vous</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Vue chronologique de la journée · les chevauchements sont
+                affichés côte à côte
+              </p>
+            </div>
+            <AppointmentStatusLegend />
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-[82px_minmax(0,1fr)]">
-        <TimeRail />
+        <div className="grid grid-cols-[82px_minmax(0,1fr)]">
+          <TimeRail />
 
-        <div
-          className="relative min-w-0 bg-white"
-          style={{ height: VIEWPORT_HEIGHT }}
-        >
-          <TimeGrid />
-          {positioned.map((item) => (
-            <AppointmentCard key={item.appointment.id} item={item} />
-          ))}
-          {showNow ? <NowLine top={nowTop} /> : null}
           <div
-            className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
-            style={{ top: CALENDAR_HEIGHT, height: BOTTOM_SPACE }}
+            className="relative min-w-0 bg-white"
+            style={{ height: VIEWPORT_HEIGHT }}
           >
-            <span className="absolute right-4 top-3 text-[11px] font-medium text-slate-400">
-              Fermeture · 21:00
-            </span>
+            <TimeGrid />
+            {positioned.map((item) => (
+              <AppointmentCard key={item.appointment.id} item={item} />
+            ))}
+            {showNow ? <NowLine top={nowTop} /> : null}
+            <div
+              className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
+              style={{ top: CALENDAR_HEIGHT, height: BOTTOM_SPACE }}
+            >
+              <span className="absolute right-4 top-3 text-[11px] font-medium text-slate-400">
+                Fermeture · 21:00
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -477,7 +479,7 @@ function ResourceCalendar({
   const minWidth = Math.max(900, 92 + columns.length * 248);
 
   return (
-    <div className="hidden rounded-3xl border border-slate-200 bg-white shadow-sm md:block">
+    <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div
         ref={scrollRef}
         className="max-h-[calc(100vh-190px)] min-h-[620px] overflow-auto rounded-3xl [scrollbar-gutter:stable]"
@@ -672,37 +674,6 @@ export function DayCalendar({
           nowTop={nowTop}
         />
       )}
-
-      <div className="space-y-3 md:hidden">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-          Planning du jour
-        </p>
-        {appointments.map((appointment) => (
-          <Link
-            key={appointment.id}
-            href={`/appointments/${appointment.id}`}
-            className={`block rounded-2xl border p-4 shadow-sm ${statusClass(
-              appointment.status,
-            )}`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-semibold text-slate-950">
-                  {appointment.client.name}
-                </p>
-                <p className="mt-1 truncate text-sm text-slate-600">
-                  {appointment.services
-                    .map((service) => service.name)
-                    .join(" · ")}
-                </p>
-              </div>
-              <span className="shrink-0 text-sm font-semibold text-slate-800">
-                {formatPlanningTime(appointment.scheduledStart)}
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
