@@ -203,11 +203,16 @@ function TimeGrid() {
     <>
       {Array.from({ length: (END_HOUR - START_HOUR) * 2 + 1 }, (_, index) => {
         const isHour = index % 2 === 0;
+        const isOpeningLine = index === 0;
         return (
           <div
             key={index}
             className={`absolute inset-x-0 border-t ${
-              isHour ? "border-slate-200" : "border-slate-100"
+              isOpeningLine
+                ? "border-slate-400"
+                : isHour
+                  ? "border-slate-200"
+                  : "border-slate-100"
             }`}
             style={{ top: index * (HOUR_HEIGHT / 2) }}
           />
@@ -226,15 +231,27 @@ function TimeRail() {
       {Array.from(
         { length: END_HOUR - START_HOUR + 1 },
         (_, index) => START_HOUR + index,
-      ).map((hour) => (
-        <div
-          key={hour}
-          className="absolute right-3 -translate-y-2 text-xs font-medium text-slate-500"
-          style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }}
-        >
-          {String(hour).padStart(2, "0")}:00
-        </div>
-      ))}
+      ).map((hour) => {
+        const isOpeningHour = hour === START_HOUR;
+
+        return (
+          <div
+            key={hour}
+            className={`absolute right-3 text-xs ${
+              isOpeningHour
+                ? "top-2 font-bold text-slate-900"
+                : "-translate-y-2 font-medium text-slate-500"
+            }`}
+            style={
+              isOpeningHour
+                ? undefined
+                : { top: (hour - START_HOUR) * HOUR_HEIGHT }
+            }
+          >
+            {String(hour).padStart(2, "0")}:00
+          </div>
+        );
+      })}
     </div>
   );
 }
