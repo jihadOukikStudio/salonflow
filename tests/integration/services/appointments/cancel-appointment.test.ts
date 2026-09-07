@@ -3,6 +3,8 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import type { CurrentUser } from "@/server/permissions";
 
 import { cancelAppointment } from "@/server/services/appointments/cancel-appointment";
+import { validateEmployeeAvailability } from "@/server/services/resources/validate-employee-availability";
+import { validateRoomAvailability } from "@/server/services/resources/validate-room-availability";
 
 import {
   BusinessRuleError,
@@ -181,6 +183,107 @@ describe("cancelAppointment", () => {
     expect(log).not.toBeNull();
 
     expect(log?.entityType).toBe("APPOINTMENT");
+  });
+
+  it("libère immédiatement l'employée, la salle et le créneau après annulation", async () => {
+    const context = await createContext();
+
+    const employee = await testPrisma.employee.create({
+      data: {
+        salonId: context.salon.id,
+        firstName: "Employée test",
+        isActive: true,
+      },
+    });
+
+    const room = await testPrisma.room.create({
+      data: {
+        salonId: context.salon.id,
+        name: `Salle ${crypto.randomUUID()}`,
+        type: "TREATMENT_ROOM",
+        capacity: 1,
+        isActive: true,
+      },
+    });
+
+    const appointmentService =
+      await testPrisma.appointmentService.findFirstOrThrow({
+        where: {
+          appointmentId: context.appointment.id,
+        },
+      });
+
+    await testPrisma.appointmentService.update({
+      where: {
+        id: appointmentService.id,
+      },
+      data: {
+        assignedEmployeeId: employee.id,
+        roomId: room.id,
+        requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+      },
+    });
+
+    const interval = {
+      salonId: context.salon.id,
+      scheduledStart: context.appointment.scheduledStart,
+      estimatedDurationMinutes: context.appointment.estimatedDurationMinutes,
+    };
+
+    await expect(
+      testPrisma.$transaction((tx) =>
+        validateEmployeeAvailability(tx, {
+          ...interval,
+          employeeId: employee.id,
+        }),
+      ),
+    ).rejects.toBeInstanceOf(BusinessRuleError);
+
+    await expect(
+      testPrisma.$transaction((tx) =>
+        validateRoomAvailability(tx, {
+          ...interval,
+          roomId: room.id,
+          requiredRoomType: "TREATMENT_ROOM",
+        }),
+      ),
+    ).rejects.toBeInstanceOf(BusinessRuleError);
+
+    await cancelAppointment(context.currentUser, {
+      appointmentId: context.appointment.id,
+    });
+
+    await expect(
+      testPrisma.$transaction((tx) =>
+        validateEmployeeAvailability(tx, {
+          ...interval,
+          employeeId: employee.id,
+        }),
+      ),
+    ).resolves.toBeUndefined();
+
+    await expect(
+      testPrisma.$transaction((tx) =>
+        validateRoomAvailability(tx, {
+          ...interval,
+          roomId: room.id,
+          requiredRoomType: "TREATMENT_ROOM",
+        }),
+      ),
+    ).resolves.toBeUndefined();
+
+    const storedService = await testPrisma.appointmentService.findUniqueOrThrow(
+      {
+        where: {
+          id: appointmentService.id,
+        },
+      },
+    );
+
+    // On garde les affectations pour l'historique : "libérer" signifie que
+    // les moteurs de disponibilité ignorent le RDV annulé, pas effacer les traces.
+    expect(storedService.assignedEmployeeId).toBe(employee.id);
+    expect(storedService.roomId).toBe(room.id);
   });
 
   it("allows only one concurrent cancellation", async () => {

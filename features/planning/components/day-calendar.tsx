@@ -156,6 +156,48 @@ function layoutAppointments(
   return result;
 }
 
+function AppointmentStatusLegend() {
+  const items = [
+    {
+      label: "Prévu",
+      className: "border-violet-200 bg-violet-50",
+      dotClassName: "bg-violet-600",
+    },
+    {
+      label: "En cours",
+      className: "border-amber-300 bg-amber-50",
+      dotClassName: "bg-amber-500",
+    },
+    {
+      label: "Terminé",
+      className: "border-emerald-300 bg-emerald-50",
+      dotClassName: "bg-emerald-600",
+    },
+    {
+      label: "Clôturé",
+      className: "border-slate-300 bg-slate-100",
+      dotClassName: "bg-slate-400",
+    },
+  ] as const;
+
+  return (
+    <div
+      aria-label="Légende des statuts de rendez-vous"
+      className="flex flex-wrap items-center gap-2"
+    >
+      {items.map((item) => (
+        <span
+          key={item.label}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold text-slate-700 ${item.className}`}
+        >
+          <span className={`h-2 w-2 rounded-full ${item.dotClassName}`} />
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function TimeGrid() {
   return (
     <>
@@ -313,12 +355,15 @@ function AppointmentsCalendar({
         <div className="border-r border-slate-200 px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
           Heure
         </div>
-        <div className="px-4 py-3">
-          <p className="font-semibold text-slate-950">Rendez-vous</p>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Vue chronologique de la journée · les chevauchements sont affichés
-            côte à côte
-          </p>
+        <div className="flex flex-col gap-2 px-4 py-3 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <p className="font-semibold text-slate-950">Rendez-vous</p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Vue chronologique de la journée · les chevauchements sont affichés
+              côte à côte
+            </p>
+          </div>
+          <AppointmentStatusLegend />
         </div>
       </div>
 

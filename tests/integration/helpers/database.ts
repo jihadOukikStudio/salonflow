@@ -3,9 +3,18 @@ import { testPrisma } from "./prisma";
 export async function cleanDatabase(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
 
-  if (!connectionString?.includes("salonflow_test")) {
+  if (!connectionString) {
     throw new Error(
-      "SECURITY: Refusing to clean a database that is not salonflow_test.",
+      "SECURITY: DATABASE_URL is required before database cleanup.",
+    );
+  }
+
+  const database = new URL(connectionString);
+  const databaseName = database.pathname.replace(/^\//, "");
+
+  if (databaseName !== "salonflow_test") {
+    throw new Error(
+      `SECURITY: Refusing to clean database "${databaseName || "<empty>"}".`,
     );
   }
 

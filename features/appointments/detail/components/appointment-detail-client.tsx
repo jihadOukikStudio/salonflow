@@ -73,11 +73,21 @@ function timeOnly(value: string) {
 
 function statusLabel(status: AppointmentDetail["status"]) {
   return {
-    PLANNED: "Planifié",
+    PLANNED: "Prévu",
     IN_PROGRESS: "En cours",
     COMPLETED: "Terminé",
     CLOSED: "Clôturé",
     CANCELLED: "Annulé",
+  }[status];
+}
+
+function statusTextClass(status: AppointmentDetail["status"]) {
+  return {
+    PLANNED: "text-violet-700",
+    IN_PROGRESS: "text-amber-700",
+    COMPLETED: "text-emerald-700",
+    CLOSED: "text-slate-600",
+    CANCELLED: "text-slate-500",
   }[status];
 }
 
@@ -91,6 +101,8 @@ export function AppointmentDetailClient({ detail }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const [paymentAmountOverride, setPaymentAmountOverride] = useState<
     string | null
   >(null);
@@ -168,6 +180,59 @@ export function AppointmentDetailClient({ detail }: Props) {
       });
   }, [canChangeStructure, detail.id, selectedCatalogService]);
 
+  useEffect(() => {
+    if (!cancelDialogOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusTimer = window.setTimeout(() => {
+      cancelButtonRef.current?.focus();
+    }, 0);
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !pending) {
+        setCancelDialogOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [cancelDialogOpen, pending]);
+
+  function confirmCancellation() {
+    setMessage(null);
+
+    startTransition(async () => {
+      try {
+        const result = await cancelAppointmentAction({
+          appointmentId: detail.id,
+        });
+
+        if (!result.ok) {
+          setMessage(result.message);
+          return;
+        }
+
+        setCancelDialogOpen(false);
+        setMessage(
+          "Rendez-vous annulé. Les ressources sont de nouveau disponibles.",
+        );
+        router.refresh();
+      } catch (error) {
+        console.error("Appointment cancellation failed", error);
+        setMessage(
+          "Impossible d’annuler le rendez-vous pour le moment. Veuillez réessayer.",
+        );
+      }
+    });
+  }
+
   function run(
     action: () => Promise<
       { ok: true; data: unknown } | { ok: false; message: string; code: string }
@@ -208,12 +273,21 @@ export function AppointmentDetailClient({ detail }: Props) {
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-violet-700">
+              <p
+                className={`text-sm font-semibold ${statusTextClass(detail.status)}`}
+              >
                 {statusLabel(detail.status)}
               </p>
               <h2 className="mt-1 text-2xl font-semibold text-slate-950">
                 {detail.client.name}
               </h2>
+              {detail.status === "CANCELLED" ? (
+                <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600 ring-1 ring-slate-200">
+                  Rendez-vous annulé : le créneau, les employées et les salles
+                  associés sont de nouveau disponibles. Les affectations restent
+                  visibles uniquement pour l’historique.
+                </p>
+              ) : null}
               <p className="mt-1 text-sm font-medium text-slate-700">
                 {detail.client.phone}
               </p>
@@ -970,15 +1044,8 @@ export function AppointmentDetailClient({ detail }: Props) {
               disabled={pending}
               className={`${buttonClass} mt-3 w-full border border-red-300 bg-white text-red-700 hover:bg-red-50`}
               onClick={() => {
-                if (!window.confirm("Annuler définitivement ce rendez-vous ?"))
-                  return;
-                run(
-                  () =>
-                    cancelAppointmentAction({
-                      appointmentId: detail.id,
-                    }),
-                  "Rendez-vous annulé.",
-                );
+                setMessage(null);
+                setCancelDialogOpen(true);
               }}
             >
               Annuler le rendez-vous
@@ -986,6 +1053,80 @@ export function AppointmentDetailClient({ detail }: Props) {
           ) : null}
         </aside>
       </section>
+
+      {cancelDialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !pending) {
+              setCancelDialogOpen(false);
+            }
+          }}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="cancel-appointment-title"
+            aria-describedby="cancel-appointment-description"
+            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-xl text-red-700">
+              <span aria-hidden="true">!</span>
+            </div>
+
+            <h2
+              id="cancel-appointment-title"
+              className="mt-4 text-xl font-semibold text-slate-950"
+            >
+              Annuler le rendez-vous ?
+            </h2>
+
+            <p
+              id="cancel-appointment-description"
+              className="mt-2 text-sm leading-6 text-slate-600"
+            >
+              Le rendez-vous restera dans l’historique. Son créneau, les
+              employées et les salles réservées seront immédiatement libérés.
+            </p>
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-sm font-semibold text-slate-950">
+                {detail.client.name}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                {dateTime(detail.scheduledStart)} ·{" "}
+                {detail.estimatedDurationMinutes} min
+              </p>
+            </div>
+
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Cette action n’efface pas le rendez-vous : elle conserve sa trace
+              et ses affectations dans l’historique.
+            </p>
+
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={pending}
+                className={`${buttonClass} border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 sm:min-w-28`}
+                onClick={() => setCancelDialogOpen(false)}
+              >
+                Retour
+              </button>
+
+              <button
+                ref={cancelButtonRef}
+                type="button"
+                disabled={pending}
+                className={`${buttonClass} bg-red-700 text-white hover:bg-red-800 sm:min-w-48`}
+                onClick={confirmCancellation}
+              >
+                {pending ? "Annulation…" : "Annuler le rendez-vous"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

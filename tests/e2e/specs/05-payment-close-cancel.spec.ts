@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 
 import { createAppointmentScenario, pastDate, testPrisma } from "../helpers/db";
 import { loginAsAdmin } from "../helpers/auth";
-import { acceptNextDialog } from "../helpers/ui";
 
 test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
   test("le paiement est désactivé tant que le RDV n'est pas terminé", async ({
@@ -105,8 +104,20 @@ test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
     await loginAsAdmin(page);
     await page.goto(`/appointments/${s.appointment.id}`);
 
-    await acceptNextDialog(page);
     await page.getByRole("button", { name: /annuler le rendez-vous/i }).click();
+
+    const cancelDialog = page.getByRole("alertdialog", {
+      name: /annuler le rendez-vous/i,
+    });
+
+    await expect(cancelDialog).toBeVisible();
+    await expect(cancelDialog).toContainText(
+      /créneau, les employées et les salles réservées seront immédiatement libérés/i,
+    );
+
+    await cancelDialog
+      .getByRole("button", { name: /^annuler le rendez-vous$/i })
+      .click();
 
     await expect
       .poll(

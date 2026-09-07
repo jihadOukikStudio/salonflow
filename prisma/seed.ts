@@ -19,6 +19,15 @@ const connectionString = requireEnv("DATABASE_URL");
 const adminEmail = requireEnv("SEED_ADMIN_EMAIL").toLowerCase();
 const adminPassword = requireEnv("SEED_ADMIN_PASSWORD");
 
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.PRODUCTION_SEED_CONFIRM !== "SALONFLOW_PRODUCTION_BOOTSTRAP"
+) {
+  throw new Error(
+    "SECURITY: production seed refused. Set PRODUCTION_SEED_CONFIRM=SALONFLOW_PRODUCTION_BOOTSTRAP only for the intentional bootstrap.",
+  );
+}
+
 if (adminPassword.length < 12) {
   throw new Error("SEED_ADMIN_PASSWORD must contain at least 12 characters.");
 }
@@ -61,48 +70,57 @@ const services: SeedService[] = [
     category: "Coiffure",
     name: "Brushing",
     price: 60,
+    durationMinutes: 30,
     isStartingPrice: true,
   },
   {
     category: "Coiffure",
     name: "Brushing Dyson",
     price: 100,
+    durationMinutes: 30,
   },
   {
     category: "Coiffure",
     name: "Touching",
     price: 40,
+    durationMinutes: 20,
   },
   {
     category: "Coiffure",
     name: "Coupe",
     price: 200,
+    durationMinutes: 45,
   },
   {
     category: "Coiffure",
     name: "Frange pointe",
     price: 50,
+    durationMinutes: 15,
   },
   {
     category: "Coiffure",
     name: "Coiffure soirée",
     price: 300,
+    durationMinutes: 60,
     isStartingPrice: true,
   },
   {
     category: "Coiffure",
     name: "Bushing wavy",
     price: 80,
+    durationMinutes: 45,
   },
   {
     category: "Coiffure",
     name: "Extensions (20 mèches)",
     price: 1400,
+    durationMinutes: 120,
   },
   {
     category: "Coiffure",
     name: "Application racines",
     price: 150,
+    durationMinutes: 30,
   },
 
   // Soins capillaires
@@ -110,27 +128,32 @@ const services: SeedService[] = [
     category: "Soins capillaires",
     name: "Soin classic",
     price: 100,
+    durationMinutes: 30,
   },
   {
     category: "Soins capillaires",
     name: "Soin fusio dose",
     price: 250,
+    durationMinutes: 30,
   },
   {
     category: "Soins capillaires",
     name: "Soin chronologiste",
     price: 500,
+    durationMinutes: 45,
   },
   {
     category: "Soins capillaires",
     name: "Soin 18 k",
     price: 200,
+    durationMinutes: 45,
     isStartingPrice: true,
   },
   {
     category: "Soins capillaires",
     name: "Soin terra coco todo de coco",
     price: 350,
+    durationMinutes: 45,
   },
 
   // Coloration
@@ -138,16 +161,19 @@ const services: SeedService[] = [
     category: "Coloration",
     name: "Coloration racines",
     price: 250,
+    durationMinutes: 60,
   },
   {
     category: "Coloration",
     name: "Coloration cheveux courts",
     price: 300,
+    durationMinutes: 75,
   },
   {
     category: "Coloration",
     name: "Coloration cheveux longs",
     price: 400,
+    durationMinutes: 90,
   },
 
   // Coloration sans ammoniaque
@@ -155,16 +181,19 @@ const services: SeedService[] = [
     category: "Coloration sans ammoniaque",
     name: "Coloration racines",
     price: 300,
+    durationMinutes: 60,
   },
   {
     category: "Coloration sans ammoniaque",
     name: "Coloration cheveux courts",
     price: 350,
+    durationMinutes: 75,
   },
   {
     category: "Coloration sans ammoniaque",
     name: "Coloration cheveux longs",
     price: 450,
+    durationMinutes: 90,
   },
 
   // Balayages
@@ -172,18 +201,21 @@ const services: SeedService[] = [
     category: "Balayages",
     name: "Balayage cheveux courts",
     price: 500,
+    durationMinutes: 120,
     isStartingPrice: true,
   },
   {
     category: "Balayages",
     name: "Balayage cheveux longs",
     price: 600,
+    durationMinutes: 150,
     isStartingPrice: true,
   },
   {
     category: "Balayages",
     name: "Ombré",
     price: 900,
+    durationMinutes: 180,
     isStartingPrice: true,
   },
 
@@ -192,22 +224,26 @@ const services: SeedService[] = [
     category: "Cils & Sourcils",
     name: "Faux cils",
     price: 200,
+    durationMinutes: 45,
   },
   {
     category: "Cils & Sourcils",
     name: "Extension de cils",
     price: 500,
+    durationMinutes: 120,
     isStartingPrice: true,
   },
   {
     category: "Cils & Sourcils",
     name: "Rehaussement des cils",
     price: 300,
+    durationMinutes: 60,
   },
   {
     category: "Cils & Sourcils",
     name: "Rehaussement des sourcils",
     price: 400,
+    durationMinutes: 60,
   },
 
   // Épilation à la cire
@@ -215,78 +251,91 @@ const services: SeedService[] = [
     category: "Épilation à la cire",
     name: "Sourcils",
     price: 40,
+    durationMinutes: 15,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Duvet",
     price: 30,
+    durationMinutes: 10,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Visage entier",
     price: 100,
+    durationMinutes: 30,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Aisselles",
     price: 50,
+    durationMinutes: 15,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Demi-bras",
     price: 50,
+    durationMinutes: 20,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Bras entiers",
     price: 90,
+    durationMinutes: 30,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Demi-jambes",
     price: 60,
+    durationMinutes: 30,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Jambes entières",
     price: 120,
+    durationMinutes: 45,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Bords de maillot",
     price: 60,
+    durationMinutes: 20,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Maillot intégral",
     price: 110,
+    durationMinutes: 30,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Fesses",
     price: 50,
+    durationMinutes: 15,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Ventre / Dos",
     price: 50,
+    durationMinutes: 30,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Épilation à la cire",
     name: "Épilation complète",
     price: 350,
+    durationMinutes: 90,
     requiredRoomType: "TREATMENT_ROOM",
   },
 
@@ -295,96 +344,115 @@ const services: SeedService[] = [
     category: "Beauté des mains et des pieds",
     name: "Manucure simple",
     price: 100,
+    durationMinutes: 30,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Manucure spa",
     price: 150,
+    durationMinutes: 45,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Manucure + vernis permanent",
     price: 180,
+    durationMinutes: 60,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pose vernis normal",
     price: 50,
+    durationMinutes: 20,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pose french",
     price: 60,
+    durationMinutes: 30,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pose vernis semi permanent",
     price: 60,
+    durationMinutes: 30,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pose vernis permanent French / Motifs",
     price: 200,
+    durationMinutes: 60,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Renforcement (kératine)",
     price: 150,
+    durationMinutes: 45,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Peeling des ongles",
     price: 150,
+    durationMinutes: 30,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pédicure simple",
     price: 150,
+    durationMinutes: 45,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pédicure spa",
     price: 200,
+    durationMinutes: 60,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Pédicure + vernis permanent",
     price: 180,
+    durationMinutes: 60,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Dépose vernis permanent",
     price: 50,
+    durationMinutes: 20,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Dépose gel",
     price: 100,
+    durationMinutes: 30,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Faux ongles vernis normal",
     price: 150,
+    durationMinutes: 60,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Faux ongles vernis permanent",
     price: 250,
+    durationMinutes: 75,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Gel",
     price: 400,
+    durationMinutes: 90,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Remplissage gel",
     price: 300,
+    durationMinutes: 75,
   },
   {
     category: "Beauté des mains et des pieds",
     name: "Gel avec babyboomer / Nail art",
     price: 500,
+    durationMinutes: 120,
   },
 
   // Lissages
@@ -392,12 +460,14 @@ const services: SeedService[] = [
     category: "Lissages",
     name: "Soin lissage",
     price: 1000,
+    durationMinutes: 180,
     isStartingPrice: true,
   },
   {
     category: "Lissages",
     name: "Soin protéine",
     price: 800,
+    durationMinutes: 150,
     isStartingPrice: true,
   },
 
@@ -406,36 +476,42 @@ const services: SeedService[] = [
     category: "Soins du visage",
     name: "Soin gold coup d'éclat",
     price: 250,
+    durationMinutes: 45,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Soins du visage",
     name: "Soin gold vitamin C boost",
     price: 350,
+    durationMinutes: 60,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Soins du visage",
     name: "Soin gold hydra glow treatment",
     price: 500,
+    durationMinutes: 75,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Soins du visage",
     name: "Soin gold collagen eyes rescue",
     price: 700,
+    durationMinutes: 60,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Soins du visage",
     name: "Soin micro dermabrasion",
     price: 800,
+    durationMinutes: 75,
     requiredRoomType: "TREATMENT_ROOM",
   },
   {
     category: "Soins du visage",
     name: "Soin gold booster 100% collagen",
     price: 900,
+    durationMinutes: 90,
     requiredRoomType: "TREATMENT_ROOM",
   },
 
@@ -444,24 +520,28 @@ const services: SeedService[] = [
     category: "Hamam oriental",
     name: "Hamam traditionnel",
     price: 190,
+    durationMinutes: 60,
     requiredRoomType: "HAMAM",
   },
   {
     category: "Hamam oriental",
     name: "Hamam tropical",
     price: 290,
+    durationMinutes: 60,
     requiredRoomType: "HAMAM",
   },
   {
     category: "Hamam oriental",
     name: "Hamam royal",
     price: 390,
+    durationMinutes: 60,
     requiredRoomType: "HAMAM",
   },
   {
     category: "Hamam oriental",
     name: "Hamam enfant",
     price: 90,
+    durationMinutes: 60,
     requiredRoomType: "HAMAM",
   },
 
