@@ -133,7 +133,8 @@ export async function saveEmployeeAccess(
   currentUser: CurrentUser,
   input: {
     employeeId: string;
-    email: string;
+    phone: string;
+    email?: string | null;
     temporaryPassword?: string;
     canManageSalon: boolean;
     isActive: boolean;
@@ -158,16 +159,37 @@ export async function saveEmployeeAccess(
       );
     }
 
-    const duplicate = await tx.user.findFirst({
+    const normalizedEmail = cleanNullable(input.email)?.toLowerCase() ?? null;
+
+    const duplicatePhone = await tx.user.findFirst({
       where: {
         salonId: admin.salonId,
-        email: input.email.toLowerCase(),
+        phone: input.phone,
         ...(employee.userId ? { id: { not: employee.userId } } : {}),
       },
       select: { id: true },
     });
-    if (duplicate)
-      throw new BusinessRuleError("Cet email est déjà utilisé dans ce salon.");
+    if (duplicatePhone) {
+      throw new BusinessRuleError(
+        "Ce téléphone est déjà utilisé dans ce salon.",
+      );
+    }
+
+    if (normalizedEmail) {
+      const duplicateEmail = await tx.user.findFirst({
+        where: {
+          salonId: admin.salonId,
+          email: normalizedEmail,
+          ...(employee.userId ? { id: { not: employee.userId } } : {}),
+        },
+        select: { id: true },
+      });
+      if (duplicateEmail) {
+        throw new BusinessRuleError(
+          "Cet email est déjà utilisé dans ce salon.",
+        );
+      }
+    }
 
     if (!employee.userId && !input.temporaryPassword) {
       throw new BusinessRuleError(
@@ -184,17 +206,21 @@ export async function saveEmployeeAccess(
       linkedUser = await tx.user.update({
         where: { id: employee.userId },
         data: {
-          email: input.email.toLowerCase(),
+          phone: input.phone,
+          email: normalizedEmail,
           canManageSalon: input.canManageSalon,
           isActive: input.isActive,
-          ...(passwordHash ? { passwordHash } : {}),
+          ...(passwordHash
+            ? { passwordHash, sessionVersion: { increment: 1 } }
+            : {}),
         },
       });
     } else {
       linkedUser = await tx.user.create({
         data: {
           salonId: admin.salonId,
-          email: input.email.toLowerCase(),
+          phone: input.phone,
+          email: normalizedEmail,
           passwordHash: passwordHash!,
           firstName: employee.firstName,
           lastName: employee.lastName,
@@ -205,7 +231,7 @@ export async function saveEmployeeAccess(
       });
       await tx.employee.update({
         where: { id: employee.id },
-        data: { userId: linkedUser.id },
+        data: { userId: linkedUser.id, phone: input.phone },
       });
     }
 
@@ -217,6 +243,7 @@ export async function saveEmployeeAccess(
         entityType: "Employee",
         entityId: employee.id,
         metadata: {
+          phone: linkedUser.phone,
           email: linkedUser.email,
           canManageSalon: linkedUser.canManageSalon,
           isActive: linkedUser.isActive,

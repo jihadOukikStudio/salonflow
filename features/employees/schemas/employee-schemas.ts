@@ -1,7 +1,28 @@
 import { z } from "zod";
 
+import { normalizeLoginPhone } from "@/lib/phone";
+
 const nullableText = (max: number) =>
   z.union([z.string().trim().max(max), z.null()]).optional();
+
+const optionalEmail = z
+  .union([
+    z.string().trim().toLowerCase().email("Email invalide."),
+    z.literal(""),
+    z.null(),
+  ])
+  .optional()
+  .transform((value) => value || null);
+
+const loginPhone = z
+  .string()
+  .trim()
+  .min(1, "Le téléphone est obligatoire pour le compte de connexion.")
+  .refine(
+    (value) => normalizeLoginPhone(value) !== null,
+    "Numéro de téléphone invalide.",
+  )
+  .transform((value) => normalizeLoginPhone(value)!);
 
 export const createEmployeeActionSchema = z.object({
   firstName: z.string().trim().min(1, "Le prénom est obligatoire.").max(100),
@@ -23,7 +44,8 @@ export const setEmployeeActiveActionSchema = z.object({
 
 export const saveEmployeeAccessActionSchema = z.object({
   employeeId: z.string().uuid(),
-  email: z.string().trim().toLowerCase().email("Email invalide."),
+  phone: loginPhone,
+  email: optionalEmail,
   temporaryPassword: z
     .string()
     .min(12, "Le mot de passe doit contenir au moins 12 caractères.")

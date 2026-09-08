@@ -9,14 +9,43 @@ describe("employee schemas", () => {
     expect(() => createEmployeeActionSchema.parse({ firstName: "" })).toThrow();
   });
 
-  it("accepts an optional employee access with a strong temporary password", () => {
+  it("accepts employee access with phone and optional email", () => {
     const parsed = saveEmployeeAccessActionSchema.parse({
       employeeId: crypto.randomUUID(),
-      email: "sara@example.com",
+      phone: "06 12 34 56 78",
+      email: "",
       temporaryPassword: "TempPassword12!",
       canManageSalon: true,
       isActive: true,
     });
+
+    expect(parsed.phone).toBe("+212612345678");
+    expect(parsed.email).toBeNull();
+  });
+
+  it("keeps email available when the employee has one", () => {
+    const parsed = saveEmployeeAccessActionSchema.parse({
+      employeeId: crypto.randomUUID(),
+      phone: "+212612345678",
+      email: "SARA@EXAMPLE.COM",
+      temporaryPassword: "TempPassword12!",
+      canManageSalon: false,
+      isActive: true,
+    });
+
     expect(parsed.email).toBe("sara@example.com");
+  });
+
+  it("rejects access creation without a valid phone", () => {
+    expect(() =>
+      saveEmployeeAccessActionSchema.parse({
+        employeeId: crypto.randomUUID(),
+        phone: "123",
+        email: "sara@example.com",
+        temporaryPassword: "TempPassword12!",
+        canManageSalon: false,
+        isActive: true,
+      }),
+    ).toThrow();
   });
 });

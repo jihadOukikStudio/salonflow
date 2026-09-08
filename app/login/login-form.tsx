@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { loginAction, type LoginActionState } from "@/app/login/actions";
@@ -19,17 +20,19 @@ export function LoginForm() {
     <form action={formAction} className="space-y-5" aria-busy={pending}>
       <div>
         <label
-          htmlFor="email"
+          htmlFor="identifier"
           className="mb-2 block text-sm font-medium text-slate-700"
         >
-          Email
+          Téléphone ou email
         </label>
 
         <input
-          id="email"
-          name="email"
-          type="email"
+          id="identifier"
+          name="identifier"
+          type="text"
+          inputMode="text"
           autoComplete="username"
+          placeholder="+212 6… ou nom@exemple.com"
           required
           maxLength={320}
           disabled={pending}
@@ -55,6 +58,15 @@ export function LoginForm() {
           disabled={pending}
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-200 disabled:bg-slate-100 disabled:text-slate-500"
         />
+      </div>
+
+      <div className="-mt-2 text-right">
+        <Link
+          href="/forgot-password"
+          className="text-sm font-medium text-violet-700 hover:text-violet-900"
+        >
+          Mot de passe oublié ?
+        </Link>
       </div>
 
       {state.error ? (

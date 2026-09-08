@@ -25,7 +25,8 @@ type EmployeeRow = {
   skills: Array<{ serviceId: string }>;
   user: {
     id: string;
-    email: string;
+    email: string | null;
+    phone: string | null;
     canManageSalon: boolean;
     isActive: boolean;
   } | null;
@@ -168,6 +169,9 @@ function EmployeeCard({
   const [lastName, setLastName] = useState(employee.lastName ?? "");
   const [phone, setPhone] = useState(employee.phone ?? "");
   const [email, setEmail] = useState(employee.user?.email ?? "");
+  const [loginPhone, setLoginPhone] = useState(
+    employee.user?.phone ?? employee.phone ?? "",
+  );
   const [password, setPassword] = useState("");
   const [canManageSalon, setCanManageSalon] = useState(
     employee.user?.canManageSalon ?? false,
@@ -270,13 +274,30 @@ function EmployeeCard({
         Enregistrer la fiche
       </button>
 
-      <div className="mt-6 border-t border-slate-200 pt-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <details className="group mt-6 border-t border-slate-200 pt-5">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-3 py-2 transition hover:bg-slate-50">
           <div>
             <h4 className="font-semibold text-slate-950">
               Compétences prestations
             </h4>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+            <p className="mt-1 text-sm text-slate-600">
+              {selectedSkillIds.length > 0
+                ? `${selectedSkillIds.length} compétence${selectedSkillIds.length > 1 ? "s" : ""} enregistrée${selectedSkillIds.length > 1 ? "s" : ""}`
+                : "À configurer"}
+            </p>
+          </div>
+
+          <span
+            aria-hidden="true"
+            className="text-xl text-slate-500 transition-transform group-open:rotate-180"
+          >
+            ⌄
+          </span>
+        </summary>
+
+        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <p className="max-w-3xl text-sm leading-6 text-slate-600">
               Cochez uniquement les prestations que cette employée sait
               réellement réaliser. Ces compétences sont utilisées par
               l’anti-surbooking avant chaque réservation. Dès qu’une première
@@ -284,74 +305,87 @@ function EmployeeCard({
               strict : une prestation sans employée compétente sera bloquée
               jusqu’à configuration.
             </p>
-          </div>
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-bold ${selectedSkillIds.length > 0 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}
-          >
-            {selectedSkillIds.length > 0
-              ? `${selectedSkillIds.length} compétence${selectedSkillIds.length > 1 ? "s" : ""}`
-              : "À configurer"}
-          </span>
-        </div>
 
-        <div className="mt-4 space-y-4">
-          {servicesByCategory.map((category) => (
-            <fieldset
-              key={category.id}
-              className="rounded-2xl border border-slate-200 p-4"
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold ${selectedSkillIds.length > 0 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}
             >
-              <legend className="px-2 text-sm font-bold text-slate-900">
-                {category.name}
-              </legend>
-              <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {category.services.map((service) => (
-                  <label
-                    key={service.id}
-                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 hover:border-violet-300 hover:bg-violet-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedSkillIds.includes(service.id)}
-                      onChange={() => toggleSkill(service.id)}
-                    />
-                    <span>{service.name}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
-        </div>
+              {selectedSkillIds.length > 0
+                ? `${selectedSkillIds.length} compétence${selectedSkillIds.length > 1 ? "s" : ""}`
+                : "À configurer"}
+            </span>
+          </div>
 
-        <button
-          type="button"
-          disabled={pending}
-          className={`${buttonClass} mt-4 bg-violet-700 text-white hover:bg-violet-800`}
-          onClick={() =>
-            run(
-              () =>
-                saveEmployeeSkillsAction({
-                  employeeId: employee.id,
-                  serviceIds: selectedSkillIds,
-                }),
-              "Compétences enregistrées. La capacité du planning a été recalibrée.",
-            )
-          }
-        >
-          Enregistrer les compétences
-        </button>
-      </div>
+          <div className="mt-4 space-y-4">
+            {servicesByCategory.map((category) => (
+              <fieldset
+                key={category.id}
+                className="rounded-2xl border border-slate-200 bg-white p-4"
+              >
+                <legend className="px-2 text-sm font-bold text-slate-900">
+                  {category.name}
+                </legend>
+                <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {category.services.map((service) => (
+                    <label
+                      key={service.id}
+                      className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 hover:border-violet-300 hover:bg-violet-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedSkillIds.includes(service.id)}
+                        onChange={() => toggleSkill(service.id)}
+                      />
+                      <span>{service.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            disabled={pending}
+            className={`${buttonClass} mt-4 bg-violet-700 text-white hover:bg-violet-800`}
+            onClick={() =>
+              run(
+                () =>
+                  saveEmployeeSkillsAction({
+                    employeeId: employee.id,
+                    serviceIds: selectedSkillIds,
+                  }),
+                "Compétences enregistrées. La capacité du planning a été recalibrée.",
+              )
+            }
+          >
+            Enregistrer les compétences
+          </button>
+        </div>
+      </details>
 
       <div className="mt-6 border-t border-slate-200 pt-5">
         <h4 className="font-semibold text-slate-950">Compte de connexion</h4>
         <p className="mt-1 text-sm text-slate-600">
-          Optionnel. Le mot de passe est obligatoire uniquement lors de la
-          création du compte. S’il est ressaisi ensuite, il est réinitialisé.
+          Téléphone obligatoire pour se connecter. L’email est facultatif pour
+          les employées et responsables. Pour réinitialiser un mot de passe,
+          saisissez-en un nouveau : les anciennes sessions seront déconnectées.
         </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <input
+            className={inputClass}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="Téléphone de connexion *"
+            value={loginPhone}
+            onChange={(e) => setLoginPhone(e.target.value)}
+          />
           <input
             className={inputClass}
             type="email"
-            placeholder="Email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="Email (facultatif)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -360,7 +394,7 @@ function EmployeeCard({
             type="password"
             placeholder={
               employee.user
-                ? "Nouveau mot de passe (optionnel)"
+                ? "Réinitialiser le mot de passe (optionnel)"
                 : "Mot de passe temporaire (12 caractères min.)"
             }
             value={password}
@@ -388,7 +422,9 @@ function EmployeeCard({
         <button
           type="button"
           disabled={
-            pending || !email.trim() || (!employee.user && password.length < 12)
+            pending ||
+            !loginPhone.trim() ||
+            (!employee.user && password.length < 12)
           }
           className={`${buttonClass} mt-4 bg-violet-700 text-white hover:bg-violet-800`}
           onClick={() =>
@@ -396,7 +432,8 @@ function EmployeeCard({
               () =>
                 saveEmployeeAccessAction({
                   employeeId: employee.id,
-                  email,
+                  phone: loginPhone,
+                  email: email || null,
                   ...(password ? { temporaryPassword: password } : {}),
                   canManageSalon,
                   isActive: accessActive,

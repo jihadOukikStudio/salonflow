@@ -69,6 +69,7 @@ export const ModelName = {
   RoomUnavailability: "RoomUnavailability",
   EmployeeUnavailability: "EmployeeUnavailability",
   Payment: "Payment",
+  PasswordResetToken: "PasswordResetToken",
   ActivityLog: "ActivityLog",
 } as const;
 
@@ -105,7 +106,9 @@ export const UserScalarFieldEnum = {
   id: "id",
   salonId: "salonId",
   email: "email",
+  phone: "phone",
   passwordHash: "passwordHash",
+  sessionVersion: "sessionVersion",
   firstName: "firstName",
   lastName: "lastName",
   role: "role",
@@ -299,6 +302,18 @@ export const PaymentScalarFieldEnum = {
 
 export type PaymentScalarFieldEnum =
   (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
+
+export const PasswordResetTokenScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  tokenHash: "tokenHash",
+  expiresAt: "expiresAt",
+  usedAt: "usedAt",
+  createdAt: "createdAt",
+} as const;
+
+export type PasswordResetTokenScalarFieldEnum =
+  (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum];
 
 export const ActivityLogScalarFieldEnum = {
   id: "id",

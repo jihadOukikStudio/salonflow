@@ -442,6 +442,7 @@ export const ModelName = {
   RoomUnavailability: "RoomUnavailability",
   EmployeeUnavailability: "EmployeeUnavailability",
   Payment: "Payment",
+  PasswordResetToken: "PasswordResetToken",
   ActivityLog: "ActivityLog",
 } as const;
 
@@ -480,6 +481,7 @@ export type TypeMap<
       | "roomUnavailability"
       | "employeeUnavailability"
       | "payment"
+      | "passwordResetToken"
       | "activityLog";
     txIsolationLevel: TransactionIsolationLevel;
   };
@@ -1624,6 +1626,82 @@ export type TypeMap<
         };
       };
     };
+    PasswordResetToken: {
+      payload: Prisma.$PasswordResetTokenPayload<ExtArgs>;
+      fields: Prisma.PasswordResetTokenFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PasswordResetTokenFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PasswordResetTokenFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        findFirst: {
+          args: Prisma.PasswordResetTokenFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PasswordResetTokenFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        findMany: {
+          args: Prisma.PasswordResetTokenFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>[];
+        };
+        create: {
+          args: Prisma.PasswordResetTokenCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        createMany: {
+          args: Prisma.PasswordResetTokenCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PasswordResetTokenCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>[];
+        };
+        delete: {
+          args: Prisma.PasswordResetTokenDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        update: {
+          args: Prisma.PasswordResetTokenUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PasswordResetTokenDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PasswordResetTokenUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PasswordResetTokenUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>[];
+        };
+        upsert: {
+          args: Prisma.PasswordResetTokenUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PasswordResetTokenPayload>;
+        };
+        aggregate: {
+          args: Prisma.PasswordResetTokenAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePasswordResetToken>;
+        };
+        groupBy: {
+          args: Prisma.PasswordResetTokenGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PasswordResetTokenGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PasswordResetTokenCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PasswordResetTokenCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     ActivityLog: {
       payload: Prisma.$ActivityLogPayload<ExtArgs>;
       fields: Prisma.ActivityLogFieldRefs;
@@ -1756,7 +1834,9 @@ export const UserScalarFieldEnum = {
   id: "id",
   salonId: "salonId",
   email: "email",
+  phone: "phone",
   passwordHash: "passwordHash",
+  sessionVersion: "sessionVersion",
   firstName: "firstName",
   lastName: "lastName",
   role: "role",
@@ -1951,6 +2031,18 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum =
   (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
 
+export const PasswordResetTokenScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  tokenHash: "tokenHash",
+  expiresAt: "expiresAt",
+  usedAt: "usedAt",
+  createdAt: "createdAt",
+} as const;
+
+export type PasswordResetTokenScalarFieldEnum =
+  (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum];
+
 export const ActivityLogScalarFieldEnum = {
   id: "id",
   salonId: "salonId",
@@ -2048,22 +2140,6 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
- * Reference to a field of type 'UserRole'
- */
-export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  "UserRole"
->;
-
-/**
- * Reference to a field of type 'UserRole[]'
- */
-export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  "UserRole[]"
->;
-
-/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -2077,6 +2153,22 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   "Int[]"
+>;
+
+/**
+ * Reference to a field of type 'UserRole'
+ */
+export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "UserRole"
+>;
+
+/**
+ * Reference to a field of type 'UserRole[]'
+ */
+export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "UserRole[]"
 >;
 
 /**
@@ -2379,6 +2471,7 @@ export type GlobalOmitConfig = {
   roomUnavailability?: Prisma.RoomUnavailabilityOmit;
   employeeUnavailability?: Prisma.EmployeeUnavailabilityOmit;
   payment?: Prisma.PaymentOmit;
+  passwordResetToken?: Prisma.PasswordResetTokenOmit;
   activityLog?: Prisma.ActivityLogOmit;
 };
 

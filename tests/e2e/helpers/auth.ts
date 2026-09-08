@@ -3,24 +3,25 @@ import { expect, type Page } from "@playwright/test";
 import {
   ADMIN_EMAIL,
   EMPLOYEE_EMAIL,
+  EMPLOYEE_PHONE,
   OTHER_EMPLOYEE_EMAIL,
   E2E_PASSWORD,
 } from "./db";
 
-async function fillLogin(page: Page, email: string) {
+async function fillLogin(page: Page, identifier: string) {
   await page.goto("/login");
 
-  const emailInput = page
-    .locator('input[type="email"], input[name="email"]')
+  const identifierInput = page
+    .locator('input[name="identifier"], input[name="email"]')
     .first();
   const passwordInput = page
     .locator('input[type="password"], input[name="password"]')
     .first();
 
-  await expect(emailInput).toBeVisible();
+  await expect(identifierInput).toBeVisible();
   await expect(passwordInput).toBeVisible();
 
-  await emailInput.fill(email);
+  await identifierInput.fill(identifier);
   await passwordInput.fill(E2E_PASSWORD);
 
   const button = page
@@ -43,6 +44,10 @@ export function loginAsAdmin(page: Page) {
 
 export function loginAsEmployee(page: Page) {
   return fillLogin(page, EMPLOYEE_EMAIL);
+}
+
+export function loginAsEmployeeByPhone(page: Page) {
+  return fillLogin(page, EMPLOYEE_PHONE);
 }
 
 export function loginAsSara(page: Page) {

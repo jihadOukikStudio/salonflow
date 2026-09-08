@@ -10,17 +10,6 @@ import {
   deleteRoomUnavailabilityAction,
 } from "@/features/unavailability/server/actions/unavailability-actions";
 import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
-function formatCasablancaDateTime(value: Date | string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
 const inputClass =
   "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200";
 type Room = {
@@ -81,14 +70,12 @@ export function RoomsAdmin({
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <input
-              aria-label="Nom de la salle"
               className={inputClass}
-              placeholder="Nom de la salle"
+              placeholder="Nom"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <select
-              aria-label="Type de salle"
               className={inputClass}
               value={type}
               onChange={(e) => setType(e.target.value as typeof type)}
@@ -97,7 +84,6 @@ export function RoomsAdmin({
               <option value="TREATMENT_ROOM">Salle de soins</option>
             </select>
             <input
-              aria-label="Capacité de la salle"
               className={inputClass}
               type="number"
               min={1}
@@ -120,27 +106,16 @@ export function RoomsAdmin({
         </section>
       ) : null}
       <section className="space-y-4">
-        {rooms.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
-            <p className="font-semibold text-slate-900">
-              Aucune salle configurée
-            </p>
-            <p className="mt-1 text-sm text-slate-600">
-              Ajoutez les Hamam et salles de soins utilisés par le salon.
-            </p>
-          </div>
-        ) : (
-          rooms.map((room) => (
-            <RoomCard
-              key={room.id}
-              room={room}
-              isAdmin={isAdmin}
-              canManage={canManage}
-              pending={pending}
-              run={run}
-            />
-          ))
-        )}
+        {rooms.map((room) => (
+          <RoomCard
+            key={room.id}
+            room={room}
+            isAdmin={isAdmin}
+            canManage={canManage}
+            pending={pending}
+            run={run}
+          />
+        ))}
       </section>
     </div>
   );
@@ -183,13 +158,11 @@ function RoomCard({
       {isAdmin ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <input
-            aria-label={`Nom de ${room.name}`}
             className={inputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
-            aria-label={`Capacité de ${room.name}`}
             className={inputClass}
             type="number"
             min={1}
@@ -224,98 +197,126 @@ function RoomCard({
           </button>
         </div>
       ) : null}
-      {canManage && room.isActive ? (
-        <div className="mt-5 border-t border-slate-200 pt-4">
-          <h4 className="font-semibold text-slate-950">Indisponibilité</h4>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            <label>
-              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Début
-              </span>
-              <input
-                type="datetime-local"
-                className={inputClass}
-                value={startAt}
-                onChange={(e) => setStartAt(e.target.value)}
-              />
-            </label>
-            <label>
-              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Fin
-              </span>
-              <input
-                type="datetime-local"
-                className={inputClass}
-                value={endAt}
-                onChange={(e) => setEndAt(e.target.value)}
-              />
-            </label>
-            <label>
-              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
-                Raison
-              </span>
-              <input
-                className={inputClass}
-                placeholder="Optionnelle"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-              />
-            </label>
+      <details className="group mt-5 border-t border-slate-200 pt-4">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-3 py-2 transition hover:bg-slate-50">
+          <div>
+            <h4 className="font-semibold text-slate-950">Indisponibilités</h4>
+            <p className="mt-1 text-sm text-slate-600">
+              {room.unavailabilities.length > 0
+                ? `${room.unavailabilities.length} indisponibilité${room.unavailabilities.length > 1 ? "s" : ""} enregistrée${room.unavailabilities.length > 1 ? "s" : ""}`
+                : "Aucune indisponibilité enregistrée"}
+            </p>
           </div>
-          <button
-            disabled={pending || !startAt || !endAt}
-            onClick={() =>
-              run(
-                () =>
-                  createRoomUnavailabilityAction({
-                    roomId: room.id,
-                    startAt: casablancaLocalDateTimeToIso(
-                      startAt.slice(0, 10),
-                      startAt.slice(11, 16),
-                    ),
-                    endAt: casablancaLocalDateTimeToIso(
-                      endAt.slice(0, 10),
-                      endAt.slice(11, 16),
-                    ),
-                    reason: reason || null,
-                  }),
-                "Indisponibilité salle enregistrée.",
-              )
-            }
-            className="mt-3 rounded-xl border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-800"
+
+          <span
+            aria-hidden="true"
+            className="text-xl text-slate-500 transition-transform group-open:rotate-180"
           >
-            Ajouter l’indisponibilité
-          </button>
-        </div>
-      ) : null}
-      <div className="mt-4 space-y-2">
-        {room.unavailabilities.map((u) => (
-          <div
-            key={u.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2"
-          >
-            <span className="text-xs text-slate-700">
-              {formatCasablancaDateTime(u.startAt)} →{" "}
-              {formatCasablancaDateTime(u.endAt)}
-              {u.reason ? ` · ${u.reason}` : ""}
-            </span>
-            {canManage ? (
+            ⌄
+          </span>
+        </summary>
+
+        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+          {canManage && room.isActive ? (
+            <div>
+              <h5 className="text-sm font-semibold text-slate-950">
+                Ajouter une indisponibilité
+              </h5>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <input
+                  type="datetime-local"
+                  className={inputClass}
+                  value={startAt}
+                  onChange={(e) => setStartAt(e.target.value)}
+                />
+                <input
+                  type="datetime-local"
+                  className={inputClass}
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                />
+                <input
+                  className={inputClass}
+                  placeholder="Raison"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                />
+              </div>
               <button
-                disabled={pending}
+                disabled={pending || !startAt || !endAt}
                 onClick={() =>
                   run(
-                    () => deleteRoomUnavailabilityAction({ id: u.id }),
-                    "Indisponibilité supprimée.",
+                    () =>
+                      createRoomUnavailabilityAction({
+                        roomId: room.id,
+                        startAt: casablancaLocalDateTimeToIso(
+                          startAt.slice(0, 10),
+                          startAt.slice(11, 16),
+                        ),
+                        endAt: casablancaLocalDateTimeToIso(
+                          endAt.slice(0, 10),
+                          endAt.slice(11, 16),
+                        ),
+                        reason: reason || null,
+                      }),
+                    "Indisponibilité salle enregistrée.",
                   )
                 }
-                className="text-xs font-semibold text-red-700"
+                className="mt-3 rounded-xl border border-violet-300 bg-white px-4 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-50"
               >
-                Supprimer
+                Ajouter l&apos;indisponibilité
               </button>
-            ) : null}
-          </div>
-        ))}
-      </div>
+            </div>
+          ) : null}
+
+          {room.unavailabilities.length > 0 ? (
+            <div
+              className={
+                canManage && room.isActive
+                  ? "mt-5 space-y-2 border-t border-slate-200 pt-4"
+                  : "space-y-2"
+              }
+            >
+              {room.unavailabilities.map((u) => (
+                <div
+                  key={u.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                >
+                  <span className="text-xs text-slate-700">
+                    {new Date(u.startAt).toLocaleString("fr-FR")} →{" "}
+                    {new Date(u.endAt).toLocaleString("fr-FR")}
+                    {u.reason ? ` · ${u.reason}` : ""}
+                  </span>
+                  {canManage ? (
+                    <button
+                      disabled={pending}
+                      onClick={() =>
+                        run(
+                          () => deleteRoomUnavailabilityAction({ id: u.id }),
+                          "Indisponibilité supprimée.",
+                        )
+                      }
+                      className="text-xs font-semibold text-red-700 hover:text-red-800"
+                    >
+                      Supprimer
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p
+              className={
+                canManage && room.isActive
+                  ? "mt-5 border-t border-slate-200 pt-4 text-sm text-slate-500"
+                  : "text-sm text-slate-500"
+              }
+            >
+              Aucune indisponibilité enregistrée pour cette salle.
+            </p>
+          )}
+        </div>
+      </details>
     </article>
   );
 }

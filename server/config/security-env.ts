@@ -15,11 +15,26 @@ export function assertProductionRuntimeSecurity(): void {
 
   const databaseUrl = required("DATABASE_URL");
   const authSecret = required("AUTH_SECRET");
+  const appBaseUrl = required("APP_BASE_URL");
+  required("RESEND_API_KEY");
+  required("PASSWORD_RESET_EMAIL_FROM");
 
   if (authSecret.length < 32) {
     throw new Error(
       "SECURITY: AUTH_SECRET must contain at least 32 characters in production.",
     );
+  }
+
+  let applicationUrl: URL;
+
+  try {
+    applicationUrl = new URL(appBaseUrl);
+  } catch {
+    throw new Error("SECURITY: APP_BASE_URL is not a valid URL.");
+  }
+
+  if (applicationUrl.protocol !== "https:") {
+    throw new Error("SECURITY: APP_BASE_URL must use HTTPS in production.");
   }
 
   let database: URL;

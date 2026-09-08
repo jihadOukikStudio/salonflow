@@ -10,7 +10,8 @@ import { cleanDatabase } from "../helpers/database";
 import { testPrisma } from "../helpers/prisma";
 
 async function createAccount(params?: {
-  email?: string;
+  email?: string | null;
+  phone?: string | null;
   password?: string;
   userIsActive?: boolean;
   salonIsActive?: boolean;
@@ -30,11 +31,16 @@ async function createAccount(params?: {
       });
 
   const password = params?.password ?? "SalonFlow-Test-123!";
+  const email =
+    params && "email" in params
+      ? params.email
+      : `${crypto.randomUUID()}@test.local`;
 
   const user = await testPrisma.user.create({
     data: {
       salonId: salon.id,
-      email: params?.email ?? `${crypto.randomUUID()}@test.local`,
+      email,
+      phone: params?.phone ?? null,
       passwordHash: await hash(password, 4),
       firstName: "Amina",
       lastName: "Test",
@@ -67,7 +73,7 @@ describe("verifyCredentials", () => {
     );
   });
 
-  it("authenticates valid credentials", async () => {
+  it("authenticates valid existing email credentials", async () => {
     const context = await createAccount({
       email: "amina@salonflow.ma",
     });
@@ -81,6 +87,23 @@ describe("verifyCredentials", () => {
       id: context.user.id,
       email: context.user.email,
       name: "Amina Test",
+      sessionVersion: 0,
+    });
+  });
+
+  it("authenticates an employee by normalized phone without email", async () => {
+    const context = await createAccount({
+      email: null,
+      phone: "+212612345678",
+    });
+
+    const result = await verifyCredentials("06 12 34 56 78", context.password);
+
+    expect(result).toEqual({
+      id: context.user.id,
+      email: context.user.email,
+      name: "Amina Test",
+      sessionVersion: 0,
     });
   });
 
@@ -88,11 +111,11 @@ describe("verifyCredentials", () => {
     const context = await createAccount();
 
     await expect(
-      verifyCredentials(context.user.email, "wrong-password"),
+      verifyCredentials(context.user.email!, "wrong-password"),
     ).resolves.toBeNull();
   });
 
-  it("rejects an unknown email", async () => {
+  it("rejects an unknown identifier", async () => {
     await expect(
       verifyCredentials("unknown@salonflow.ma", "wrong-password"),
     ).resolves.toBeNull();
@@ -104,7 +127,7 @@ describe("verifyCredentials", () => {
     });
 
     await expect(
-      verifyCredentials(context.user.email, context.password),
+      verifyCredentials(context.user.email!, context.password),
     ).resolves.toBeNull();
   });
 
@@ -114,7 +137,7 @@ describe("verifyCredentials", () => {
     });
 
     await expect(
-      verifyCredentials(context.user.email, context.password),
+      verifyCredentials(context.user.email!, context.password),
     ).resolves.toBeNull();
   });
 
@@ -136,9 +159,31 @@ describe("verifyCredentials", () => {
     ).resolves.toBeNull();
   });
 
+  it("rejects an ambiguous phone shared by two salons", async () => {
+    const phone = "+212612345678";
+
+    const accountA = await createAccount({
+      email: null,
+      phone,
+      password: "Password-A!",
+    });
+
+    await createAccount({
+      email: null,
+      phone,
+      password: "Password-B!",
+    });
+
+    await expect(
+      verifyCredentials("0612345678", accountA.password),
+    ).resolves.toBeNull();
+  });
+
   it("rejects an empty password", async () => {
     const context = await createAccount();
 
-    await expect(verifyCredentials(context.user.email, "")).resolves.toBeNull();
+    await expect(
+      verifyCredentials(context.user.email!, ""),
+    ).resolves.toBeNull();
   });
 });

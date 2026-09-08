@@ -22,5 +22,6 @@ export type * from "./models/Room";
 export type * from "./models/RoomUnavailability";
 export type * from "./models/EmployeeUnavailability";
 export type * from "./models/Payment";
+export type * from "./models/PasswordResetToken";
 export type * from "./models/ActivityLog";
 export type * from "./commonInputTypes";

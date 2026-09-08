@@ -28,6 +28,7 @@ export async function getEmployees(currentUser: CurrentUser) {
           select: {
             id: true,
             email: true,
+            phone: true,
             canManageSalon: true,
             isActive: true,
           },

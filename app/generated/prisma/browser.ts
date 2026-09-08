@@ -92,6 +92,11 @@ export type EmployeeUnavailability = Prisma.EmployeeUnavailabilityModel;
  */
 export type Payment = Prisma.PaymentModel;
 /**
+ * Model PasswordResetToken
+ *
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel;
+/**
  * Model ActivityLog
  *
  */

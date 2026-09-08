@@ -18,6 +18,9 @@ export const authConfig = {
       const pathname = request.nextUrl.pathname;
 
       const isLoginPage = pathname === "/login";
+      const isPasswordRecoveryPage =
+        pathname === "/forgot-password" ||
+        pathname.startsWith("/reset-password/");
 
       if (isLoginPage) {
         if (isLoggedIn) {
@@ -27,23 +30,11 @@ export const authConfig = {
         return true;
       }
 
+      if (isPasswordRecoveryPage) {
+        return true;
+      }
+
       return isLoggedIn;
-    },
-
-    jwt({ token, user }) {
-      if (user?.id) {
-        token.sub = user.id;
-      }
-
-      return token;
-    },
-
-    session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
-      }
-
-      return session;
     },
   },
 

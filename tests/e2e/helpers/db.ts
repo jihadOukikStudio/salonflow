@@ -8,6 +8,7 @@ export { testPrisma };
 export const E2E_PASSWORD = "SalonFlow-E2E-2026!";
 export const ADMIN_EMAIL = "gerante.e2e@salonflow.test";
 export const EMPLOYEE_EMAIL = "amina.e2e@salonflow.test";
+export const EMPLOYEE_PHONE = "+212612345678";
 export const OTHER_EMPLOYEE_EMAIL = "sara.e2e@salonflow.test";
 
 export function uniquePhone(suffix = "1") {
@@ -57,6 +58,7 @@ export async function createBaseE2EContext() {
     data: {
       salonId: salon.id,
       email: EMPLOYEE_EMAIL,
+      phone: EMPLOYEE_PHONE,
       passwordHash,
       firstName: "Amina",
       role: "EMPLOYEE",
