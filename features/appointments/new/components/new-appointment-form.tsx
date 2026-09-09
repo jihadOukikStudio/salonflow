@@ -80,19 +80,6 @@ function formatDuration(value: number): string {
   return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
 }
 
-function formatSelectedDate(dateKey: string): string {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  if (!year || !month || !day) return dateKey;
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
-}
-
 function timeToMinutes(value: string): number {
   const [hours, minutes] = value.split(":").map(Number);
   return hours * 60 + minutes;
@@ -321,18 +308,23 @@ export function NewAppointmentForm({
   }, [latestStartTime, minimumTimeForSelectedDate]);
 
   useEffect(() => {
-    if (availableTimeOptions.length === 0) {
+    if (
+      availableTimeOptions.length === 0 ||
+      availableTimeOptions.includes(timeValue)
+    ) {
       return;
     }
 
-    // Conserve toujours le créneau explicitement choisi depuis le planning
-    // tant qu'il reste légal après recalcul de la durée. Sinon, SalonFlow
-    // sélectionne le premier quart d'heure encore possible.
-    if (!availableTimeOptions.includes(timeValue)) {
+    // Conserve le créneau choisi tant qu'il reste légal après recalcul de la
+    // durée. Sinon, corrige au prochain tick pour éviter un setState synchrone
+    // dans l'effet (react-hooks/set-state-in-effect).
+    const timeoutId = window.setTimeout(() => {
       setTimeValue(availableTimeOptions[0]);
       setCapacityMessage(null);
       clearNextAvailableSlots();
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [availableTimeOptions, timeValue]);
 
   const newClientIsComplete =

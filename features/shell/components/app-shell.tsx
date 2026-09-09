@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarCheck2,
   CalendarDays,
   ClipboardList,
   DoorOpen,
@@ -42,6 +43,7 @@ export function AppShell({
   const pathname = usePathname();
   const isAdmin = user.role === "ADMIN";
   const canManage = isAdmin || user.canManageSalon;
+  const homeHref = canManage ? "/dashboard" : "/my-day";
 
   const items: NavItem[] = [
     {
@@ -49,6 +51,12 @@ export function AppShell({
       label: "Dashboard",
       icon: LayoutDashboard,
       visible: canManage,
+    },
+    {
+      href: "/my-day",
+      label: "Ma journée",
+      icon: CalendarCheck2,
+      visible: user.role === "EMPLOYEE",
     },
     { href: "/planning", label: "Planning", icon: CalendarDays, visible: true },
     {
@@ -78,10 +86,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-[#fcf9f7] lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
       <aside className="hidden h-screen border-r border-slate-200/80 bg-[#fffaf8] px-4 py-6 lg:sticky lg:top-0 lg:flex lg:flex-col">
-        <Link
-          href={canManage ? "/dashboard" : "/planning"}
-          className="mb-8 flex items-center gap-3 px-2"
-        >
+        <Link href={homeHref} className="mb-8 flex items-center gap-3 px-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
             <Sparkles className="h-5 w-5" strokeWidth={1.7} />
           </span>
@@ -152,7 +157,7 @@ export function AppShell({
         <div className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#fffaf8]/95 px-3 py-2 backdrop-blur lg:hidden">
           <div className="flex items-center gap-3 overflow-x-auto pb-1">
             <Link
-              href={canManage ? "/dashboard" : "/planning"}
+              href={homeHref}
               className="mr-1 flex shrink-0 items-center gap-2 px-1"
             >
               <Sparkles className="h-4 w-4 text-violet-700" strokeWidth={1.8} />

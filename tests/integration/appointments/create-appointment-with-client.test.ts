@@ -1,10 +1,22 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
+import {
+  casablancaLocalDateTimeToIso,
+  getCasablancaDateTimeFields,
+} from "@/features/appointments/lib/casablanca-local-datetime";
 import type { CurrentUser } from "@/server/permissions";
 import { createAppointmentWithClient } from "@/server/services/appointments/create-appointment-with-client";
 
 import { cleanDatabase } from "../helpers/database";
 import { testPrisma } from "../helpers/prisma";
+
+function futureBookableSlot(timeValue = "10:00") {
+  const { dateKey } = getCasablancaDateTimeFields(
+    new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+  );
+
+  return new Date(casablancaLocalDateTimeToIso(dateKey, timeValue));
+}
 
 async function createSalonContext() {
   const salon = await testPrisma.salon.create({
@@ -94,7 +106,7 @@ describe("createAppointmentWithClient", () => {
         name: "Sara Test",
         phone: "+212612345678",
       },
-      scheduledStart: new Date(Date.now() + 60 * 60 * 1000),
+      scheduledStart: futureBookableSlot(),
       services: [{ serviceId: service.id }],
       internalNote: "Test",
     });
@@ -127,7 +139,7 @@ describe("createAppointmentWithClient", () => {
         name: "Nom saisi",
         phone: "+212612345678",
       },
-      scheduledStart: new Date(Date.now() + 60 * 60 * 1000),
+      scheduledStart: futureBookableSlot(),
       services: [{ serviceId: service.id }],
     });
 

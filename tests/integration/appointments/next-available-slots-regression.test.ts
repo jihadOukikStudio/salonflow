@@ -273,13 +273,13 @@ describe("Phase 12.7.4 — prochains créneaux sans conflit", () => {
     expect(slots).toEqual([]);
   });
 
-  it("ne propose jamais un créneau qui finit après 21:00", async () => {
+  it("ne propose jamais un créneau qui finit après 21:30", async () => {
     const c = await createContext({
       serviceName: "Soin long",
       durationMinutes: 90,
     });
 
-    // Indisponible jusqu'à 20:00 : 20:00 -> 21:30 doit être rejeté.
+    // Indisponible jusqu'à 20:00 : 20:00 -> 21:30 est la dernière limite autorisée.
     await testPrisma.employeeUnavailability.create({
       data: {
         employeeId: c.employee.id,
@@ -299,10 +299,21 @@ describe("Phase 12.7.4 — prochains créneaux sans conflit", () => {
     );
 
     expect(
-      slots.every(
-        (slot) =>
-          slot.dateKey !== "2035-09-10" ||
-          Number(slot.timeValue.slice(0, 2)) < 20,
+      slots.every((slot) => {
+        if (slot.dateKey !== "2035-09-10") {
+          return true;
+        }
+
+        const [hours, minutes] = slot.timeValue.split(":").map(Number);
+        const startMinute = hours * 60 + minutes;
+
+        return startMinute + 90 <= 21 * 60 + 30;
+      }),
+    ).toBe(true);
+
+    expect(
+      slots.some(
+        (slot) => slot.dateKey === "2035-09-10" && slot.timeValue === "20:00",
       ),
     ).toBe(true);
   });

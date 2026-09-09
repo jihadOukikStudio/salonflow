@@ -133,10 +133,12 @@ test.describe("Lot 1 — création depuis le planning", () => {
     await page.getByLabel(/Nom/).fill("Cliente E2E");
     await page.getByRole("button", { name: "Continuer" }).click();
 
-    await expect(page.getByLabel("Date du rendez-vous")).toHaveValue(
-      tomorrowKey,
-    );
-    await expect(page.getByLabel("Heure du rendez-vous")).toHaveValue("10:00");
+    await expect(
+      page.getByRole("textbox", { name: "Date du rendez-vous" }),
+    ).toHaveValue(tomorrowKey);
+    await expect(
+      page.getByRole("textbox", { name: "Heure du rendez-vous" }),
+    ).toHaveValue("10:00");
   });
 
   test("un créneau futur ouvre la popup avec des horaires de 15 minutes et les catégories pliables", async ({
@@ -159,10 +161,12 @@ test.describe("Lot 1 — création depuis le planning", () => {
     await page.getByLabel(/Nom/).fill("Cliente E2E");
     await page.getByRole("button", { name: "Continuer" }).click();
 
-    await expect(page.getByLabel("Date du rendez-vous")).toHaveValue(
-      tomorrowKey,
-    );
-    await expect(page.getByLabel("Heure du rendez-vous")).toHaveValue("10:00");
+    await expect(
+      page.getByRole("textbox", { name: "Date du rendez-vous" }),
+    ).toHaveValue(tomorrowKey);
+    await expect(
+      page.getByRole("textbox", { name: "Heure du rendez-vous" }),
+    ).toHaveValue("10:00");
 
     await page
       .getByRole("button", { name: /choisir l’heure du rendez-vous/i })
