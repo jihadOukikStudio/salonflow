@@ -13,6 +13,7 @@ import {
   roomLockKey,
 } from "@/server/services/resources/resource-lock-keys";
 import { validateEmployeeAvailability } from "@/server/services/resources/validate-employee-availability";
+import { validateBookingWindow } from "@/server/services/appointments/booking-window";
 import { validateRoomAvailability } from "@/server/services/resources/validate-room-availability";
 
 import {
@@ -135,6 +136,11 @@ export async function updateAppointmentSchedule(
     if (appointment.status !== "PLANNED") {
       throw new BusinessRuleError("Ce rendez-vous ne peut pas être déplacé.");
     }
+
+    validateBookingWindow(
+      input.scheduledStart,
+      appointment.estimatedDurationMinutes,
+    );
 
     const employeeIds = [
       ...new Set(

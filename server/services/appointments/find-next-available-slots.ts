@@ -5,6 +5,7 @@ import {
   getCasablancaDateTimeFields,
 } from "@/features/appointments/lib/casablanca-local-datetime";
 import { checkBookingFeasibilityInDb } from "@/server/services/appointments/check-booking-feasibility";
+import { BusinessRuleError } from "@/server/services/errors";
 
 type Db = Prisma.TransactionClient;
 
@@ -22,7 +23,8 @@ type Input = {
 };
 
 const OPENING_MINUTE = 10 * 60;
-const CLOSING_MINUTE = 21 * 60;
+const LAST_START_MINUTE = 21 * 60;
+const MAX_END_MINUTE = 21 * 60 + 30;
 const STEP_MINUTES = 15;
 const MAX_DAYS = 3;
 const MAX_RESULTS = 3;
@@ -70,9 +72,18 @@ export async function findNextAvailableSlotsInDb(
   db: Db,
   input: Input,
 ): Promise<NextAvailableSlot[]> {
-  const initial = await checkBookingFeasibilityInDb(db, input);
+  let initial: Awaited<ReturnType<typeof checkBookingFeasibilityInDb>> | null =
+    null;
 
-  if (initial.canCreate || hasStructuralBlocker(initial)) {
+  try {
+    initial = await checkBookingFeasibilityInDb(db, input);
+  } catch (error) {
+    if (!(error instanceof BusinessRuleError)) throw error;
+    // Un créneau hors horaires / déjà passé peut tout de même avoir des
+    // alternatives valides plus tard : on poursuit la recherche.
+  }
+
+  if (initial && (initial.canCreate || hasStructuralBlocker(initial))) {
     return [];
   }
 
@@ -88,16 +99,26 @@ export async function findNextAvailableSlotsInDb(
     const local = getCasablancaDateTimeFields(candidate);
     const startMinute = minuteOfDay(local.timeValue);
 
-    if (startMinute >= OPENING_MINUTE && startMinute < CLOSING_MINUTE) {
+    if (startMinute >= OPENING_MINUTE && startMinute <= LAST_START_MINUTE) {
       const canonicalStart = new Date(
         casablancaLocalDateTimeToIso(local.dateKey, local.timeValue),
       );
 
-      const feasibility = await checkBookingFeasibilityInDb(db, {
-        salonId: input.salonId,
-        scheduledStart: canonicalStart,
-        serviceIds: input.serviceIds,
-      });
+      let feasibility: Awaited<ReturnType<typeof checkBookingFeasibilityInDb>>;
+
+      try {
+        feasibility = await checkBookingFeasibilityInDb(db, {
+          salonId: input.salonId,
+          scheduledStart: canonicalStart,
+          serviceIds: input.serviceIds,
+        });
+      } catch (error) {
+        if (error instanceof BusinessRuleError) {
+          candidate = new Date(candidate.getTime() + STEP_MINUTES * 60_000);
+          continue;
+        }
+        throw error;
+      }
 
       if (feasibility.canCreate) {
         const endLocal = getCasablancaDateTimeFields(
@@ -108,7 +129,7 @@ export async function findNextAvailableSlotsInDb(
         // ou traverse la journée locale.
         if (
           endLocal.dateKey === local.dateKey &&
-          minuteOfDay(endLocal.timeValue) <= CLOSING_MINUTE
+          minuteOfDay(endLocal.timeValue) <= MAX_END_MINUTE
         ) {
           results.push({
             scheduledStart: feasibility.scheduledStart,

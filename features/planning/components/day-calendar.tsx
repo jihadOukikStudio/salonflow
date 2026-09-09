@@ -5,6 +5,13 @@ import { CircleAlert, Clock3, DoorOpen, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { formatPlanningTime } from "@/features/planning/components/planning-formatters";
+import {
+  isInsidePlanningWindow,
+  planningNowTop,
+  PLANNING_END_MINUTE,
+  PLANNING_HOUR_HEIGHT,
+  PLANNING_START_MINUTE,
+} from "@/features/planning/components/planning-now";
 import type {
   PlanningAppointmentItem,
   PlanningEmployeeItem,
@@ -17,6 +24,7 @@ type Props = {
   appointments: PlanningAppointmentItem[];
   employees: PlanningEmployeeItem[];
   rooms: PlanningRoomItem[];
+  canCreateAppointment?: boolean;
 };
 
 type PositionedAppointment = {
@@ -25,13 +33,15 @@ type PositionedAppointment = {
   laneCount: number;
 };
 
-const START_HOUR = 10;
+const START_HOUR = PLANNING_START_MINUTE / 60;
 const END_HOUR = 21;
+const FLEX_END_MINUTE = PLANNING_END_MINUTE;
 
-// Salon ouvert de 10h à 21h. 112 px = 1 heure pour une lecture confortable.
-const HOUR_HEIGHT = 112;
-const CALENDAR_HEIGHT = (END_HOUR - START_HOUR) * HOUR_HEIGHT;
-const BOTTOM_SPACE = 52;
+// Salon ouvert à 10h. Une marge opérationnelle autorise une fin jusqu'à 21h30.
+const HOUR_HEIGHT = PLANNING_HOUR_HEIGHT;
+const CALENDAR_HEIGHT =
+  ((FLEX_END_MINUTE - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+const BOTTOM_SPACE = 20;
 const VIEWPORT_HEIGHT = CALENDAR_HEIGHT + BOTTOM_SPACE;
 const CARD_GAP = 6;
 
@@ -201,23 +211,26 @@ function AppointmentStatusLegend() {
 function TimeGrid() {
   return (
     <>
-      {Array.from({ length: (END_HOUR - START_HOUR) * 2 + 1 }, (_, index) => {
-        const isHour = index % 2 === 0;
-        const isOpeningLine = index === 0;
-        return (
-          <div
-            key={index}
-            className={`absolute inset-x-0 border-t ${
-              isOpeningLine
-                ? "border-slate-400"
-                : isHour
-                  ? "border-slate-200"
-                  : "border-slate-100"
-            }`}
-            style={{ top: index * (HOUR_HEIGHT / 2) }}
-          />
-        );
-      })}
+      {Array.from(
+        { length: (FLEX_END_MINUTE - START_HOUR * 60) / 30 + 1 },
+        (_, index) => {
+          const isHour = index % 2 === 0;
+          const isOpeningLine = index === 0;
+          return (
+            <div
+              key={index}
+              className={`absolute inset-x-0 border-t ${
+                isOpeningLine
+                  ? "border-slate-400"
+                  : isHour
+                    ? "border-slate-200"
+                    : "border-slate-100"
+              }`}
+              style={{ top: index * (HOUR_HEIGHT / 2) }}
+            />
+          );
+        },
+      )}
     </>
   );
 }
@@ -252,14 +265,22 @@ function TimeRail() {
           </div>
         );
       })}
+      <div
+        className="absolute right-3 -translate-y-2 text-xs font-semibold text-violet-700"
+        style={{ top: CALENDAR_HEIGHT }}
+      >
+        21:30
+      </div>
     </div>
   );
 }
 
-function NowLine({ top }: { top: number }) {
+function NowLine({ top, anchorId }: { top: number; anchorId?: string }) {
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-40 border-t-2 border-red-500/80"
+      id={anchorId}
+      data-planning-now-anchor={anchorId ? "true" : undefined}
+      className="pointer-events-none absolute inset-x-0 z-40 scroll-mt-32 border-t-2 border-red-500/80"
       style={{ top }}
     >
       <span className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full bg-red-500" />
@@ -352,14 +373,21 @@ function AppointmentCard({ item }: { item: PositionedAppointment }) {
 }
 
 function AppointmentsCalendar({
+  dateKey,
   appointments,
   showNow,
   nowTop,
+  nowDateKey,
+  nowMinute,
+  canCreateAppointment,
 }: {
   dateKey: string;
   appointments: PlanningAppointmentItem[];
   showNow: boolean;
   nowTop: number;
+  nowDateKey: string;
+  nowMinute: number;
+  canCreateAppointment: boolean;
 }) {
   const positioned = useMemo(
     () => layoutAppointments(appointments),
@@ -393,16 +421,50 @@ function AppointmentsCalendar({
             style={{ height: VIEWPORT_HEIGHT }}
           >
             <TimeGrid />
+            {canCreateAppointment
+              ? Array.from(
+                  { length: (FLEX_END_MINUTE - START_HOUR * 60) / 15 },
+                  (_, index) => START_HOUR * 60 + index * 15,
+                ).map((minute) => {
+                  const isPast =
+                    dateKey < nowDateKey ||
+                    (dateKey === nowDateKey && minute <= nowMinute);
+                  const hour = Math.floor(minute / 60);
+                  const mins = minute % 60;
+                  const timeValue = `${String(hour).padStart(2, "0")}:${String(
+                    mins,
+                  ).padStart(2, "0")}`;
+
+                  if (isPast) return null;
+
+                  return (
+                    <Link
+                      key={timeValue}
+                      href={`/planning?date=${encodeURIComponent(
+                        dateKey,
+                      )}&view=planning&period=day&new=1&time=${encodeURIComponent(
+                        timeValue,
+                      )}`}
+                      aria-label={`Créer un rendez-vous à ${timeValue}`}
+                      className="absolute inset-x-0 z-[1] transition hover:bg-violet-50/50 focus-visible:bg-violet-50/70 focus-visible:outline-none"
+                      style={{
+                        top: ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
+                        height: HOUR_HEIGHT / 4,
+                      }}
+                    />
+                  );
+                })
+              : null}
             {positioned.map((item) => (
               <AppointmentCard key={item.appointment.id} item={item} />
             ))}
-            {showNow ? <NowLine top={nowTop} /> : null}
+            {showNow ? <NowLine top={nowTop} anchorId="planning-now" /> : null}
             <div
               className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
               style={{ top: CALENDAR_HEIGHT, height: BOTTOM_SPACE }}
             >
               <span className="absolute right-4 top-3 text-[11px] font-medium text-slate-400">
-                Fermeture · 21:00
+                Fin maximale · 21:30
               </span>
             </div>
           </div>
@@ -544,7 +606,7 @@ function ResourceCalendar({
               <TimeRail />
             </div>
 
-            {columns.map((column) => (
+            {columns.map((column, columnIndex) => (
               <div
                 key={column.id}
                 className="relative border-r border-slate-100 bg-white last:border-r-0"
@@ -623,7 +685,12 @@ function ResourceCalendar({
                   );
                 })}
 
-                {showNow ? <NowLine top={nowTop} /> : null}
+                {showNow ? (
+                  <NowLine
+                    top={nowTop}
+                    anchorId={columnIndex === 0 ? "planning-now" : undefined}
+                  />
+                ) : null}
 
                 <div
                   className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
@@ -637,7 +704,7 @@ function ResourceCalendar({
 
       <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
         <span>Début du planning : 10:00</span>
-        <span>Fermeture : 21:00</span>
+        <span>Fin maximale : 21:30</span>
       </div>
     </div>
   );
@@ -649,6 +716,7 @@ export function DayCalendar({
   appointments,
   employees,
   rooms,
+  canCreateAppointment = false,
 }: Props) {
   const [now, setNow] = useState(() => new Date());
 
@@ -659,18 +727,16 @@ export function DayCalendar({
 
   const nowParts = casablancaParts(now);
   const showNow =
-    nowParts.dateKey === dateKey &&
-    nowParts.minutes >= START_HOUR * 60 &&
-    nowParts.minutes <= END_HOUR * 60;
-  const nowTop = ((nowParts.minutes - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+    nowParts.dateKey === dateKey && isInsidePlanningWindow(nowParts.minutes);
+  const nowTop = planningNowTop(nowParts.minutes);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-sm text-slate-600">
         <Clock3 className="h-4 w-4 text-violet-700" />
         <span>
-          Salon ouvert de 10h à 21h · la hauteur des blocs représente la durée
-          réelle des rendez-vous.
+          Salon ouvert à 10h · fin des prestations autorisée jusqu’à 21h30 · la
+          hauteur des blocs représente la durée réelle des rendez-vous.
         </span>
       </div>
 
@@ -680,6 +746,9 @@ export function DayCalendar({
           appointments={appointments}
           showNow={showNow}
           nowTop={nowTop}
+          nowDateKey={nowParts.dateKey}
+          nowMinute={nowParts.minutes}
+          canCreateAppointment={canCreateAppointment}
         />
       ) : (
         <ResourceCalendar

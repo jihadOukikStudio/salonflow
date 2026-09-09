@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
 import { PwaRegister } from "@/features/pwa/components/pwa-register";
+import { getOrganizationIssueCount } from "@/features/organize/server";
 import { AppShell } from "@/features/shell/components/app-shell";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { getCurrentUser } from "@/server/auth/get-current-user";
@@ -53,11 +54,13 @@ export default async function RootLayout({
     role: "ADMIN" | "EMPLOYEE";
     canManageSalon: boolean;
   } | null = null;
+  let organizationIssueCount = 0;
 
   if (session?.user) {
     const currentUser = await getCurrentUser();
     const user = await getAuthoritativeCurrentUser(currentUser);
     shellUser = { role: user.role, canManageSalon: user.canManageSalon };
+    organizationIssueCount = await getOrganizationIssueCount(user.salonId);
   }
 
   return (
@@ -68,7 +71,12 @@ export default async function RootLayout({
       <body className="min-h-full">
         <PwaRegister />
         {shellUser ? (
-          <AppShell user={shellUser}>{children}</AppShell>
+          <AppShell
+            user={shellUser}
+            organizationIssueCount={organizationIssueCount}
+          >
+            {children}
+          </AppShell>
         ) : (
           children
         )}

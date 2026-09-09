@@ -20,12 +20,15 @@ import type {
   NewAppointmentClientOption,
   NewAppointmentServiceOption,
 } from "@/features/appointments/new/types";
+import { AppointmentDateTimePicker } from "@/features/appointments/new/components/appointment-date-time-picker";
 
 type NewAppointmentFormProps = {
   services: NewAppointmentServiceOption[];
   initialDate: string;
+  initialTime?: string;
   initialMinimumBooking: CasablancaDateTimeFields;
   canConfigureServices: boolean;
+  cancelHref?: string;
 };
 
 const steps = [
@@ -77,6 +80,39 @@ function formatDuration(value: number): string {
   return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
 }
 
+function formatSelectedDate(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
+}
+
+function timeToMinutes(value: string): number {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(value: number): string {
+  const safe = Math.max(0, Math.min(23 * 60 + 59, value));
+  return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(
+    safe % 60,
+  ).padStart(2, "0")}`;
+}
+
+function ceilToQuarter(value: string): string {
+  return minutesToTime(Math.ceil(timeToMinutes(value) / 15) * 15);
+}
+
+function floorToQuarter(value: string): string {
+  return minutesToTime(Math.floor(timeToMinutes(value) / 15) * 15);
+}
+
 function roomLabel(
   roomType: NewAppointmentServiceOption["requiredRoomType"],
 ): string | null {
@@ -94,8 +130,10 @@ function roomLabel(
 export function NewAppointmentForm({
   services,
   initialDate,
+  initialTime,
   initialMinimumBooking,
   canConfigureServices,
+  cancelHref = "/planning",
 }: NewAppointmentFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -122,11 +160,17 @@ export function NewAppointmentForm({
 
   const [minimumBooking, setMinimumBooking] = useState(initialMinimumBooking);
   const [dateKey, setDateKey] = useState(initialDate);
-  const [timeValue, setTimeValue] = useState(
-    initialDate === initialMinimumBooking.dateKey
-      ? initialMinimumBooking.timeValue
-      : "09:00",
-  );
+  const [timeValue, setTimeValue] = useState(() => {
+    const requested = initialTime
+      ? ceilToQuarter(initialTime)
+      : initialDate === initialMinimumBooking.dateKey
+        ? ceilToQuarter(initialMinimumBooking.timeValue)
+        : "10:00";
+
+    if (requested < "10:00") return "10:00";
+    if (requested > "21:00") return "21:00";
+    return requested;
+  });
   const [internalNote, setInternalNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [capacityMessage, setCapacityMessage] = useState<{
@@ -253,6 +297,43 @@ export function NewAppointmentForm({
     (total, service) => total + (service.defaultDurationMinutes ?? 0),
     0,
   );
+
+  const latestStartTime = useMemo(() => {
+    const latestMinute = Math.min(21 * 60, 21 * 60 + 30 - totalDuration);
+    return floorToQuarter(minutesToTime(Math.max(10 * 60, latestMinute)));
+  }, [totalDuration]);
+
+  const minimumTimeForSelectedDate =
+    dateKey === minimumBooking.dateKey && minimumBooking.timeValue > "10:00"
+      ? ceilToQuarter(minimumBooking.timeValue)
+      : "10:00";
+
+  const availableTimeOptions = useMemo(() => {
+    const start = Math.max(10 * 60, timeToMinutes(minimumTimeForSelectedDate));
+    const end = Math.min(21 * 60, timeToMinutes(latestStartTime));
+
+    if (start > end) return [];
+
+    return Array.from(
+      { length: Math.floor((end - start) / 15) + 1 },
+      (_, index) => minutesToTime(start + index * 15),
+    );
+  }, [latestStartTime, minimumTimeForSelectedDate]);
+
+  useEffect(() => {
+    if (availableTimeOptions.length === 0) {
+      return;
+    }
+
+    // Conserve toujours le créneau explicitement choisi depuis le planning
+    // tant qu'il reste légal après recalcul de la durée. Sinon, SalonFlow
+    // sélectionne le premier quart d'heure encore possible.
+    if (!availableTimeOptions.includes(timeValue)) {
+      setTimeValue(availableTimeOptions[0]);
+      setCapacityMessage(null);
+      clearNextAvailableSlots();
+    }
+  }, [availableTimeOptions, timeValue]);
 
   const newClientIsComplete =
     clientNameSearch.trim().length > 0 &&
@@ -584,6 +665,18 @@ export function NewAppointmentForm({
           );
           return false;
         }
+
+        if (timeValue < "10:00") {
+          setError("Le salon ouvre à 10h00.");
+          return false;
+        }
+
+        if (totalDuration > 0 && timeValue > latestStartTime) {
+          setError(
+            `Avec ${formatDuration(totalDuration)} de prestations, le rendez-vous dépasserait 21h30. Dernier début possible : ${latestStartTime}.`,
+          );
+          return false;
+        }
       } catch (conversionError) {
         setError(
           conversionError instanceof Error
@@ -665,11 +758,15 @@ export function NewAppointmentForm({
     setCapacityMessage(null);
     clearNextAvailableSlots();
 
-    if (
-      value === minimumBooking.dateKey &&
-      timeValue < minimumBooking.timeValue
-    ) {
-      setTimeValue(minimumBooking.timeValue);
+    const minimumTime =
+      value === minimumBooking.dateKey && minimumBooking.timeValue > "10:00"
+        ? ceilToQuarter(minimumBooking.timeValue)
+        : "10:00";
+
+    if (timeValue < minimumTime) {
+      setTimeValue(minimumTime);
+    } else if (timeValue > latestStartTime) {
+      setTimeValue(latestStartTime);
     }
   }
 
@@ -998,33 +1095,26 @@ export function NewAppointmentForm({
                   empêcher d’en essayer une autre plus courte ou utilisant une
                   autre ressource.
                 </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <input
-                    type="date"
-                    value={dateKey}
-                    min={minimumBooking.dateKey}
-                    onChange={(event) => {
-                      handleDateChange(event.target.value);
-                    }}
-                    className={inputClassName}
-                  />
-                  <input
-                    type="time"
-                    value={timeValue}
-                    min={
-                      dateKey === minimumBooking.dateKey
-                        ? minimumBooking.timeValue
-                        : undefined
-                    }
-                    onChange={(event) => {
-                      setTimeValue(event.target.value);
+                <div className="mt-4">
+                  <AppointmentDateTimePicker
+                    dateKey={dateKey}
+                    timeValue={timeValue}
+                    minimumDateKey={minimumBooking.dateKey}
+                    timeOptions={availableTimeOptions}
+                    onDateChange={handleDateChange}
+                    onTimeChange={(time) => {
+                      setTimeValue(time);
                       setError(null);
                       setCapacityMessage(null);
                       clearNextAvailableSlots();
                     }}
-                    className={inputClassName}
                   />
                 </div>
+
+                <p className="mt-3 text-xs font-semibold text-violet-800">
+                  Créneaux proposés toutes les 15 minutes, entre 10h00 et 21h00.
+                  La fin du rendez-vous peut aller jusqu&apos;à 21h30 maximum.
+                </p>
               </div>
 
               {capacityMessage && capacityMessage.level !== "BLOCKED" ? (
@@ -1097,80 +1187,105 @@ export function NewAppointmentForm({
                 </div>
               ) : null}
 
-              <div className="mt-6 space-y-6">
-                {groupedServices.map(([categoryName, categoryServices]) => (
-                  <section key={categoryName}>
-                    <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
-                      {categoryName}
-                    </h3>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {categoryServices.map((service) => {
-                        const selected = selectedServiceIds.includes(
-                          service.id,
-                        );
-                        const durationConfigured =
-                          service.defaultDurationMinutes !== null;
-                        const requiredRoom = roomLabel(
-                          service.requiredRoomType,
-                        );
+              <div className="mt-6 space-y-3">
+                {groupedServices.map(([categoryName, categoryServices]) => {
+                  const selectedCount = categoryServices.filter((service) =>
+                    selectedServiceIds.includes(service.id),
+                  ).length;
 
-                        return (
-                          <button
-                            key={service.id}
-                            type="button"
-                            disabled={!durationConfigured || isCheckingCapacity}
-                            onClick={() => toggleService(service)}
-                            className={`rounded-2xl border p-4 text-left transition ${
-                              !durationConfigured
-                                ? "cursor-not-allowed border-amber-200 bg-amber-50/70 opacity-80"
-                                : selected
-                                  ? "border-violet-500 bg-violet-50 ring-2 ring-violet-100"
-                                  : "border-slate-300 bg-white hover:border-violet-300 hover:bg-slate-50"
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <span className="block font-semibold text-slate-950">
-                                  {service.name}
-                                </span>
-                                <span className="mt-2 block text-sm font-semibold text-slate-700">
-                                  {service.isStartingPrice
-                                    ? "À partir de "
-                                    : ""}
-                                  {formatMoney(service.defaultPrice)}
-                                </span>
+                  return (
+                    <details
+                      key={categoryName}
+                      className="group rounded-2xl border border-slate-200 bg-white"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
+                        <span>
+                          <span className="block text-sm font-bold text-slate-900">
+                            {categoryName}
+                          </span>
+                          <span className="mt-0.5 block text-xs font-medium text-slate-500">
+                            {categoryServices.length} prestation
+                            {categoryServices.length > 1 ? "s" : ""}
+                            {selectedCount > 0
+                              ? ` · ${selectedCount} sélectionnée${selectedCount > 1 ? "s" : ""}`
+                              : ""}
+                          </span>
+                        </span>
+                        <span className="text-lg text-slate-400 transition-transform group-open:rotate-180">
+                          ⌄
+                        </span>
+                      </summary>
+                      <div className="grid gap-3 border-t border-slate-100 p-4 sm:grid-cols-2">
+                        {categoryServices.map((service) => {
+                          const selected = selectedServiceIds.includes(
+                            service.id,
+                          );
+                          const durationConfigured =
+                            service.defaultDurationMinutes !== null;
+                          const requiredRoom = roomLabel(
+                            service.requiredRoomType,
+                          );
+
+                          return (
+                            <button
+                              key={service.id}
+                              type="button"
+                              disabled={
+                                !durationConfigured || isCheckingCapacity
+                              }
+                              onClick={() => toggleService(service)}
+                              className={`rounded-2xl border p-4 text-left transition ${
+                                !durationConfigured
+                                  ? "cursor-not-allowed border-amber-200 bg-amber-50/70 opacity-80"
+                                  : selected
+                                    ? "border-violet-500 bg-violet-50 ring-2 ring-violet-100"
+                                    : "border-slate-300 bg-white hover:border-violet-300 hover:bg-slate-50"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <span className="block font-semibold text-slate-950">
+                                    {service.name}
+                                  </span>
+                                  <span className="mt-2 block text-sm font-semibold text-slate-700">
+                                    {service.isStartingPrice
+                                      ? "À partir de "
+                                      : ""}
+                                    {formatMoney(service.defaultPrice)}
+                                  </span>
+                                </div>
+                                {selected ? (
+                                  <span className="rounded-full bg-violet-600 px-2.5 py-1 text-xs font-bold text-white">
+                                    Ajoutée
+                                  </span>
+                                ) : null}
                               </div>
-                              {selected ? (
-                                <span className="rounded-full bg-violet-600 px-2.5 py-1 text-xs font-bold text-white">
-                                  Ajoutée
-                                </span>
-                              ) : null}
-                            </div>
 
-                            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                              {durationConfigured ? (
-                                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
-                                  {formatDuration(
-                                    service.defaultDurationMinutes!,
-                                  )}
-                                </span>
-                              ) : (
-                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-amber-900">
-                                  Durée à configurer par la gérante
-                                </span>
-                              )}
-                              {requiredRoom ? (
-                                <span className="rounded-full bg-pink-50 px-2.5 py-1 text-pink-800">
-                                  {requiredRoom}
-                                </span>
-                              ) : null}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
-                ))}
+                              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                                {durationConfigured ? (
+                                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+                                    {formatDuration(
+                                      service.defaultDurationMinutes!,
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-amber-900">
+                                    Durée à configurer par la gérante
+                                  </span>
+                                )}
+                                {requiredRoom ? (
+                                  <span className="rounded-full bg-pink-50 px-2.5 py-1 text-pink-800">
+                                    {requiredRoom}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </details>
+                  );
+                })}
               </div>
             </div>
           ) : null}
@@ -1319,7 +1434,7 @@ export function NewAppointmentForm({
                 </button>
               ) : (
                 <Link
-                  href="/planning"
+                  href={cancelHref}
                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                 >
                   Annuler

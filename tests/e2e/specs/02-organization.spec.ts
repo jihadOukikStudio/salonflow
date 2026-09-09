@@ -293,4 +293,25 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
     await expect(roomSelect).toContainText("Hamam duo");
     await expect(roomSelect).not.toContainText("Salle de soins");
   });
+  test("affiche le compteur À organiser dans la navigation et le met à jour", async ({
+    page,
+  }) => {
+    const s = await createAppointmentScenario({
+      assignedEmployeeId: null,
+      roomId: null,
+    });
+
+    await loginAsAdmin(page);
+    await page.goto("/planning");
+
+    await expect(page.getByLabel("1 élément à organiser")).toBeVisible();
+
+    await page.goto("/organize");
+    const card = organizationCard(page, "Soin visage E2E");
+    await card.locator("select").first().selectOption(s.sara.id);
+    await card.locator("select").last().selectOption(s.treatmentRoom2.id);
+
+    await expect(page.getByLabel("1 élément à organiser")).toHaveCount(0);
+    await expect(page.getByText("Tout est organisé ✓")).toBeVisible();
+  });
 });

@@ -171,14 +171,25 @@ export function EmployeeUnavailabilityAdmin({
         {employees
           .filter((e) => canManage || e.id === ownEmployeeId)
           .map((employee) => (
-            <article
+            <details
               key={employee.id}
-              className="rounded-3xl border border-slate-200 bg-white p-5"
+              className="group rounded-3xl border border-slate-200 bg-white"
             >
-              <h3 className="font-semibold text-slate-950">
-                {employee.firstName} {employee.lastName ?? ""}
-              </h3>
-              <div className="mt-3 space-y-2">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                <span>
+                  <span className="block font-semibold text-slate-950">
+                    {employee.firstName} {employee.lastName ?? ""}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-medium text-slate-500">
+                    {employee.unavailabilities.length} indisponibilité
+                    {employee.unavailabilities.length > 1 ? "s" : ""}
+                  </span>
+                </span>
+                <span className="text-lg text-slate-400 transition-transform group-open:rotate-180">
+                  ⌄
+                </span>
+              </summary>
+              <div className="space-y-2 border-t border-slate-100 p-5">
                 {employee.unavailabilities.length === 0 ? (
                   <p className="text-sm text-slate-500">
                     Aucune indisponibilité future.
@@ -216,7 +227,7 @@ export function EmployeeUnavailabilityAdmin({
                   ))
                 )}
               </div>
-            </article>
+            </details>
           ))}
       </section>
     </div>

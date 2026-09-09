@@ -189,4 +189,12 @@ describe("getPlanningDay", () => {
     expect(planning.appointments[0]?.services[0]?.price).toBe(125.5);
     expect(planning.appointments[0]?.totalAmount).toBe(125.5);
   });
+  it("allows consulting an historical planning date", async () => {
+    const context = await createSalonContext();
+
+    const planning = await getPlanningDay(context.currentUser, "2024-01-15");
+
+    expect(planning.dateKey).toBe("2024-01-15");
+    expect(planning.appointments).toEqual([]);
+  });
 });

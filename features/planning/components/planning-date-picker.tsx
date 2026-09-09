@@ -25,6 +25,16 @@ function toDateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function formatCalendarDateLabel(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 function buildCalendarDays(monthDate: Date) {
   const year = monthDate.getUTCFullYear();
   const month = monthDate.getUTCMonth();
@@ -232,6 +242,7 @@ export function PlanningDatePicker({
                   key={cellKey}
                   type="button"
                   onClick={() => selectDate(date)}
+                  aria-label={formatCalendarDateLabel(date)}
                   aria-current={isToday ? "date" : undefined}
                   aria-pressed={isSelected}
                   className={`flex aspect-square min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${

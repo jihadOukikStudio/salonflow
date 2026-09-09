@@ -66,6 +66,11 @@ export function OrganizationQueue({ items, currentEmployeeId }: Props) {
     });
   }
 
+  const employeeMissingCount = items.filter(
+    (item) => item.employeeMissing,
+  ).length;
+  const roomMissingCount = items.filter((item) => item.roomMissing).length;
+
   if (items.length === 0) {
     return (
       <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center">
@@ -80,6 +85,33 @@ export function OrganizationQueue({ items, currentEmployeeId }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-700">
+            À organiser
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-amber-950">
+            {items.length}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+            Employée manquante
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">
+            {employeeMissingCount}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+            Salle manquante
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">
+            {roomMissingCount}
+          </p>
+        </div>
+      </div>
+
       {message ? (
         <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-medium text-violet-950">
           {message}

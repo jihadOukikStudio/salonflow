@@ -8,6 +8,7 @@ import {
   BusinessRuleError,
   ResourceNotFoundError,
 } from "@/server/services/errors";
+import { validateBookingWindow } from "@/server/services/appointments/booking-window";
 import {
   checkEmployeeCapacityInDb,
   type ServiceEmployeeCapacity,
@@ -135,7 +136,11 @@ export async function checkBookingFeasibilityInDb(
     }
   }
 
-  const scheduledEnd = getAppointmentEnd(input.scheduledStart, durationMinutes);
+  const bookingWindow = validateBookingWindow(
+    input.scheduledStart,
+    durationMinutes,
+  );
+  const scheduledEnd = bookingWindow.scheduledEnd;
   const targetInterval = { startAt: input.scheduledStart, endAt: scheduledEnd };
 
   const [

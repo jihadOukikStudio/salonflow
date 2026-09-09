@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
 
 import { PlanningDatePicker } from "@/features/planning/components/planning-date-picker";
 import {
@@ -91,7 +91,15 @@ export function PlanningDateNavigation({
         >
           Aujourd’hui
         </Link>
-      ) : null}
+      ) : (
+        <a
+          href="#planning-now"
+          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100"
+        >
+          <Clock3 aria-hidden="true" className="h-4 w-4" strokeWidth={1.9} />
+          Maintenant
+        </a>
+      )}
     </div>
   );
 }

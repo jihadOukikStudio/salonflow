@@ -178,25 +178,33 @@ export function ServiceCatalogForm({ categories }: Props) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3">
       {categories.map((category) => (
-        <section key={category.id}>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-950">
-              {category.name}
-            </h2>
-            <span className="text-xs font-semibold text-slate-500">
-              {category.services.length} prestation
-              {category.services.length > 1 ? "s" : ""}
+        <details
+          key={category.id}
+          className="group rounded-2xl border border-slate-200 bg-white shadow-sm"
+        >
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
+            <span>
+              <span className="block text-lg font-semibold text-slate-950">
+                {category.name}
+              </span>
+              <span className="mt-0.5 block text-xs font-semibold text-slate-500">
+                {category.services.length} prestation
+                {category.services.length > 1 ? "s" : ""}
+              </span>
             </span>
-          </div>
+            <span className="text-lg text-slate-400 transition-transform group-open:rotate-180">
+              ⌄
+            </span>
+          </summary>
 
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-slate-100 p-4">
             {category.services.map((service) => (
               <ServiceRow key={service.id} service={service} />
             ))}
           </div>
-        </section>
+        </details>
       ))}
     </div>
   );

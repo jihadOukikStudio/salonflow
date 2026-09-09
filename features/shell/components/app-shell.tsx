@@ -23,6 +23,7 @@ type ShellUser = {
 
 type AppShellProps = {
   user: ShellUser;
+  organizationIssueCount: number;
   children: ReactNode;
 };
 
@@ -33,7 +34,11 @@ type NavItem = {
   visible: boolean;
 };
 
-export function AppShell({ user, children }: AppShellProps) {
+export function AppShell({
+  user,
+  organizationIssueCount,
+  children,
+}: AppShellProps) {
   const pathname = usePathname();
   const isAdmin = user.role === "ADMIN";
   const canManage = isAdmin || user.canManageSalon;
@@ -107,6 +112,20 @@ export function AppShell({ user, children }: AppShellProps) {
               >
                 <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.8} />
                 <span>{item.label}</span>
+                {item.href === "/organize" && organizationIssueCount > 0 ? (
+                  <span
+                    aria-label={`${organizationIssueCount} élément${organizationIssueCount > 1 ? "s" : ""} à organiser`}
+                    className={`ml-auto inline-flex min-w-6 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums ${
+                      active
+                        ? "bg-white/20 text-white"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {organizationIssueCount > 99
+                      ? "99+"
+                      : organizationIssueCount}
+                  </span>
+                ) : null}
               </Link>
             );
           })}
@@ -151,13 +170,23 @@ export function AppShell({ user, children }: AppShellProps) {
                   href={item.href}
                   aria-label={item.label}
                   title={item.label}
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
+                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
                     active
                       ? "bg-violet-600 text-white"
                       : "bg-white text-slate-600 ring-1 ring-slate-200"
                   }`}
                 >
                   <Icon className="h-4.5 w-4.5" strokeWidth={1.8} />
+                  {item.href === "/organize" && organizationIssueCount > 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#fffaf8]"
+                    >
+                      {organizationIssueCount > 9
+                        ? "9+"
+                        : organizationIssueCount}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}

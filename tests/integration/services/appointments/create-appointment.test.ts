@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { CurrentUser } from "@/server/permissions";
 import { PermissionDeniedError } from "@/server/permissions";
+import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
 import { createAppointment } from "@/server/services/appointments/create-appointment";
 import {
   BusinessRuleError,
@@ -375,5 +376,84 @@ describe("createAppointment", () => {
     expect(await testPrisma.appointment.count()).toBe(0);
     expect(await testPrisma.appointmentService.count()).toBe(0);
     expect(await testPrisma.activityLog.count()).toBe(0);
+  });
+  it("rejects a start before salon opening", async () => {
+    const context = await createContext();
+
+    await expect(
+      createAppointment(context.currentUser, {
+        clientId: context.client.id,
+        scheduledStart: new Date(
+          casablancaLocalDateTimeToIso("2026-09-10", "09:45"),
+        ),
+        services: [{ serviceId: context.service.id }],
+      }),
+    ).rejects.toThrow("Le salon ouvre à 10h00.");
+  });
+
+  it("accepts a booking ending exactly at 21:30", async () => {
+    const context = await createContext();
+
+    await testPrisma.service.update({
+      where: { id: context.service.id },
+      data: { defaultDurationMinutes: 90 },
+    });
+
+    const appointment = await createAppointment(context.currentUser, {
+      clientId: context.client.id,
+      scheduledStart: new Date(
+        casablancaLocalDateTimeToIso("2026-09-10", "20:00"),
+      ),
+      services: [{ serviceId: context.service.id }],
+    });
+
+    expect(appointment.estimatedDurationMinutes).toBe(90);
+  });
+
+  it("rejects a booking ending after 21:30", async () => {
+    const context = await createContext();
+
+    await testPrisma.service.update({
+      where: { id: context.service.id },
+      data: { defaultDurationMinutes: 90 },
+    });
+
+    await expect(
+      createAppointment(context.currentUser, {
+        clientId: context.client.id,
+        scheduledStart: new Date(
+          casablancaLocalDateTimeToIso("2026-09-10", "20:15"),
+        ),
+        services: [{ serviceId: context.service.id }],
+      }),
+    ).rejects.toThrow(/Dernier début possible : 20:00/);
+  });
+
+  it("rejects a start after 21:00", async () => {
+    const context = await createContext();
+
+    await expect(
+      createAppointment(context.currentUser, {
+        clientId: context.client.id,
+        scheduledStart: new Date(
+          casablancaLocalDateTimeToIso("2026-09-10", "21:15"),
+        ),
+        services: [{ serviceId: context.service.id }],
+      }),
+    ).rejects.toThrow("Un rendez-vous doit commencer entre 10h00 et 21h00.");
+  });
+
+  it("rejects a start outside the 15 minute grid", async () => {
+    const context = await createContext();
+
+    await expect(
+      createAppointment(context.currentUser, {
+        clientId: context.client.id,
+        scheduledStart: new Date(
+          casablancaLocalDateTimeToIso("2026-09-10", "10:22"),
+        ),
+        services: [{ serviceId: context.service.id }],
+      }),
+    ).rejects.toThrow(/tranche de 15 minutes/);
   });
 });

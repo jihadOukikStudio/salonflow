@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { CurrentUser } from "@/server/permissions";
+import { getOrganizationIssueCount } from "@/features/organize/server/get-organization-issue-count";
 import { getOrganizationQueue } from "@/features/organize/server/get-organization-queue";
 
 import { cleanDatabase } from "../helpers/database";
@@ -287,5 +288,24 @@ describe("getOrganizationQueue availability", () => {
     expect(item?.availableRooms.map((room) => room.id)).toContain(
       context.room1.id,
     );
+  });
+  it("compte une prestation une seule fois même si employée et salle manquent", async () => {
+    const context = await createContext();
+
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(1);
+
+    await testPrisma.appointmentService.update({
+      where: { id: context.queueService.id },
+      data: { assignedEmployeeId: context.sara.id },
+    });
+
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(1);
+
+    await testPrisma.appointmentService.update({
+      where: { id: context.queueService.id },
+      data: { roomId: context.room1.id },
+    });
+
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(0);
   });
 });
