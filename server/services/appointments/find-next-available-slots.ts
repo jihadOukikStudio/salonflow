@@ -44,11 +44,23 @@ function hasStructuralBlocker(
 ) {
   if (feasibility.employeeCapacity.active === 0) return true;
 
-  // Une prestation sans aucune employée qualifiée ne deviendra pas disponible
-  // en avançant simplement l'heure.
+  /**
+   * Si aucune employée active ne peut réaliser une prestation, avancer
+   * simplement l'heure ne changera jamais la faisabilité.
+   *
+   * Important :
+   * `skillConfigured` signifie qu'au moins une compétence existe pour CETTE
+   * prestation. Quand le salon est déjà en mode compétences mais que personne
+   * ne maîtrise la prestation demandée, `skillConfigured` vaut justement
+   * `false` et `qualifiedActive` vaut `0`.
+   *
+   * Le test précédent sur `skillConfigured && qualifiedActive === 0`
+   * laissait donc passer ce cas structurel et SalonFlow parcourait inutilement
+   * jusqu'à 3 jours de créneaux dans la même transaction Prisma.
+   */
   if (
     feasibility.serviceEmployeeCapacity.some(
-      (service) => service.skillConfigured && service.qualifiedActive === 0,
+      (service) => service.qualifiedActive === 0,
     )
   ) {
     return true;
@@ -79,18 +91,30 @@ export async function findNextAvailableSlotsInDb(
     initial = await checkBookingFeasibilityInDb(db, input);
   } catch (error) {
     if (!(error instanceof BusinessRuleError)) throw error;
+
     // Un créneau hors horaires / déjà passé peut tout de même avoir des
     // alternatives valides plus tard : on poursuit la recherche.
   }
 
+  /**
+   * - Si le créneau demandé est déjà faisable, aucune alternative n'est utile.
+   * - Si le blocage est structurel (aucune employée active/compétente ou
+   *   aucune salle requise configurée), aucun autre horaire ne pourra le
+   *   résoudre : on sort immédiatement.
+   *
+   * Cette sortie rapide évite aussi de maintenir une transaction Prisma
+   * interactive pendant le scan de dizaines/centaines de créneaux.
+   */
   if (initial && (initial.canCreate || hasStructuralBlocker(initial))) {
     return [];
   }
 
   const results: NextAvailableSlot[] = [];
+
   const searchLimit = new Date(
     input.scheduledStart.getTime() + MAX_DAYS * 24 * 60 * 60_000,
   );
+
   let candidate = roundUpToStep(
     new Date(input.scheduledStart.getTime() + STEP_MINUTES * 60_000),
   );
@@ -114,10 +138,22 @@ export async function findNextAvailableSlotsInDb(
         });
       } catch (error) {
         if (error instanceof BusinessRuleError) {
-          candidate = new Date(candidate.getTime() + STEP_MINUTES * 60_000);
+          candidate = new Date(
+            candidate.getTime() + STEP_MINUTES * 60_000,
+          );
           continue;
         }
+
         throw error;
+      }
+
+      /**
+       * Ce cas ne devrait normalement être rencontré qu'après le premier
+       * créneau, mais si une vérification révèle finalement un blocage
+       * structurel, il est inutile de continuer les jours suivants.
+       */
+      if (hasStructuralBlocker(feasibility)) {
+        return results;
       }
 
       if (feasibility.canCreate) {

@@ -1331,7 +1331,8 @@ export function NewAppointmentForm({
                 >
                   {capacityMessage.text}
                   <span className="mt-2 block border-t border-current/15 pt-2 text-xs font-medium opacity-80">
-                    ✓ Les disponibilités seront revérifiées à la création du rendez-vous.
+                    ✓ Les disponibilités seront revérifiées à la création du
+                    rendez-vous.
                   </span>
                 </div>
               ) : null}

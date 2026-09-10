@@ -101,7 +101,7 @@ async function createContext(params?: {
       salonId: salon.id,
       clientId: client.id,
 
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
 
       estimatedDurationMinutes: 60,
 
@@ -155,7 +155,7 @@ describe("updateAppointmentSchedule", () => {
   it("allows an admin to move a planned appointment", async () => {
     const context = await createContext();
 
-    const newStart = new Date("2026-09-10T14:00:00.000Z");
+    const newStart = new Date("2099-09-10T14:00:00.000Z");
 
     const result = await updateAppointmentSchedule(context.admin.currentUser, {
       appointmentId: context.appointment.id,
@@ -178,10 +178,10 @@ describe("updateAppointmentSchedule", () => {
     const result = await updateAppointmentSchedule(responsible.currentUser, {
       appointmentId: context.appointment.id,
 
-      scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
     });
 
-    expect(result.scheduledStart).toEqual(new Date("2026-09-10T14:00:00.000Z"));
+    expect(result.scheduledStart).toEqual(new Date("2099-09-10T14:00:00.000Z"));
   });
 
   it("rejects a standard employee", async () => {
@@ -191,7 +191,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.employeeAccount.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
       }),
     ).rejects.toThrow();
   });
@@ -209,7 +209,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(inactiveAdmin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
       }),
     ).rejects.toThrow();
   });
@@ -223,7 +223,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(contextA.admin.currentUser, {
         appointmentId: contextB.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(ResourceNotFoundError);
   });
@@ -251,7 +251,7 @@ describe("updateAppointmentSchedule", () => {
         updateAppointmentSchedule(context.admin.currentUser, {
           appointmentId: context.appointment.id,
 
-          scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+          scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
         }),
       ).rejects.toBeInstanceOf(BusinessRuleError);
     },
@@ -266,9 +266,9 @@ describe("updateAppointmentSchedule", () => {
 
         type: "ABSENCE",
 
-        startAt: new Date("2026-09-10T14:00:00.000Z"),
+        startAt: new Date("2099-09-10T14:00:00.000Z"),
 
-        endAt: new Date("2026-09-10T16:00:00.000Z"),
+        endAt: new Date("2099-09-10T16:00:00.000Z"),
 
         createdByUserId: context.admin.user.id,
       },
@@ -278,7 +278,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.admin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:30:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
   });
@@ -290,9 +290,9 @@ describe("updateAppointmentSchedule", () => {
       data: {
         roomId: context.room.id,
 
-        startAt: new Date("2026-09-10T14:00:00.000Z"),
+        startAt: new Date("2099-09-10T14:00:00.000Z"),
 
-        endAt: new Date("2026-09-10T16:00:00.000Z"),
+        endAt: new Date("2099-09-10T16:00:00.000Z"),
 
         reason: "Maintenance",
 
@@ -304,7 +304,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.admin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:30:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
   });
@@ -324,7 +324,7 @@ describe("updateAppointmentSchedule", () => {
         salonId: context.salon.id,
         clientId: otherClient.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
 
         estimatedDurationMinutes: 60,
         status: "PLANNED",
@@ -348,7 +348,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.admin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:30:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
   });
@@ -368,7 +368,7 @@ describe("updateAppointmentSchedule", () => {
         salonId: context.salon.id,
         clientId: otherClient.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
 
         estimatedDurationMinutes: 60,
         status: "PLANNED",
@@ -394,7 +394,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.admin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:30:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
   });
@@ -417,7 +417,7 @@ describe("updateAppointmentSchedule", () => {
         salonId: context.salon.id,
         clientId: otherClient.id,
 
-        scheduledStart: new Date("2026-09-10T14:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
 
         estimatedDurationMinutes: 60,
         status: "PLANNED",
@@ -446,16 +446,16 @@ describe("updateAppointmentSchedule", () => {
     const result = await updateAppointmentSchedule(context.admin.currentUser, {
       appointmentId: context.appointment.id,
 
-      scheduledStart: new Date("2026-09-10T15:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T15:00:00.000Z"),
     });
 
-    expect(result.scheduledStart).toEqual(new Date("2026-09-10T15:00:00.000Z"));
+    expect(result.scheduledStart).toEqual(new Date("2099-09-10T15:00:00.000Z"));
   });
 
   it("persists the new scheduled start", async () => {
     const context = await createContext();
 
-    const newStart = new Date("2026-09-10T16:00:00.000Z");
+    const newStart = new Date("2099-09-10T16:00:00.000Z");
 
     await updateAppointmentSchedule(context.admin.currentUser, {
       appointmentId: context.appointment.id,
@@ -482,9 +482,9 @@ describe("updateAppointmentSchedule", () => {
 
         type: "ABSENCE",
 
-        startAt: new Date("2026-09-10T14:00:00.000Z"),
+        startAt: new Date("2099-09-10T14:00:00.000Z"),
 
-        endAt: new Date("2026-09-10T16:00:00.000Z"),
+        endAt: new Date("2099-09-10T16:00:00.000Z"),
 
         createdByUserId: context.admin.user.id,
       },
@@ -494,7 +494,7 @@ describe("updateAppointmentSchedule", () => {
       updateAppointmentSchedule(context.admin.currentUser, {
         appointmentId: context.appointment.id,
 
-        scheduledStart: new Date("2026-09-10T14:30:00.000Z"),
+        scheduledStart: new Date("2099-09-10T14:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
 
@@ -510,7 +510,7 @@ describe("updateAppointmentSchedule", () => {
   it("creates an activity log", async () => {
     const context = await createContext();
 
-    const newStart = new Date("2026-09-10T16:00:00.000Z");
+    const newStart = new Date("2099-09-10T16:00:00.000Z");
 
     await updateAppointmentSchedule(context.admin.currentUser, {
       appointmentId: context.appointment.id,

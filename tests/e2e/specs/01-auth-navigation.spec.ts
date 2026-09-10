@@ -22,11 +22,11 @@ test.describe("Phase 12.1 — authentification et navigation", () => {
     await expect(page.locator("body")).toContainText(/planning|rendez-vous/i);
   });
 
-  test("la gérante accède à À organiser", async ({ page }) => {
+  test("la gérante accède à Organisation", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/organize");
     await expect(
-      page.getByRole("heading", { name: /à organiser/i }),
+      page.getByRole("heading", { name: /^organisation$/i }),
     ).toBeVisible();
   });
 

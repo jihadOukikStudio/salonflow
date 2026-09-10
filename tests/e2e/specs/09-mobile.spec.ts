@@ -35,7 +35,7 @@ test.describe("Phase 12.9 — responsive mobile Chromium", () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test("À organiser utilisable sans débordement horizontal", async ({
+  test("Organisation utilisable sans débordement horizontal", async ({
     page,
   }) => {
     await createAppointmentScenario({
@@ -45,7 +45,9 @@ test.describe("Phase 12.9 — responsive mobile Chromium", () => {
     await loginAsAdmin(page);
     await page.goto("/organize");
 
-    await expect(page.locator("body")).toContainText(/à organiser/i);
+    await expect(
+      page.getByRole("heading", { name: /^organisation$/i }),
+    ).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 

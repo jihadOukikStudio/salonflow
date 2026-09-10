@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Check,
-  ChevronDown,
-  CircleAlert,
-  DoorOpen,
-  UserRound,
-} from "lucide-react";
+import { Check, ChevronDown, DoorOpen, UserRound } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -98,8 +92,12 @@ export function OrganizationQueue({ items, currentEmployeeId }: Props) {
     () => items.filter((item) => !item.employeeMissing && !item.roomMissing),
     [items],
   );
-  const organizedToday = organized.filter((item) => isToday(item.scheduledStart));
-  const organizedLater = organized.filter((item) => !isToday(item.scheduledStart));
+  const organizedToday = organized.filter((item) =>
+    isToday(item.scheduledStart),
+  );
+  const organizedLater = organized.filter(
+    (item) => !isToday(item.scheduledStart),
+  );
 
   const issueCount = unresolved.reduce(
     (total, item) =>
@@ -173,7 +171,9 @@ export function OrganizationQueue({ items, currentEmployeeId }: Props) {
               {organized.length}
             </p>
             <p className="pb-1 text-sm text-slate-600">
-              {organized.length === 1 ? "prestation prête" : "prestations prêtes"}
+              {organized.length === 1
+                ? "prestation prête"
+                : "prestations prêtes"}
             </p>
           </div>
         </div>
@@ -259,7 +259,9 @@ export function OrganizationQueue({ items, currentEmployeeId }: Props) {
                           aria-label={`Affecter une employée à ${item.serviceName}`}
                           className={`${inputClass} min-w-0 flex-1`}
                           defaultValue=""
-                          disabled={pending || item.availableEmployees.length === 0}
+                          disabled={
+                            pending || item.availableEmployees.length === 0
+                          }
                           onChange={(event) => {
                             if (!event.target.value) return;
                             const employee = item.availableEmployees.find(
@@ -478,7 +480,9 @@ function OrganizedRow({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-semibold text-slate-950">{item.serviceName}</span>
+            <span className="font-semibold text-slate-950">
+              {item.serviceName}
+            </span>
             <span className="text-sm text-slate-500">· {item.clientName}</span>
           </div>
           <p className="mt-1 text-xs text-slate-500">
@@ -530,7 +534,10 @@ function OrganizedRow({
             value={item.assignedEmployee?.id ?? ""}
             disabled={pending}
             onChange={(event) => {
-              if (!event.target.value || event.target.value === item.assignedEmployee?.id) {
+              if (
+                !event.target.value ||
+                event.target.value === item.assignedEmployee?.id
+              ) {
                 return;
               }
               const employee = item.availableEmployees.find(
@@ -566,7 +573,10 @@ function OrganizedRow({
             value={item.assignedRoom?.id ?? ""}
             disabled={pending}
             onChange={(event) => {
-              if (!event.target.value || event.target.value === item.assignedRoom?.id) {
+              if (
+                !event.target.value ||
+                event.target.value === item.assignedRoom?.id
+              ) {
                 return;
               }
               const room = item.availableRooms.find(

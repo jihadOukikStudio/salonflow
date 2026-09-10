@@ -289,10 +289,10 @@ describe("getOrganizationQueue availability", () => {
       context.room1.id,
     );
   });
-  it("compte une prestation une seule fois même si employée et salle manquent", async () => {
+  it("compte séparément les décisions employée et salle manquantes", async () => {
     const context = await createContext();
 
-    expect(await getOrganizationIssueCount(context.salon.id)).toBe(1);
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(2);
 
     await testPrisma.appointmentService.update({
       where: { id: context.queueService.id },

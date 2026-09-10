@@ -41,7 +41,7 @@ test.describe("Phase 12 — permissions de navigation", () => {
     await expect(page.locator('a[href="/appointments/new"]')).toHaveCount(0);
 
     await expect(
-      page.getByRole("link", { name: "À organiser", exact: true }),
+      page.getByRole("link", { name: "Organisation", exact: true }),
     ).toBeVisible();
 
     const planningViews = page.getByRole("navigation", {

@@ -294,7 +294,7 @@ function NowLine({ top, anchorId }: { top: number; anchorId?: string }) {
 }
 
 function AppointmentCard({ item }: { item: PositionedAppointment }) {
-  const { appointment, lane, laneCount } = item;
+  const { appointment, lane } = item;
   const top = Math.max(0, topFor(appointment.scheduledStart));
   const height = Math.min(
     heightFor(appointment.scheduledStart, appointment.scheduledEnd),

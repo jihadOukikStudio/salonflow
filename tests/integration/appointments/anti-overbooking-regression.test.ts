@@ -255,7 +255,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
 
       const result = await createAppointment(c.adminUser, {
         clientId: client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [{ serviceId: c.services.s30.id }],
       });
 
@@ -271,13 +271,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: existingClient.id,
-        start: "2026-09-10T11:30:00.000Z",
+        start: "2099-09-10T11:30:00.000Z",
         duration: 60,
       });
 
       const oneAndTwo = await feasibility(
         c.salon.id,
-        "2026-09-10T10:00:00.000Z",
+        "2099-09-10T10:00:00.000Z",
         [c.services.s30.id, c.services.s45.id],
       );
       expect(oneAndTwo.canCreate).toBe(true);
@@ -285,7 +285,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
 
       const withThird = await feasibility(
         c.salon.id,
-        "2026-09-10T10:00:00.000Z",
+        "2099-09-10T10:00:00.000Z",
         [c.services.s30.id, c.services.s45.id, c.services.s60.id],
       );
       expect(withThird.canCreate).toBe(false);
@@ -293,7 +293,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
 
       const withFourthInstead = await feasibility(
         c.salon.id,
-        "2026-09-10T10:00:00.000Z",
+        "2099-09-10T10:00:00.000Z",
         [c.services.s30.id, c.services.s45.id, c.services.s15.id],
       );
       expect(withFourthInstead.canCreate).toBe(true);
@@ -307,11 +307,11 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T11:00:00.000Z",
+        start: "2099-09-10T11:00:00.000Z",
         duration: 60,
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:00:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:00:00.000Z", [
         c.services.s90.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -324,15 +324,15 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T11:00:00.000Z",
+        start: "2099-09-10T11:00:00.000Z",
         duration: 60,
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.s30.id,
       ]);
       expect(result.canCreate).toBe(true);
-      expect(result.scheduledEnd).toBe("2026-09-10T11:00:00.000Z");
+      expect(result.scheduledEnd).toBe("2099-09-10T11:00:00.000Z");
     });
 
     it("bloque un chevauchement d'une minute", async () => {
@@ -342,7 +342,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T11:00:00.000Z",
+        start: "2099-09-10T11:00:00.000Z",
         duration: 60,
       });
 
@@ -350,7 +350,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         name: "31 minutes",
         duration: 31,
       });
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         service31.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -365,13 +365,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: existingClient.id,
-        start: "2026-09-10T10:30:00.000Z",
+        start: "2099-09-10T10:30:00.000Z",
         duration: 60,
       });
 
       const created = await createAppointment(c.adminUser, {
         clientId: newClient.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [{ serviceId: c.services.s60.id, durationMinutes: 15 }],
       });
 
@@ -387,12 +387,12 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
         assignedEmployeeId: null,
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.s30.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -406,13 +406,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         data: {
           employeeId: employee.id,
           type: "ABSENCE",
-          startAt: new Date("2026-09-10T09:00:00.000Z"),
-          endAt: new Date("2026-09-10T12:00:00.000Z"),
+          startAt: new Date("2099-09-10T09:00:00.000Z"),
+          endAt: new Date("2099-09-10T12:00:00.000Z"),
           createdByUserId: c.admin.id,
         },
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:00:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:00:00.000Z", [
         c.services.s30.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -428,15 +428,15 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           data: {
             employeeId: employee.id,
             type,
-            startAt: new Date("2026-09-10T10:15:00.000Z"),
-            endAt: new Date("2026-09-10T10:45:00.000Z"),
+            startAt: new Date("2099-09-10T10:15:00.000Z"),
+            endAt: new Date("2099-09-10T10:45:00.000Z"),
             createdByUserId: c.admin.id,
           },
         });
 
         const result = await feasibility(
           c.salon.id,
-          "2026-09-10T10:00:00.000Z",
+          "2099-09-10T10:00:00.000Z",
           [c.services.s60.id],
         );
         expect(result.canCreate).toBe(false);
@@ -450,13 +450,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         data: {
           employeeId: employee.id,
           type: "ABSENCE",
-          startAt: new Date("2026-09-10T09:00:00.000Z"),
-          endAt: new Date("2026-09-10T12:00:00.000Z"),
+          startAt: new Date("2099-09-10T09:00:00.000Z"),
+          endAt: new Date("2099-09-10T12:00:00.000Z"),
           createdByUserId: c.admin.id,
         },
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:00:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:00:00.000Z", [
         c.services.s30.id,
       ]);
       expect(result.canCreate).toBe(true);
@@ -471,18 +471,18 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: clientA.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
       });
       await createStoredAppointment({
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: clientB.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:15:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:15:00.000Z", [
         c.services.s30.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -498,13 +498,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
         roomId: hamam.id,
         requiredRoomType: "HAMAM",
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.hamam60.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -525,13 +525,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
         roomId: hamam.id,
         requiredRoomType: "HAMAM",
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.hamam60.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -549,13 +549,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
         roomId: first.id,
         requiredRoomType: "TREATMENT_ROOM",
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.treatment30.id,
       ]);
       expect(result.canCreate).toBe(true);
@@ -578,14 +578,14 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           salonId: c.salon.id,
           userId: c.admin.id,
           clientId: client.id,
-          start: "2026-09-10T10:00:00.000Z",
+          start: "2099-09-10T10:00:00.000Z",
           duration: 60,
           roomId: room.id,
           requiredRoomType: "TREATMENT_ROOM",
         });
       }
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:30:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:30:00.000Z", [
         c.services.treatment30.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -597,14 +597,14 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
       await testPrisma.roomUnavailability.create({
         data: {
           roomId: room.id,
-          startAt: new Date("2026-09-10T10:15:00.000Z"),
-          endAt: new Date("2026-09-10T10:45:00.000Z"),
+          startAt: new Date("2099-09-10T10:15:00.000Z"),
+          endAt: new Date("2099-09-10T10:45:00.000Z"),
           reason: "Maintenance",
           createdByUserId: c.admin.id,
         },
       });
 
-      const result = await feasibility(c.salon.id, "2026-09-10T10:00:00.000Z", [
+      const result = await feasibility(c.salon.id, "2099-09-10T10:00:00.000Z", [
         c.services.treatment30.id,
       ]);
       expect(result.canCreate).toBe(false);
@@ -621,14 +621,14 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           salonId: c.salon.id,
           userId: c.admin.id,
           clientId: client.id,
-          start: "2026-09-10T10:00:00.000Z",
+          start: "2099-09-10T10:00:00.000Z",
           duration: 60,
           status,
         });
 
         const result = await feasibility(
           c.salon.id,
-          "2026-09-10T10:30:00.000Z",
+          "2099-09-10T10:30:00.000Z",
           [c.services.s30.id],
         );
         expect(result.canCreate).toBe(true);
@@ -644,7 +644,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
       });
 
@@ -663,7 +663,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
         status: "IN_PROGRESS",
       });
@@ -684,7 +684,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: currentClient.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
         status: "IN_PROGRESS",
         assignedEmployeeId: employee.id,
@@ -693,7 +693,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: nextClient.id,
-        start: "2026-09-10T10:30:00.000Z",
+        start: "2099-09-10T10:30:00.000Z",
         duration: 60,
         assignedEmployeeId: employee.id,
       });
@@ -715,7 +715,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: currentClient.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
         status: "IN_PROGRESS",
       });
@@ -723,7 +723,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: otherClient.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
         roomId: room.id,
         requiredRoomType: "TREATMENT_ROOM",
@@ -743,7 +743,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
         status: "COMPLETED",
       });
@@ -765,7 +765,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
         status: "COMPLETED",
       });
@@ -798,7 +798,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           salonId: c.salon.id,
           userId: c.admin.id,
           clientId: client.id,
-          start: "2026-09-10T10:00:00.000Z",
+          start: "2099-09-10T10:00:00.000Z",
           duration: 30,
           status,
         });
@@ -822,12 +822,12 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
       const results = await Promise.allSettled([
         createAppointment(c.adminUser, {
           clientId: clientA.id,
-          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+          scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
           services: [{ serviceId: c.services.s30.id }],
         }),
         createAppointment(c.adminUser, {
           clientId: clientB.id,
-          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+          scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
           services: [{ serviceId: c.services.s30.id }],
         }),
       ]);
@@ -850,7 +850,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
       });
 
@@ -883,13 +883,13 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: salonA.salon.id,
         userId: salonA.admin.id,
         clientId: clientA.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 60,
       });
 
       const result = await feasibility(
         salonB.salon.id,
-        "2026-09-10T10:30:00.000Z",
+        "2099-09-10T10:30:00.000Z",
         [salonB.services.s30.id],
       );
       expect(result.canCreate).toBe(true);
@@ -903,7 +903,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: salonA.salon.id,
         userId: salonA.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
       });
 
@@ -921,7 +921,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
       await expect(
         createAppointment(c.responsibleUser, {
           clientId: client.id,
-          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+          scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
           services: [{ serviceId: c.services.s30.id }],
         }),
       ).resolves.toBeDefined();
@@ -933,7 +933,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
       await expect(
         createAppointment(c.standardUser, {
           clientId: client.id,
-          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+          scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
           services: [{ serviceId: c.services.s30.id }],
         }),
       ).rejects.toBeInstanceOf(PermissionDeniedError);
@@ -946,7 +946,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T10:00:00.000Z",
+        start: "2099-09-10T10:00:00.000Z",
         duration: 30,
       });
 
@@ -968,7 +968,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T09:00:00.000Z",
+        start: "2099-09-10T09:00:00.000Z",
         duration: 60,
         assignedEmployeeId: employee.id,
       });
@@ -978,7 +978,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           validateEmployeeAvailability(tx, {
             salonId: c.salon.id,
             employeeId: employee.id,
-            scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+            scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
             estimatedDurationMinutes: 60,
           }),
         ),
@@ -993,7 +993,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
         salonId: c.salon.id,
         userId: c.admin.id,
         clientId: client.id,
-        start: "2026-09-10T09:00:00.000Z",
+        start: "2099-09-10T09:00:00.000Z",
         duration: 60,
         roomId: room.id,
         requiredRoomType: "TREATMENT_ROOM",
@@ -1004,7 +1004,7 @@ describe("Phase 11.2.1 — anti-surbooking regression suite", () => {
           validateRoomAvailability(tx, {
             salonId: c.salon.id,
             roomId: room.id,
-            scheduledStart: new Date("2026-09-10T09:59:00.000Z"),
+            scheduledStart: new Date("2099-09-10T09:59:00.000Z"),
             estimatedDurationMinutes: 30,
             requiredRoomType: "TREATMENT_ROOM",
           }),

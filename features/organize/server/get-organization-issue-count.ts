@@ -1,3 +1,4 @@
+import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/server/db/prisma";
 
 const ORGANIZATION_HORIZON_DAYS = 14;
@@ -8,9 +9,9 @@ export async function getOrganizationIssueCount(salonId: string) {
     now.getTime() + ORGANIZATION_HORIZON_DAYS * 24 * 60 * 60 * 1000,
   );
 
-  const appointmentScope = {
+  const appointmentScope: Prisma.AppointmentWhereInput = {
     salonId,
-    status: { in: ["PLANNED", "IN_PROGRESS"] as const },
+    status: { in: ["PLANNED", "IN_PROGRESS"] },
     scheduledStart: { lte: horizon },
   };
 
@@ -21,6 +22,7 @@ export async function getOrganizationIssueCount(salonId: string) {
         assignedEmployeeId: null,
       },
     }),
+
     prisma.appointmentService.count({
       where: {
         appointment: appointmentScope,
@@ -30,7 +32,5 @@ export async function getOrganizationIssueCount(salonId: string) {
     }),
   ]);
 
-  // Le badge représente des décisions à prendre.
-  // Une prestation qui manque à la fois d'employée et de salle compte donc 2.
   return missingEmployeeCount + missingRoomCount;
 }

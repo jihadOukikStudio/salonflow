@@ -109,7 +109,7 @@ describe("createAppointment", () => {
 
     const appointment = await createAppointment(context.currentUser, {
       clientId: context.client.id,
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
       services: [
         {
           serviceId: context.service.id,
@@ -133,7 +133,7 @@ describe("createAppointment", () => {
 
     const appointment = await createAppointment(context.currentUser, {
       clientId: context.client.id,
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
       services: [
         {
           serviceId: context.service.id,
@@ -153,7 +153,7 @@ describe("createAppointment", () => {
 
     const appointment = await createAppointment(context.currentUser, {
       clientId: context.client.id,
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
       services: [
         {
           serviceId: context.service.id,
@@ -181,7 +181,7 @@ describe("createAppointment", () => {
 
     const appointment = await createAppointment(context.currentUser, {
       clientId: context.client.id,
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
       services: [
         {
           serviceId: context.service.id,
@@ -201,7 +201,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: context.service.id,
@@ -221,7 +221,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: context.service.id,
@@ -245,7 +245,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(salonA.currentUser, {
         clientId: salonB.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: salonA.service.id,
@@ -269,7 +269,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(salonA.currentUser, {
         clientId: salonA.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: salonB.service.id,
@@ -296,7 +296,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: context.service.id,
@@ -323,7 +323,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: context.service.id,
@@ -341,7 +341,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [],
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -364,7 +364,7 @@ describe("createAppointment", () => {
     await expect(
       createAppointment(context.currentUser, {
         clientId: context.client.id,
-        scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+        scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
         services: [
           {
             serviceId: context.service.id,
@@ -384,7 +384,7 @@ describe("createAppointment", () => {
       createAppointment(context.currentUser, {
         clientId: context.client.id,
         scheduledStart: new Date(
-          casablancaLocalDateTimeToIso("2026-09-10", "09:45"),
+          casablancaLocalDateTimeToIso("2099-09-10", "09:45"),
         ),
         services: [{ serviceId: context.service.id }],
       }),
@@ -402,7 +402,7 @@ describe("createAppointment", () => {
     const appointment = await createAppointment(context.currentUser, {
       clientId: context.client.id,
       scheduledStart: new Date(
-        casablancaLocalDateTimeToIso("2026-09-10", "20:00"),
+        casablancaLocalDateTimeToIso("2099-09-10", "20:00"),
       ),
       services: [{ serviceId: context.service.id }],
     });
@@ -422,7 +422,7 @@ describe("createAppointment", () => {
       createAppointment(context.currentUser, {
         clientId: context.client.id,
         scheduledStart: new Date(
-          casablancaLocalDateTimeToIso("2026-09-10", "20:15"),
+          casablancaLocalDateTimeToIso("2099-09-10", "20:15"),
         ),
         services: [{ serviceId: context.service.id }],
       }),
@@ -436,7 +436,7 @@ describe("createAppointment", () => {
       createAppointment(context.currentUser, {
         clientId: context.client.id,
         scheduledStart: new Date(
-          casablancaLocalDateTimeToIso("2026-09-10", "21:15"),
+          casablancaLocalDateTimeToIso("2099-09-10", "21:15"),
         ),
         services: [{ serviceId: context.service.id }],
       }),
@@ -450,7 +450,7 @@ describe("createAppointment", () => {
       createAppointment(context.currentUser, {
         clientId: context.client.id,
         scheduledStart: new Date(
-          casablancaLocalDateTimeToIso("2026-09-10", "10:22"),
+          casablancaLocalDateTimeToIso("2099-09-10", "10:22"),
         ),
         services: [{ serviceId: context.service.id }],
       }),

@@ -8,7 +8,7 @@ import {
 import { loginAsAdmin, loginAsEmployee } from "../helpers/auth";
 import { organizationCard } from "../helpers/ui";
 
-test.describe("Phase 12.2 — À organiser et disponibilités", () => {
+test.describe("Phase 12.2 — Organisation et disponibilités", () => {
   test("n'affiche pas une employée absente ni une salle indisponible", async ({
     page,
   }) => {
@@ -56,7 +56,7 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
     await expect(roomSelect).not.toContainText("Hamam");
   });
 
-  test("la gérante affecte une employée depuis À organiser", async ({
+  test("la gérante affecte une employée depuis Organisation", async ({
     page,
   }) => {
     const s = await createAppointmentScenario({
@@ -83,10 +83,11 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
       )
       .toBe(s.sara.id);
 
-    await expect(page.locator("body")).toContainText(/employée affectée/i);
+    await expect(card.locator("select").first()).toHaveValue(s.sara.id);
+    await expect(card).toContainText("Sara");
   });
 
-  test("la gérante affecte une salle depuis À organiser", async ({ page }) => {
+  test("la gérante affecte une salle depuis Organisation", async ({ page }) => {
     const s = await createAppointmentScenario({
       assignedEmployeeId: null,
       roomId: null,
@@ -163,7 +164,7 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
     await expect(card.getByRole("button", { name: /je prends/i })).toHaveCount(
       0,
     );
-    await expect(card).toContainText(/pas disponible/i);
+    await expect(card.locator("select").first()).not.toContainText("Amina");
   });
 
   test("une employée occupée sur un autre RDV n'est pas proposée", async ({
@@ -293,7 +294,7 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
     await expect(roomSelect).toContainText("Hamam duo");
     await expect(roomSelect).not.toContainText("Salle de soins");
   });
-  test("affiche le compteur À organiser dans la navigation et le met à jour", async ({
+  test("affiche le compteur Organisation dans la navigation et le met à jour", async ({
     page,
   }) => {
     const s = await createAppointmentScenario({
@@ -304,14 +305,41 @@ test.describe("Phase 12.2 — À organiser et disponibilités", () => {
     await loginAsAdmin(page);
     await page.goto("/planning");
 
-    await expect(page.getByLabel("1 élément à organiser")).toBeVisible();
+    // Organisation V2 compte les décisions manquantes :
+    // employée + salle = 2 points à régler.
+    await expect(page.getByLabel("2 éléments à organiser")).toBeVisible();
 
     await page.goto("/organize");
-    const card = organizationCard(page, "Soin visage E2E");
+    let card = organizationCard(page, "Soin visage E2E");
     await card.locator("select").first().selectOption(s.sara.id);
+
+    await expect(page.getByLabel("1 élément à organiser")).toBeVisible();
+
+    card = organizationCard(page, "Soin visage E2E");
     await card.locator("select").last().selectOption(s.treatmentRoom2.id);
 
-    await expect(page.getByLabel("1 élément à organiser")).toHaveCount(0);
-    await expect(page.getByText("Tout est organisé ✓")).toBeVisible();
+    await expect(page.getByLabel(/élément.*à organiser/i)).toHaveCount(0);
+
+    // Une fois les deux décisions prises, la prestation doit rester visible
+    // dans la zone "Organisé" : Organisation V2 ne la fait plus disparaître.
+    await expect
+      .poll(async () => {
+        const service = await testPrisma.appointmentService.findUnique({
+          where: { id: s.appointmentService.id },
+          select: {
+            assignedEmployeeId: true,
+            roomId: true,
+          },
+        });
+
+        return service;
+      })
+      .toEqual({
+        assignedEmployeeId: s.sara.id,
+        roomId: s.treatmentRoom2.id,
+      });
+
+    await expect(page.getByText(/organisé/i).first()).toBeVisible();
+    await expect(organizationCard(page, "Soin visage E2E")).toBeVisible();
   });
 });
