@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-const salonFlowDisplay = Cormorant_Garamond({
+const salonFlowDisplay = Playfair_Display({
   variable: "--font-salonflow-display",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#a65e70",
+  themeColor: "#3b2f2a",
   colorScheme: "light",
 };
 

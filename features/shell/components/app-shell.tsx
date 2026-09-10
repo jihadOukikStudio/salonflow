@@ -65,7 +65,7 @@ export function AppShell({
     { href: "/planning", label: "Planning", icon: CalendarDays, visible: true },
     {
       href: "/organize",
-      label: "À organiser",
+      label: "Organisation",
       icon: ClipboardList,
       visible: true,
     },

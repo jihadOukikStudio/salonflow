@@ -40,17 +40,17 @@ export function LoginSplash({ children }: { children: ReactNode }) {
           aria-label="Ouverture de SalonFlow"
         >
           <div className="flex flex-col items-center text-center">
-            <div className="sf-splash-logo rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-slate-200/80">
+            <div className="sf-splash-logo rounded-full bg-white p-2 shadow-sm ring-1 ring-slate-200">
               <SalonFlowLogo size={92} showName={false} />
             </div>
             <p className="mt-6 font-[family-name:var(--font-salonflow-display)] text-4xl font-semibold tracking-tight text-slate-950">
               SalonFlow
             </p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-violet-700">
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
               Le 7ème Sens Marrakech
             </p>
             <div
-              className="mt-8 h-1 w-24 overflow-hidden rounded-full bg-violet-100"
+              className="mt-8 h-1 w-24 overflow-hidden rounded-full bg-slate-200"
               aria-hidden="true"
             >
               <span className="sf-splash-progress block h-full rounded-full bg-violet-700" />

@@ -43,7 +43,7 @@ export function PlanningQuickNav({
     },
     {
       href: "/organize",
-      label: "À organiser",
+      label: "Organisation",
       visible: true,
       icon: ClipboardList,
       key: "organize",

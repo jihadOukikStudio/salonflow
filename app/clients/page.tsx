@@ -23,7 +23,7 @@ export default async function ClientsPage({
   const canManage = user.role === "ADMIN" || user.canManageSalon;
 
   return (
-    <main className="min-h-screen bg-[#fcf9f7]">
+    <main className="min-h-screen bg-[#fcf9f6]">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <header className="mb-6">
           <Link

@@ -5,8 +5,8 @@ import { SalonFlowLogo } from "@/features/brand/components/salonflow-logo";
 export default function LoginPage() {
   return (
     <LoginSplash>
-      <main className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
-        <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-9">
+      <main className="flex min-h-dvh items-center justify-center bg-transparent px-4 py-10">
+        <section className="w-full max-w-md rounded-[1.75rem] border border-slate-200 bg-white/95 p-8 shadow-sm backdrop-blur sm:p-9">
           <div className="mb-8">
             <SalonFlowLogo size={54} />
 

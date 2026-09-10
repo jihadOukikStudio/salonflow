@@ -150,7 +150,7 @@ export default async function PlanningPage({
         };
 
   return (
-    <main className="min-h-screen bg-[#fcf9f7] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
+    <main className="min-h-screen bg-[#fcf9f6] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
       <div className="mx-auto w-full max-w-[1700px]">
         <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0 flex-1">

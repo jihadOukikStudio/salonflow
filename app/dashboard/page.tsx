@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   const data = await getDashboard(user);
 
   return (
-    <main className="min-h-screen bg-[#fcf9f7] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
+    <main className="min-h-screen bg-[#fcf9f6] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
       <div className="mx-auto w-full max-w-[1500px]">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

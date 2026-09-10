@@ -1,8 +1,9 @@
-const CACHE_NAME = "salonflow-static-v1";
+const CACHE_NAME = "salonflow-static-v2-seance";
 const STATIC_ASSETS = [
   "/brand/salonflow-mark.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/icons/icon-maskable-512.png",
 ];
 
 self.addEventListener("install", (event) => {

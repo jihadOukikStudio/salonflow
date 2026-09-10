@@ -11,7 +11,7 @@ export default async function OrganizePage() {
   const queue = await getOrganizationQueue(user);
 
   return (
-    <main className="min-h-screen bg-[#fcf9f7]">
+    <main className="min-h-screen bg-[#fcf9f6]">
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -21,15 +21,16 @@ export default async function OrganizePage() {
             >
               ← Retour au planning
             </Link>
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-violet-600">
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-rose-500">
               SalonFlow
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
-              À organiser
+              Organisation
             </h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Prestations sans employée ou sans salle obligatoire. Urgent = dans
-              l’heure, Bientôt = dans les 4 heures.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Les points à régler et l’organisation déjà confirmée, au même
+              endroit. Vous gardez toujours la visibilité sur qui fait quoi et
+              dans quelle salle.
             </p>
           </div>
 
@@ -42,6 +43,7 @@ export default async function OrganizePage() {
             </Link>
           ) : null}
         </header>
+
         <OrganizationQueue {...queue} />
       </div>
     </main>

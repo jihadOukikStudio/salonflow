@@ -44,6 +44,8 @@ const CALENDAR_HEIGHT =
 const BOTTOM_SPACE = 20;
 const VIEWPORT_HEIGHT = CALENDAR_HEIGHT + BOTTOM_SPACE;
 const CARD_GAP = 6;
+const APPOINTMENT_CARD_WIDTH = "min(82%, 320px)";
+const APPOINTMENT_CARD_STEP_PX = 328;
 
 function casablancaParts(value: string | Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -95,7 +97,7 @@ function statusClass(status: PlanningAppointmentItem["status"]) {
   if (status === "CLOSED") {
     return "border-slate-300 bg-slate-100/95 before:bg-slate-400";
   }
-  return "border-violet-200 bg-violet-50/95 before:bg-violet-600";
+  return "border-[#ded3cb] bg-[#f7f2ed]/95 before:bg-violet-700";
 }
 
 function uniqueNames(values: Array<string | null | undefined>) {
@@ -306,8 +308,12 @@ function AppointmentCard({ item }: { item: PositionedAppointment }) {
     appointment.services.map((service) => service.room?.name),
   );
 
-  const widthPercent = 100 / laneCount;
-  const leftPercent = lane * widthPercent;
+  // Les cartes restent volontairement compactes : elles ne monopolisent jamais
+  // toute la largeur du planning. Sur mobile, une carte fait au maximum 82 %
+  // de la zone utile ; sur écran large elle est plafonnée à 320 px.
+  // Les chevauchements s'alignent côte à côte et peuvent déborder
+  // horizontalement plutôt que d'être compressés jusqu'à devenir illisibles.
+  const left = 8 + lane * APPOINTMENT_CARD_STEP_PX;
 
   return (
     <Link
@@ -318,8 +324,8 @@ function AppointmentCard({ item }: { item: PositionedAppointment }) {
       style={{
         top,
         height,
-        left: `calc(${leftPercent}% + ${lane === 0 ? 8 : 4}px)`,
-        width: `calc(${widthPercent}% - 12px)`,
+        left,
+        width: APPOINTMENT_CARD_WIDTH,
       }}
     >
       <div className="h-full min-w-0 overflow-y-auto px-3 py-2.5 pl-4 [scrollbar-width:thin]">
@@ -396,7 +402,7 @@ function AppointmentsCalendar({
 
   return (
     <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="min-w-[680px] md:min-w-0">
+      <div className="min-w-0">
         <div className="grid grid-cols-[82px_minmax(0,1fr)] border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="border-r border-slate-200 px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
             Heure
@@ -417,7 +423,7 @@ function AppointmentsCalendar({
           <TimeRail />
 
           <div
-            className="relative min-w-0 bg-white"
+            className="relative min-w-0 overflow-visible bg-white"
             style={{ height: VIEWPORT_HEIGHT }}
           >
             <TimeGrid />
@@ -446,7 +452,7 @@ function AppointmentsCalendar({
                         timeValue,
                       )}`}
                       aria-label={`Créer un rendez-vous à ${timeValue}`}
-                      className="absolute inset-x-0 z-[1] transition hover:bg-violet-50/50 focus-visible:bg-violet-50/70 focus-visible:outline-none"
+                      className="absolute inset-x-0 z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-300"
                       style={{
                         top: ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT / 4,
@@ -460,7 +466,7 @@ function AppointmentsCalendar({
             ))}
             {showNow ? <NowLine top={nowTop} anchorId="planning-now" /> : null}
             <div
-              className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
+              className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f6]/70"
               style={{ top: CALENDAR_HEIGHT, height: BOTTOM_SPACE }}
             >
               <span className="absolute right-4 top-3 text-[11px] font-medium text-slate-400">
@@ -565,12 +571,12 @@ function ResourceCalendar({
       >
         <div style={{ minWidth }}>
           <div
-            className="sticky top-0 z-40 grid border-b border-slate-200 bg-[#fffaf8]/98 shadow-[0_2px_10px_rgba(48,38,41,0.04)] backdrop-blur"
+            className="sticky top-0 z-40 grid border-b border-slate-200 bg-[#fdfbf9]/98 shadow-[0_2px_10px_rgba(48,38,41,0.04)] backdrop-blur"
             style={{
               gridTemplateColumns: `92px repeat(${columns.length}, minmax(230px, 1fr))`,
             }}
           >
-            <div className="sticky left-0 z-50 flex items-center border-r border-slate-200 bg-[#fffaf8] px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="sticky left-0 z-50 flex items-center border-r border-slate-200 bg-[#fdfbf9] px-3 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Heure
             </div>
 
@@ -693,7 +699,7 @@ function ResourceCalendar({
                 ) : null}
 
                 <div
-                  className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f7]/70"
+                  className="absolute inset-x-0 border-t border-slate-200 bg-[#fcf9f6]/70"
                   style={{ top: CALENDAR_HEIGHT, height: BOTTOM_SPACE }}
                 />
               </div>

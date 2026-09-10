@@ -1,9 +1,7 @@
 import type { CurrentUser } from "@/server/permissions";
 
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
-
 import { prisma } from "@/server/db/prisma";
-
 import {
   getAppointmentEnd,
   intervalsOverlap,
@@ -24,6 +22,8 @@ export type OrganizationQueueItem = {
   requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
   employeeMissing: boolean;
   roomMissing: boolean;
+  assignedEmployee: AvailableResource | null;
+  assignedRoom: AvailableResource | null;
   urgency: "URGENT" | "SOON" | "LATER";
   availableEmployees: AvailableResource[];
   availableRooms: AvailableResource[];
@@ -42,6 +42,9 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
 
   const [services, employees, rooms, currentEmployee, skillModeMarker] =
     await Promise.all([
+      // Important UX V2:
+      // on charge aussi les prestations déjà organisées pour que la décision
+      // prise ne disparaisse pas immédiatement après l'affectation.
       prisma.appointmentService.findMany({
         where: {
           appointment: {
@@ -49,15 +52,6 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
             status: { in: ["PLANNED", "IN_PROGRESS"] },
             scheduledStart: { lte: horizon },
           },
-          OR: [
-            { assignedEmployeeId: null },
-            {
-              AND: [
-                { requiredRoomTypeSnapshot: { not: null } },
-                { roomId: null },
-              ],
-            },
-          ],
         },
         orderBy: { appointment: { scheduledStart: "asc" } },
         select: {
@@ -67,6 +61,10 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
           requiredRoomTypeSnapshot: true,
           assignedEmployeeId: true,
           roomId: true,
+          assignedEmployee: {
+            select: { id: true, firstName: true, lastName: true },
+          },
+          room: { select: { id: true, name: true } },
           appointment: {
             select: {
               id: true,
@@ -144,11 +142,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
             startAt: { lt: rangeEnd },
             endAt: { gt: rangeStart },
           },
-          select: {
-            employeeId: true,
-            startAt: true,
-            endAt: true,
-          },
+          select: { employeeId: true, startAt: true, endAt: true },
         })
       : Promise.resolve([]),
 
@@ -159,11 +153,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
             startAt: { lt: rangeEnd },
             endAt: { gt: rangeStart },
           },
-          select: {
-            roomId: true,
-            startAt: true,
-            endAt: true,
-          },
+          select: { roomId: true, startAt: true, endAt: true },
         })
       : Promise.resolve([]),
 
@@ -178,10 +168,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
         scheduledStart: true,
         estimatedDurationMinutes: true,
         services: {
-          select: {
-            assignedEmployeeId: true,
-            roomId: true,
-          },
+          select: { assignedEmployeeId: true, roomId: true },
         },
       },
     }),
@@ -190,8 +177,8 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
   const employeeNames = new Map(
     employees.map((employee) => [employee.id, fullName(employee)] as const),
   );
-
   const roomNames = new Map(rooms.map((room) => [room.id, room.name] as const));
+  const skillsModeEnabled = skillModeMarker !== null;
 
   const items: OrganizationQueueItem[] = services.map((service) => {
     const startAt = service.appointment.scheduledStart;
@@ -199,7 +186,6 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
       startAt,
       service.appointment.estimatedDurationMinutes,
     );
-
     const interval = { startAt, endAt };
 
     const unavailableEmployeeIds = new Set(
@@ -225,9 +211,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
     );
 
     for (const candidate of appointmentCandidates) {
-      if (candidate.id === service.appointment.id) {
-        continue;
-      }
+      if (candidate.id === service.appointment.id) continue;
 
       const candidateInterval = {
         startAt: candidate.scheduledStart,
@@ -237,26 +221,27 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
         ),
       };
 
-      if (!intervalsOverlap(interval, candidateInterval)) {
-        continue;
-      }
+      if (!intervalsOverlap(interval, candidateInterval)) continue;
 
       for (const candidateService of candidate.services) {
         if (candidateService.assignedEmployeeId) {
           unavailableEmployeeIds.add(candidateService.assignedEmployeeId);
         }
-
         if (candidateService.roomId) {
           unavailableRoomIds.add(candidateService.roomId);
         }
       }
     }
 
-    const skillsModeEnabled = skillModeMarker !== null;
-
     const availableEmployees = employees
       .filter((employee) => {
-        if (unavailableEmployeeIds.has(employee.id)) return false;
+        // La ressource déjà affectée doit rester sélectionnable lors d'une correction.
+        if (
+          unavailableEmployeeIds.has(employee.id) &&
+          employee.id !== service.assignedEmployeeId
+        ) {
+          return false;
+        }
         if (!service.serviceId || !skillsModeEnabled) return true;
         return employee.skills.some(
           (skill) => skill.serviceId === service.serviceId,
@@ -272,7 +257,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
           .filter(
             (room) =>
               room.type === service.requiredRoomTypeSnapshot &&
-              !unavailableRoomIds.has(room.id),
+              (!unavailableRoomIds.has(room.id) || room.id === service.roomId),
           )
           .map((room) => ({
             id: room.id,
@@ -281,7 +266,6 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
       : [];
 
     const diffMinutes = (startAt.getTime() - now.getTime()) / 60000;
-
     const urgency: OrganizationQueueItem["urgency"] =
       diffMinutes <= 60 ? "URGENT" : diffMinutes <= 240 ? "SOON" : "LATER";
 
@@ -296,11 +280,21 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
       employeeMissing: service.assignedEmployeeId === null,
       roomMissing:
         service.requiredRoomTypeSnapshot !== null && service.roomId === null,
+      assignedEmployee: service.assignedEmployee
+        ? {
+            id: service.assignedEmployee.id,
+            name: fullName(service.assignedEmployee),
+          }
+        : null,
+      assignedRoom: service.room
+        ? { id: service.room.id, name: service.room.name }
+        : null,
       urgency,
       availableEmployees,
       availableRooms,
       currentEmployeeCanTake:
         currentEmployee !== null &&
+        service.assignedEmployeeId === null &&
         availableEmployees.some(
           (employee) => employee.id === currentEmployee.id,
         ),

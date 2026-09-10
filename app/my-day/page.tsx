@@ -15,7 +15,7 @@ export default async function MyDayPage() {
   if (!data) redirect("/planning");
 
   return (
-    <main className="min-h-screen bg-[#fcf9f7] px-3 py-4 sm:px-6 sm:py-7">
+    <main className="min-h-screen bg-[#fcf9f6] px-3 py-4 sm:px-6 sm:py-7">
       <div className="mx-auto w-full max-w-3xl">
         <MyDayClient data={data} />
       </div>

@@ -378,9 +378,9 @@ export function NewAppointmentForm({
     return configured
       .map(
         (item) =>
-          `${item.serviceName} : ${item.qualifiedAvailable}/${item.qualifiedActive} employée${item.qualifiedActive > 1 ? "s" : ""} compétente${item.qualifiedActive > 1 ? "s" : ""} disponible${item.qualifiedAvailable > 1 ? "s" : ""}`,
+          `✓ ${item.serviceName} : ${item.qualifiedAvailable}/${item.qualifiedActive} employée${item.qualifiedActive > 1 ? "s" : ""} compétente${item.qualifiedActive > 1 ? "s" : ""} disponible${item.qualifiedAvailable > 1 ? "s" : ""}`,
       )
-      .join(" · ");
+      .join("\n");
   }
 
   function formatBlockedReason(blockers: string[]) {
@@ -733,7 +733,7 @@ export function NewAppointmentForm({
 
       setCapacityMessage({
         level: feasibility.level,
-        text: `Capacité confirmée avant récapitulatif.${skillSummary ? ` ${skillSummary}.` : ""}${feasibility.warnings.length ? ` ${feasibility.warnings.join(" ")}` : ""}`,
+        text: `Disponibilités confirmées${skillSummary ? `\n${skillSummary}` : ""}${feasibility.warnings.length ? `\n${feasibility.warnings.join("\n")}` : ""}`,
       });
       setStep(4);
     });
@@ -1327,12 +1327,11 @@ export function NewAppointmentForm({
 
               {capacityMessage && capacityMessage.level !== "BLOCKED" ? (
                 <div
-                  className={`mt-4 rounded-2xl border p-4 text-sm font-semibold ${capacityMessage.level === "WARNING" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-emerald-300 bg-emerald-50 text-emerald-900"}`}
+                  className={`mt-4 whitespace-pre-line rounded-2xl border p-4 text-sm font-semibold leading-6 ${capacityMessage.level === "WARNING" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-emerald-300 bg-emerald-50 text-emerald-900"}`}
                 >
                   {capacityMessage.text}
-                  <span className="mt-1 block text-xs font-medium">
-                    SalonFlow revalidera encore cette capacité dans la
-                    transaction finale avant création.
+                  <span className="mt-2 block border-t border-current/15 pt-2 text-xs font-medium opacity-80">
+                    ✓ Les disponibilités seront revérifiées à la création du rendez-vous.
                   </span>
                 </div>
               ) : null}

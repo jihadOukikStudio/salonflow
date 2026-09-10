@@ -1,38 +1,54 @@
 @import "tailwindcss";
 
 /*
- * SalonFlow — Design System 12.5.1
- * Direction: Rose Nude Luxury
+ * SalonFlow — "Séance" visual direction
+ * Reference: warm editorial / creamy luxury / dark espresso / coral accent.
  *
- * The existing screens intentionally keep using Tailwind semantic utility
- * names (slate / violet / emerald / amber / red). We remap those tokens here
- * so the whole application adopts the new identity without changing business
- * components, permissions or selectors.
+ * Existing components intentionally keep Tailwind semantic utility names.
+ * We remap the palette here so the entire product stays coherent without
+ * touching business rules, permissions, forms, selectors or tests.
  */
 :root {
-  --background: #fcf9f7;
-  --foreground: #302629;
+  --background: #fcf9f6;
+  --foreground: #2f2a26;
 
-  --sf-ivory: #fcf9f7;
+  --sf-canvas: #fcf9f6;
+  --sf-canvas-soft: #f7f2ed;
   --sf-surface: #ffffff;
-  --sf-rose: #a65e70;
-  --sf-rose-deep: #874858;
-  --sf-rose-soft: #f6e9ed;
-  --sf-rose-mist: #fbf3f5;
-  --sf-nude: #e7d6cf;
-  --sf-champagne: #c1a06b;
-  --sf-ink: #302629;
-  --sf-muted: #76686c;
-  --sf-subtle: #a09295;
-  --sf-border: #eadfe0;
-  --sf-success: #557866;
-  --sf-warning: #b8864b;
-  --sf-danger: #b9505b;
+  --sf-surface-warm: #fdfbf9;
 
-  --sf-shadow-sm:
-    0 1px 2px rgb(64 39 47 / 0.04), 0 8px 24px rgb(91 53 64 / 0.04);
+  --sf-primary: #3b2f2a;
+  --sf-primary-hover: #2e241f;
+  --sf-primary-soft: #eee7e1;
+
+  --sf-ink: #2f2a26;
+  --sf-muted: #7a6f66;
+  --sf-subtle: #a99d94;
+  --sf-border: #eae3dc;
+
+  --sf-accent: #d98b7d;
+  --sf-accent-soft: #f7e7e2;
+
+  --sf-success: #6f8f7a;
+  --sf-success-soft: #edf5f0;
+  --sf-warning: #c58e57;
+  --sf-warning-soft: #fff3e6;
+  --sf-info: #7aa6c2;
+  --sf-info-soft: #edf5fb;
+  --sf-danger: #c76568;
+  --sf-danger-soft: #fdecee;
+
+  --sf-radius-sm: 10px;
+  --sf-radius-md: 14px;
+  --sf-radius-lg: 20px;
+  --sf-radius-xl: 26px;
+
+  --sf-shadow-soft:
+    0 1px 2px rgb(47 42 38 / 0.025),
+    0 10px 28px rgb(59 47 42 / 0.045);
   --sf-shadow-card:
-    0 1px 2px rgb(64 39 47 / 0.04), 0 14px 38px rgb(91 53 64 / 0.055);
+    0 1px 2px rgb(47 42 38 / 0.035),
+    0 18px 44px rgb(59 47 42 / 0.06);
 }
 
 @theme inline {
@@ -41,65 +57,102 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Warm neutral scale — replaces the cold slate look throughout V1. */
-  --color-slate-50: #fcf9f7;
-  --color-slate-100: #f8f2f0;
-  --color-slate-200: #eadfe0;
-  --color-slate-300: #ddcecf;
-  --color-slate-400: #b9aaad;
-  --color-slate-500: #928487;
-  --color-slate-600: #76686c;
-  --color-slate-700: #5c4e52;
-  --color-slate-800: #44373b;
-  --color-slate-900: #382c30;
-  --color-slate-950: #302629;
+  /* Warm neutral scale */
+  --color-slate-50: #fcf9f6;
+  --color-slate-100: #f7f2ed;
+  --color-slate-200: #eae3dc;
+  --color-slate-300: #ddd4cb;
+  --color-slate-400: #b9aea5;
+  --color-slate-500: #92877e;
+  --color-slate-600: #7a6f66;
+  --color-slate-700: #61574f;
+  --color-slate-800: #473e38;
+  --color-slate-900: #382f2a;
+  --color-slate-950: #2f2a26;
 
-  /* SalonFlow signature — existing violet utilities become rose nude. */
-  --color-violet-50: #fbf3f5;
-  --color-violet-100: #f6e9ed;
-  --color-violet-200: #ebd1d8;
-  --color-violet-300: #d9adb9;
-  --color-violet-400: #c58495;
-  --color-violet-500: #b36b7e;
-  --color-violet-600: #a65e70;
-  --color-violet-700: #954f61;
-  --color-violet-800: #874858;
-  --color-violet-900: #743e4d;
-  --color-violet-950: #4d2731;
+  /*
+   * Primary controls continue using violet-* classes in existing V1 code,
+   * but the visual output is now espresso brown.
+   */
+  --color-violet-50: #f7f2ed;
+  --color-violet-100: #eee7e1;
+  --color-violet-200: #dfd4cb;
+  --color-violet-300: #c6b6aa;
+  --color-violet-400: #9b887a;
+  --color-violet-500: #6e5a4f;
+  --color-violet-600: #4c3c34;
+  --color-violet-700: #3b2f2a;
+  --color-violet-800: #2e241f;
+  --color-violet-900: #241c18;
+  --color-violet-950: #17110f;
 
-  /* Semantic states softened to stay premium and readable. */
-  --color-emerald-50: #f2f7f4;
-  --color-emerald-100: #e3eee8;
-  --color-emerald-200: #c8ddd1;
-  --color-emerald-300: #a6c6b4;
-  --color-emerald-500: #668a75;
-  --color-emerald-600: #5c806c;
-  --color-emerald-700: #557866;
-  --color-emerald-800: #456453;
-  --color-emerald-900: #385245;
-  --color-emerald-950: #26392f;
+  /* Coral accent used for delicate highlights and destructive-adjacent UI. */
+  --color-rose-50: #fff7f5;
+  --color-rose-100: #fbece8;
+  --color-rose-200: #f4d8d1;
+  --color-rose-300: #eab8ad;
+  --color-rose-400: #df9b8e;
+  --color-rose-500: #d98b7d;
+  --color-rose-600: #c87669;
+  --color-rose-700: #a95f55;
+  --color-rose-800: #864b44;
+  --color-rose-900: #6b3d38;
+  --color-rose-950: #402321;
 
-  --color-amber-50: #fcf7ee;
-  --color-amber-100: #f7ecd8;
-  --color-amber-200: #edd8ad;
-  --color-amber-300: #dfbd7c;
-  --color-amber-500: #c49a57;
-  --color-amber-600: #b8864b;
-  --color-amber-700: #996d3d;
-  --color-amber-800: #795632;
-  --color-amber-900: #62462c;
-  --color-amber-950: #3d2b1d;
+  --color-pink-50: #fff7f5;
+  --color-pink-100: #fbece8;
+  --color-pink-200: #f4d8d1;
+  --color-pink-300: #eab8ad;
+  --color-pink-500: #d98b7d;
+  --color-pink-600: #c87669;
+  --color-pink-700: #a95f55;
+  --color-pink-800: #864b44;
+  --color-pink-900: #6b3d38;
 
-  --color-red-50: #fcf2f3;
-  --color-red-100: #f8e3e6;
-  --color-red-200: #f0c9ce;
-  --color-red-300: #e4a6ae;
-  --color-red-500: #c96470;
-  --color-red-600: #b9505b;
-  --color-red-700: #a3414c;
-  --color-red-800: #883843;
-  --color-red-900: #71333c;
-  --color-red-950: #471d24;
+  /* Semantic states stay distinct and calm. */
+  --color-emerald-50: #edf5f0;
+  --color-emerald-100: #dcebe2;
+  --color-emerald-200: #c0d8c8;
+  --color-emerald-300: #9cbea8;
+  --color-emerald-500: #7b9d86;
+  --color-emerald-600: #6f8f7a;
+  --color-emerald-700: #5d7967;
+  --color-emerald-800: #4b6254;
+  --color-emerald-900: #3d5145;
+  --color-emerald-950: #29372f;
+
+  --color-amber-50: #fff8ef;
+  --color-amber-100: #fff0dc;
+  --color-amber-200: #f5d9b4;
+  --color-amber-300: #e7bb83;
+  --color-amber-500: #d39e62;
+  --color-amber-600: #c58e57;
+  --color-amber-700: #a97243;
+  --color-amber-800: #865a36;
+  --color-amber-900: #6d4a30;
+  --color-amber-950: #432d1d;
+
+  --color-red-50: #fff4f4;
+  --color-red-100: #fdecee;
+  --color-red-200: #f8d3d6;
+  --color-red-300: #efafb4;
+  --color-red-500: #d9787c;
+  --color-red-600: #c76568;
+  --color-red-700: #ab4f53;
+  --color-red-800: #8e4246;
+  --color-red-900: #763a3d;
+  --color-red-950: #481f21;
+
+  /* Soft blue used by neutral/info appointment accents. */
+  --color-blue-50: #f4f9fc;
+  --color-blue-100: #edf5fb;
+  --color-blue-200: #d7e8f3;
+  --color-blue-300: #b9d5e6;
+  --color-blue-500: #8bb2ca;
+  --color-blue-600: #7aa6c2;
+  --color-blue-700: #648ba5;
+  --color-blue-800: #527187;
+  --color-blue-900: #465f70;
 }
 
 * {
@@ -107,70 +160,143 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--sf-canvas);
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(
-      circle at 8% 0%,
-      rgb(166 94 112 / 0.055),
-      transparent 28rem
-    ),
-    radial-gradient(
-      circle at 100% 14%,
-      rgb(193 160 107 / 0.045),
-      transparent 24rem
-    ),
-    var(--background);
-  color: var(--foreground);
+    radial-gradient(circle at 7% 2%, rgb(217 139 125 / 0.085), transparent 25rem),
+    radial-gradient(circle at 97% 45%, rgb(122 166 194 / 0.08), transparent 27rem),
+    var(--sf-canvas);
+  color: var(--sf-ink);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2 {
   font-family: var(--font-salonflow-display), Georgia, "Times New Roman", serif;
   font-weight: 600;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
-::selection {
-  background: #ebd1d8;
-  color: #4d2731;
+h3 {
+  letter-spacing: -0.012em;
 }
 
-/* Refined focus treatment, accessible but less "admin-dashboard". */
+::selection {
+  background: var(--sf-accent-soft);
+  color: var(--sf-primary);
+}
+
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid rgb(166 94 112 / 0.7);
+  outline: 2px solid rgb(59 47 42 / 0.68);
   outline-offset: 2px;
 }
 
-/* Existing cards keep their utilities; these refinements make them feel richer. */
-.shadow-sm {
-  box-shadow: var(--sf-shadow-sm);
-}
-
-/* Inputs retain their current validation/disabled logic. */
 :where(input, select, textarea) {
-  accent-color: var(--sf-rose);
+  accent-color: var(--sf-primary);
 }
 
 :where(input, select, textarea)::placeholder {
   color: var(--sf-subtle);
 }
 
-/* No automatic dark theme in V1: the salon identity stays consistent. */
+.shadow-sm {
+  box-shadow: var(--sf-shadow-soft);
+}
+
+:where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button):disabled {
+  cursor: not-allowed;
+}
+
+/* Reusable premium surfaces for incremental UI work. */
+.sf-card {
+  border: 1px solid var(--sf-border);
+  border-radius: var(--sf-radius-lg);
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: var(--sf-shadow-soft);
+}
+
+.sf-button-primary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  background: var(--sf-primary);
+  padding: 0.7rem 1rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 650;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sf-button-primary:hover {
+  background: var(--sf-primary-hover);
+  box-shadow: 0 8px 20px rgb(59 47 42 / 0.13);
+}
+
+.sf-button-primary:active {
+  transform: translateY(1px);
+}
+
+.sf-button-secondary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--sf-border);
+  border-radius: 12px;
+  background: white;
+  padding: 0.7rem 1rem;
+  color: var(--sf-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sf-field {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid var(--sf-border);
+  border-radius: 12px;
+  background: white;
+  padding: 0.7rem 0.9rem;
+  color: var(--sf-ink);
+}
+
+.sf-field:focus {
+  border-color: #8b7b70;
+  box-shadow: 0 0 0 3px rgb(59 47 42 / 0.08);
+}
+
+.sf-scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.sf-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
 
 /* -------------------------------------------------------------------------- */
-/* SalonFlow — Phase 12.5.3: motion, loading and mobile finishing             */
+/* Loading / splash                                                            */
 /* -------------------------------------------------------------------------- */
 
 @keyframes sf-soft-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
+  0%, 100% {
+    opacity: 0.4;
     transform: scale(0.96);
   }
   50% {
@@ -180,22 +306,13 @@ h2 {
 }
 
 @keyframes sf-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes sf-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .sf-loading-mark {
@@ -217,104 +334,59 @@ h2 {
 .sf-skeleton {
   background: linear-gradient(
     90deg,
-    rgb(246 233 237 / 0.72) 0%,
-    rgb(255 255 255 / 0.95) 48%,
-    rgb(246 233 237 / 0.72) 100%
+    #f4eee9 0%,
+    #fff 48%,
+    #f4eee9 100%
   );
   background-size: 200% 100%;
   animation: sf-shimmer 1.8s ease-in-out infinite;
 }
 
-/* Slightly calmer transitions across interactive V1 controls. */
-:where(a, button) {
-  -webkit-tap-highlight-color: transparent;
+/* Existing login splash hooks */
+.sf-splash {
+  transition:
+    opacity 360ms ease,
+    visibility 360ms ease;
 }
 
-:where(button):disabled {
-  cursor: not-allowed;
+.sf-splash-leaving {
+  opacity: 0;
+  visibility: hidden;
 }
 
-/* Keep horizontal navigation usable on narrow phones without showing a harsh scrollbar. */
-.sf-scrollbar-hidden {
-  scrollbar-width: none;
+.sf-splash-logo {
+  animation: sf-float 2.6s ease-in-out infinite;
 }
 
-.sf-scrollbar-hidden::-webkit-scrollbar {
-  display: none;
+.sf-splash-progress {
+  width: 100%;
+  transform-origin: left;
+  animation: sf-progress 900ms ease-out both;
+}
+
+@keyframes sf-progress {
+  from { transform: scaleX(0.12); opacity: 0.6; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-loading-mark,
+  .sf-loading-dot,
+  .sf-skeleton,
+  .sf-splash-logo,
+  .sf-splash-progress {
+    animation: none !important;
+  }
 }
 
 @media (max-width: 639px) {
   body {
     background:
-      radial-gradient(
-        circle at 0% 0%,
-        rgb(166 94 112 / 0.045),
-        transparent 18rem
-      ),
-      var(--background);
+      radial-gradient(circle at 0% 0%, rgb(217 139 125 / 0.075), transparent 17rem),
+      var(--sf-canvas);
   }
 
   h1 {
-    line-height: 1.05;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* SalonFlow — PWA splash / launch identity                                   */
-/* -------------------------------------------------------------------------- */
-
-@keyframes sf-splash-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.94) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes sf-splash-progress {
-  from {
-    transform: translateX(-105%);
-  }
-  to {
-    transform: translateX(105%);
-  }
-}
-
-.sf-splash {
-  opacity: 1;
-  transition: opacity 360ms ease;
-}
-
-.sf-splash-leaving {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.sf-splash-logo {
-  animation: sf-splash-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.sf-splash-progress {
-  width: 55%;
-  animation: sf-splash-progress 900ms ease-in-out infinite;
-}
-
-@media (display-mode: standalone) {
-  body {
-    overscroll-behavior-y: none;
+    line-height: 1.06;
   }
 }
