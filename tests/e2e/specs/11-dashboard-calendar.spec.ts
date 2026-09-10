@@ -16,6 +16,23 @@ test.describe("Phase 12.6 — dashboard et calendrier", () => {
     await expect(page.getByText(/aujourd’hui/i).first()).toBeVisible();
   });
 
+  test("le dashboard propose la création rapide en haut via la popup du planning", async ({
+    page,
+  }) => {
+    await createAppointmentScenario();
+    await loginAsAdmin(page);
+    await page.goto("/dashboard");
+
+    await expect(
+      page.getByRole("heading", { name: /salon maintenant/i }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
+    await expect(page).toHaveURL(/\/planning\?new=1/);
+    await expect(
+      page.getByRole("dialog", { name: /nouveau rendez-vous/i }),
+    ).toBeVisible();
+  });
+
   test("l'employée standard est redirigée vers le planning", async ({
     page,
   }) => {

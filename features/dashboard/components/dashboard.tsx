@@ -1,12 +1,11 @@
 import Link from "next/link";
 import {
   Banknote,
-  CalendarDays,
   ChevronRight,
   CircleAlert,
   Clock3,
   DoorOpen,
-  Plus,
+  Sparkles,
   UserRound,
 } from "lucide-react";
 
@@ -20,6 +19,14 @@ function money(value: number) {
     currency: "MAD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function salonTime(value: string) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Africa/Casablanca",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function StateDot({ state }: { state: "FREE" | "BUSY" | "UNAVAILABLE" }) {
@@ -56,6 +63,89 @@ export function Dashboard({ data }: { data: AwaitedReturn }) {
             </p>
           </div>
         ))}
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-violet-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-violet-100 bg-violet-50/70 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-violet-700" strokeWidth={1.8} />
+              <h2 className="text-xl font-semibold text-slate-950">
+                Salon maintenant
+              </h2>
+            </div>
+            <p className="mt-1 text-sm text-slate-600">
+              La situation opérationnelle à {salonTime(operational.generatedAt)}
+              .
+            </p>
+          </div>
+          <Link
+            href="/planning#planning-now"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-violet-700"
+          >
+            Voir maintenant <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {operational.salonNowAppointments.length === 0 ? (
+          <div className="p-5 sm:p-6">
+            <div className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-900 ring-1 ring-emerald-100">
+              Aucun rendez-vous en cours sur le créneau actuel. Le salon est à
+              jour.
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-3 p-5 sm:p-6 lg:grid-cols-2">
+            {operational.salonNowAppointments.map((appointment) => (
+              <Link
+                key={appointment.id}
+                href={`/appointments/${appointment.id}`}
+                className="rounded-2xl border border-slate-200 p-4 transition hover:border-violet-200 hover:bg-violet-50/40"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-slate-950">
+                      {appointment.client.name}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-violet-700">
+                      {formatPlanningTime(appointment.scheduledStart)} →{" "}
+                      {formatPlanningTime(appointment.scheduledEnd)}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      appointment.status === "IN_PROGRESS"
+                        ? "bg-violet-100 text-violet-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {appointment.status === "IN_PROGRESS"
+                      ? "En cours"
+                      : "À vérifier"}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  {appointment.services.map((service) => (
+                    <p key={service.id} className="text-sm text-slate-600">
+                      <span className="font-medium text-slate-800">
+                        {service.name}
+                      </span>
+                      {service.assignedEmployee
+                        ? ` · ${service.assignedEmployee.name}`
+                        : " · Employée à affecter"}
+                      {service.room ? ` · ${service.room.name}` : ""}
+                    </p>
+                  ))}
+                </div>
+                {appointment.attention ? (
+                  <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                    {appointment.attention}
+                  </p>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {finance ? (
@@ -228,35 +318,56 @@ export function Dashboard({ data }: { data: AwaitedReturn }) {
 
         <aside className="space-y-3">
           {operational.organizationIssues > 0 ? (
-            <Link
-              href="/organize"
-              className="block rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm"
-            >
+            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
               <div className="flex items-start gap-3">
-                <CircleAlert className="mt-0.5 h-5 w-5 text-amber-700" />
-                <div>
-                  <p className="font-semibold text-amber-950">À organiser</p>
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-amber-950">À surveiller</p>
                   <p className="mt-1 text-sm text-amber-800">
-                    {operational.organizationIssues} élément
-                    {operational.organizationIssues > 1 ? "s" : ""} nécessitent
-                    une action.
+                    {operational.organizationIssues} prestation
+                    {operational.organizationIssues > 1 ? "s" : ""} à organiser.
                   </p>
+                  <div className="mt-3 space-y-2">
+                    {operational.organizationAlerts.map((alert) => (
+                      <Link
+                        key={alert.serviceId}
+                        href={`/appointments/${alert.appointmentId}`}
+                        className="block rounded-xl bg-white/70 px-3 py-2 text-sm text-amber-950 ring-1 ring-amber-200 transition hover:bg-white"
+                      >
+                        <span className="font-semibold">
+                          {formatPlanningTime(alert.scheduledStart)} ·{" "}
+                          {alert.clientName}
+                        </span>
+                        <span className="block text-xs text-amber-800">
+                          {alert.serviceName} ·{" "}
+                          {[
+                            alert.missingEmployee ? "employée" : null,
+                            alert.missingRoom ? "salle" : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" + ")}{" "}
+                          à affecter
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/organize"
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-amber-950"
+                  >
+                    Tout organiser <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </div>
               </div>
-            </Link>
-          ) : null}
-          <Link
-            href="/appointments/new"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 font-semibold text-white shadow-sm transition hover:bg-violet-700"
-          >
-            <Plus className="h-4 w-4" /> Nouveau rendez-vous
-          </Link>
-          <Link
-            href="/planning"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
-          >
-            <CalendarDays className="h-4 w-4" /> Ouvrir le planning
-          </Link>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900 shadow-sm">
+              <p className="font-semibold">Tout est organisé ✓</p>
+              <p className="mt-1 text-emerald-800">
+                Aucune affectation ne demande votre attention.
+              </p>
+            </div>
+          )}
         </aside>
       </section>
     </div>

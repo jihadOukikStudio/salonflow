@@ -83,6 +83,31 @@ export async function getDashboard(currentUser: CurrentUser) {
     .filter((appointment) => new Date(appointment.scheduledStart) > now)
     .slice(0, 4);
 
+  const salonNowAppointments = activeAppointments.map((appointment) => ({
+    ...appointment,
+    attention:
+      appointment.status === "PLANNED"
+        ? "Le rendez-vous a commencé selon le planning mais n’est pas encore marqué en cours."
+        : null,
+  }));
+
+  const organizationAlerts = planning.appointments
+    .flatMap((appointment) =>
+      appointment.services
+        .filter((service) => service.needsOrganization)
+        .map((service) => ({
+          appointmentId: appointment.id,
+          serviceId: service.id,
+          clientName: appointment.client.name,
+          serviceName: service.name,
+          scheduledStart: appointment.scheduledStart,
+          missingEmployee: service.assignedEmployee === null,
+          missingRoom:
+            service.requiredRoomType !== null && service.room === null,
+        })),
+    )
+    .slice(0, 4);
+
   const employeesNow = planning.employees.map((employee) => {
     const active = activeAppointments.find((appointment) =>
       appointment.services.some(
@@ -156,6 +181,9 @@ export async function getDashboard(currentUser: CurrentUser) {
     employeesNow,
     roomsNow,
     upcomingAppointments,
+    salonNowAppointments,
+    organizationAlerts,
+    generatedAt: now.toISOString(),
     teamActivity: {
       today: teamToday,
       week: teamWeek,

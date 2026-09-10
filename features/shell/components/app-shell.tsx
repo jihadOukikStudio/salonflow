@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   CalendarCheck2,
   CalendarDays,
@@ -9,7 +10,9 @@ import {
   DoorOpen,
   LayoutDashboard,
   LogOut,
+  Menu,
   Sparkles,
+  X,
   UsersRound,
   UserRound,
 } from "lucide-react";
@@ -41,6 +44,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isAdmin = user.role === "ADMIN";
   const canManage = isAdmin || user.canManageSalon;
   const homeHref = canManage ? "/dashboard" : "/my-day";
@@ -154,61 +158,124 @@ export function AppShell({
       </aside>
 
       <div className="min-w-0">
-        <div className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#fffaf8]/95 px-3 py-2 backdrop-blur lg:hidden">
-          <div className="flex items-center gap-3 overflow-x-auto pb-1">
-            <Link
-              href={homeHref}
-              className="mr-1 flex shrink-0 items-center gap-2 px-1"
-            >
-              <Sparkles className="h-4 w-4 text-violet-700" strokeWidth={1.8} />
-              <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
-                SalonFlow
-              </span>
-            </Link>
-            {visibleItems.map((item) => {
-              const Icon = item.icon;
-              const active =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-label={item.label}
-                  title={item.label}
-                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
-                    active
-                      ? "bg-violet-600 text-white"
-                      : "bg-white text-slate-600 ring-1 ring-slate-200"
-                  }`}
-                >
-                  <Icon className="h-4.5 w-4.5" strokeWidth={1.8} />
-                  {item.href === "/organize" && organizationIssueCount > 0 ? (
-                    <span
-                      aria-hidden="true"
-                      className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#fffaf8]"
-                    >
-                      {organizationIssueCount > 9
-                        ? "9+"
-                        : organizationIssueCount}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
-            <form action={logoutAction} className="shrink-0">
-              <button
-                type="submit"
-                aria-label="Se déconnecter"
-                title="Se déconnecter"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-600 ring-1 ring-slate-200"
-              >
-                <LogOut className="h-4.5 w-4.5" strokeWidth={1.8} />
-              </button>
-            </form>
-          </div>
+        <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffaf8]/95 px-4 py-3 backdrop-blur lg:hidden">
+          <Link href={homeHref} className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-700" strokeWidth={1.8} />
+            <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
+              SalonFlow
+            </span>
+          </Link>
         </div>
 
-        {children}
+        {mobileMenuOpen ? (
+          <div
+            className="fixed inset-0 z-[70] bg-slate-950/30 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu SalonFlow"
+              className="absolute inset-x-3 bottom-24 rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-slate-200"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <p className="font-semibold text-slate-950">Menu</p>
+                <button
+                  type="button"
+                  aria-label="Fermer le menu"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {visibleItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex min-h-12 items-center gap-3 rounded-2xl bg-slate-50 px-3 text-sm font-semibold text-slate-800 ring-1 ring-slate-200"
+                    >
+                      <Icon className="h-4.5 w-4.5 text-violet-700" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+              <form action={logoutAction} className="mt-3">
+                <button
+                  type="submit"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 text-sm font-semibold text-rose-800 ring-1 ring-rose-100"
+                >
+                  <LogOut className="h-4.5 w-4.5" /> Se déconnecter
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
+        <nav
+          aria-label="Navigation mobile"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"
+        >
+          <div
+            className={`mx-auto grid max-w-lg gap-1 ${canManage ? "grid-cols-5" : "grid-cols-4"}`}
+          >
+            {(canManage
+              ? [
+                  items.find((item) => item.href === "/dashboard"),
+                  items.find((item) => item.href === "/planning"),
+                  items.find((item) => item.href === "/organize"),
+                  items.find((item) => item.href === "/clients"),
+                ]
+              : [
+                  items.find((item) => item.href === "/my-day"),
+                  items.find((item) => item.href === "/planning"),
+                  items.find((item) => item.href === "/organize"),
+                ]
+            )
+              .filter((item): item is NavItem => Boolean(item?.visible))
+              .map((item) => {
+                const Icon = item.icon;
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-bold ${active ? "bg-violet-50 text-violet-800" : "text-slate-500"}`}
+                  >
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                    <span className="max-w-full truncate">
+                      {item.label === "Dashboard" ? "Accueil" : item.label}
+                    </span>
+                    {item.href === "/organize" && organizationIssueCount > 0 ? (
+                      <span className="absolute right-2 top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
+                        {organizationIssueCount > 9
+                          ? "9+"
+                          : organizationIssueCount}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-bold text-slate-500"
+            >
+              <Menu className="h-5 w-5" strokeWidth={1.8} />
+              <span>Plus</span>
+            </button>
+          </div>
+        </nav>
+
+        <div className="pb-24 lg:pb-0">{children}</div>
       </div>
     </div>
   );
