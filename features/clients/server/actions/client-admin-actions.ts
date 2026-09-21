@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { publishRealtimeEvent } from "@/server/realtime/publish-realtime-event";
 import {
   updateClientActionSchema,
   setClientActiveActionSchema,
@@ -13,10 +14,15 @@ import {
   setClientActive,
 } from "@/server/services/clients/client-admin";
 
-function revalidateClientViews() {
+async function revalidateClientViews(salonId: string, clientId?: string) {
   revalidatePath("/clients");
   revalidatePath("/planning");
   revalidatePath("/appointments", "layout");
+  await publishRealtimeEvent({
+    salonId,
+    type: "client.changed",
+    ...(clientId ? { entityId: clientId } : {}),
+  });
 }
 
 export async function updateClientAdminAction(input: UpdateClientActionInput) {
@@ -25,7 +31,7 @@ export async function updateClientAdminAction(input: UpdateClientActionInput) {
       currentUser,
       updateClientActionSchema.parse(input),
     );
-    revalidateClientViews();
+    await revalidateClientViews(currentUser.salonId, client.id);
     return { clientId: client.id };
   });
 }
@@ -38,7 +44,7 @@ export async function setClientActiveAdminAction(
       currentUser,
       setClientActiveActionSchema.parse(input),
     );
-    revalidateClientViews();
+    await revalidateClientViews(currentUser.salonId, client.id);
     return { clientId: client.id };
   });
 }

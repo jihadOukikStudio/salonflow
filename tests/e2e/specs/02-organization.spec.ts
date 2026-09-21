@@ -7,12 +7,56 @@ import {
 } from "../helpers/db";
 import { loginAsAdmin, loginAsEmployee } from "../helpers/auth";
 import { organizationCard } from "../helpers/ui";
+import {
+  getCasablancaDayRange,
+  parsePlanningDate,
+  shiftPlanningDate,
+} from "@/features/planning/server/casablanca-day";
+
+function organizationTodayDate() {
+  const today = parsePlanningDate(undefined, new Date());
+  const { start } = getCasablancaDayRange(today);
+
+  return new Date(start.getTime() + 14 * 60 * 60_000);
+}
 
 test.describe("Phase 12.2 — Organisation et disponibilités", () => {
+  test("Organisation affiche uniquement les rendez-vous d’aujourd’hui", async ({
+    page,
+  }) => {
+    const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
+      assignedEmployeeId: null,
+      roomId: null,
+    });
+
+    const today = parsePlanningDate(undefined, new Date());
+    const yesterday = getCasablancaDayRange(shiftPlanningDate(today, -1));
+    const tomorrow = getCasablancaDayRange(shiftPlanningDate(today, 1));
+
+    await createSecondAppointment(s, {
+      clientName: "Cliente Hier",
+      serviceName: "Prestation Hier",
+      scheduledStart: new Date(yesterday.start.getTime() + 14 * 60 * 60_000),
+    });
+    await createSecondAppointment(s, {
+      clientName: "Cliente Demain",
+      serviceName: "Prestation Demain",
+      scheduledStart: new Date(tomorrow.start.getTime() + 14 * 60 * 60_000),
+    });
+
+    await loginAsAdmin(page);
+    await page.goto("/organize");
+
+    await expect(organizationCard(page, "Soin visage E2E")).toBeVisible();
+    await expect(page.getByText("Prestation Hier")).toHaveCount(0);
+    await expect(page.getByText("Prestation Demain")).toHaveCount(0);
+  });
   test("n'affiche pas une employée absente ni une salle indisponible", async ({
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -60,6 +104,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -89,6 +134,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
 
   test("la gérante affecte une salle depuis Organisation", async ({ page }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -115,6 +161,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
 
   test("Je prends affecte à l'employée connectée", async ({ page }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -143,6 +190,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -171,6 +219,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -191,6 +240,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -214,6 +264,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -240,6 +291,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
 
   test("un RDV annulé ne bloque plus ses ressources", async ({ page }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -274,6 +326,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
       requiredRoomType: "HAMAM",
@@ -298,6 +351,7 @@ test.describe("Phase 12.2 — Organisation et disponibilités", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });

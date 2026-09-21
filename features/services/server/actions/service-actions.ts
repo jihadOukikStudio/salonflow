@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { publishRealtimeEvent } from "@/server/realtime/publish-realtime-event";
 import {
   updateServiceDefaultsActionSchema,
   type UpdateServiceDefaultsActionInput,
@@ -18,6 +19,11 @@ export async function updateServiceDefaultsAction(
 
     revalidatePath("/services");
     revalidatePath("/appointments/new");
+    await publishRealtimeEvent({
+      salonId: currentUser.salonId,
+      type: "service.changed",
+      entityId: service.id,
+    });
 
     return {
       service: {

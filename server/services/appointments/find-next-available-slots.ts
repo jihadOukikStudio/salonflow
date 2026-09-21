@@ -138,9 +138,7 @@ export async function findNextAvailableSlotsInDb(
         });
       } catch (error) {
         if (error instanceof BusinessRuleError) {
-          candidate = new Date(
-            candidate.getTime() + STEP_MINUTES * 60_000,
-          );
+          candidate = new Date(candidate.getTime() + STEP_MINUTES * 60_000);
           continue;
         }
 

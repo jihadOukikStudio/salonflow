@@ -1,18 +1,19 @@
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/server/db/prisma";
-
-const ORGANIZATION_HORIZON_DAYS = 14;
+import {
+  getCasablancaDayRange,
+  parsePlanningDate,
+} from "@/features/planning/server/casablanca-day";
 
 export async function getOrganizationIssueCount(salonId: string) {
   const now = new Date();
-  const horizon = new Date(
-    now.getTime() + ORGANIZATION_HORIZON_DAYS * 24 * 60 * 60 * 1000,
-  );
+  const today = parsePlanningDate(undefined, now);
+  const { start: dayStart, end: dayEnd } = getCasablancaDayRange(today);
 
   const appointmentScope: Prisma.AppointmentWhereInput = {
     salonId,
     status: { in: ["PLANNED", "IN_PROGRESS"] },
-    scheduledStart: { lte: horizon },
+    scheduledStart: { gte: dayStart, lt: dayEnd },
   };
 
   const [missingEmployeeCount, missingRoomCount] = await Promise.all([

@@ -3,12 +3,26 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import type { CurrentUser } from "@/server/permissions";
 import { getOrganizationIssueCount } from "@/features/organize/server/get-organization-issue-count";
 import { getOrganizationQueue } from "@/features/organize/server/get-organization-queue";
+import {
+  getCasablancaDayRange,
+  parsePlanningDate,
+  shiftPlanningDate,
+} from "@/features/planning/server/casablanca-day";
 
 import { cleanDatabase } from "../helpers/database";
 import { testPrisma } from "../helpers/prisma";
 
+function todayBase() {
+  const today = parsePlanningDate(undefined, new Date());
+  const { start } = getCasablancaDayRange(today);
+
+  // Base stable au milieu de la journée de Casablanca : les tests Organisation
+  // ne basculent pas accidentellement sur demain lorsqu'ils tournent tard.
+  return new Date(start.getTime() + 12 * 60 * 60_000);
+}
+
 function inMinutes(minutes: number) {
-  return new Date(Date.now() + minutes * 60_000);
+  return new Date(todayBase().getTime() + minutes * 60_000);
 }
 
 async function createContext() {
@@ -289,6 +303,84 @@ describe("getOrganizationQueue availability", () => {
       context.room1.id,
     );
   });
+  it("n'affiche que les rendez-vous du jour de Casablanca", async () => {
+    const context = await createContext();
+    const today = parsePlanningDate(undefined, new Date());
+    const yesterday = getCasablancaDayRange(shiftPlanningDate(today, -1));
+    const tomorrow = getCasablancaDayRange(shiftPlanningDate(today, 1));
+
+    const createOutsideAppointment = async (
+      name: string,
+      scheduledStart: Date,
+    ) => {
+      const client = await testPrisma.client.create({
+        data: {
+          salonId: context.salon.id,
+          name,
+          phone: `+212${crypto.randomUUID().replaceAll("-", "").slice(0, 9)}`,
+        },
+      });
+
+      return testPrisma.appointment.create({
+        data: {
+          salonId: context.salon.id,
+          clientId: client.id,
+          scheduledStart,
+          estimatedDurationMinutes: 60,
+          createdByUserId: context.user.id,
+          services: {
+            create: {
+              serviceNameSnapshot: name,
+              durationMinutes: 60,
+              price: 100,
+              requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+            },
+          },
+        },
+      });
+    };
+
+    await createOutsideAppointment(
+      "Hier",
+      new Date(yesterday.start.getTime() + 12 * 60 * 60_000),
+    );
+    await createOutsideAppointment(
+      "Demain",
+      new Date(tomorrow.start.getTime() + 12 * 60 * 60_000),
+    );
+
+    const queue = await getOrganizationQueue(context.currentUser);
+
+    expect(queue.items.map((item) => item.serviceName)).toContain(
+      "Soin visage",
+    );
+    expect(queue.items.map((item) => item.serviceName)).not.toContain("Hier");
+    expect(queue.items.map((item) => item.serviceName)).not.toContain("Demain");
+  });
+
+  it("le badge Organisation ignore hier et demain", async () => {
+    const context = await createContext();
+    const today = parsePlanningDate(undefined, new Date());
+    const yesterday = getCasablancaDayRange(shiftPlanningDate(today, -1));
+    const tomorrow = getCasablancaDayRange(shiftPlanningDate(today, 1));
+
+    await testPrisma.appointment.update({
+      where: { id: context.queueAppointment.id },
+      data: {
+        scheduledStart: new Date(yesterday.start.getTime() + 12 * 60 * 60_000),
+      },
+    });
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(0);
+
+    await testPrisma.appointment.update({
+      where: { id: context.queueAppointment.id },
+      data: {
+        scheduledStart: new Date(tomorrow.start.getTime() + 12 * 60 * 60_000),
+      },
+    });
+    expect(await getOrganizationIssueCount(context.salon.id)).toBe(0);
+  });
+
   it("compte séparément les décisions employée et salle manquantes", async () => {
     const context = await createContext();
 

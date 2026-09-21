@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { publishRealtimeEvent } from "@/server/realtime/publish-realtime-event";
 import {
   createEmployeeUnavailabilityActionSchema,
   deleteEmployeeUnavailabilityActionSchema,
@@ -15,12 +16,17 @@ import {
   createRoomUnavailability,
   deleteRoomUnavailability,
 } from "@/server/services/unavailability";
-function refresh() {
+async function refresh(salonId: string, entityId?: string) {
   revalidatePath("/employees/unavailability");
   revalidatePath("/rooms");
   revalidatePath("/planning");
   revalidatePath("/organize");
   revalidatePath("/appointments", "layout");
+  await publishRealtimeEvent({
+    salonId,
+    type: "availability.changed",
+    ...(entityId ? { entityId } : {}),
+  });
 }
 export async function createEmployeeUnavailabilityAction(
   input: CreateEmployeeUnavailabilityActionInput,
@@ -30,7 +36,7 @@ export async function createEmployeeUnavailabilityAction(
       user,
       createEmployeeUnavailabilityActionSchema.parse(input),
     );
-    refresh();
+    await refresh(user.salonId, item.id);
     return { id: item.id };
   });
 }
@@ -40,7 +46,7 @@ export async function deleteEmployeeUnavailabilityAction(input: {
   return runAuthenticatedAction(async (user) => {
     const parsed = deleteEmployeeUnavailabilityActionSchema.parse(input);
     const item = await deleteEmployeeUnavailability(user, parsed.id);
-    refresh();
+    await refresh(user.salonId, item.id);
     return item;
   });
 }
@@ -52,7 +58,7 @@ export async function createRoomUnavailabilityAction(
       user,
       createRoomUnavailabilityActionSchema.parse(input),
     );
-    refresh();
+    await refresh(user.salonId, item.id);
     return { id: item.id };
   });
 }
@@ -60,7 +66,7 @@ export async function deleteRoomUnavailabilityAction(input: { id: string }) {
   return runAuthenticatedAction(async (user) => {
     const parsed = deleteRoomUnavailabilityActionSchema.parse(input);
     const item = await deleteRoomUnavailability(user, parsed.id);
-    refresh();
+    await refresh(user.salonId, item.id);
     return item;
   });
 }

@@ -1,13 +1,19 @@
 import { expect, test } from "@playwright/test";
 
+import { createAppointmentScenario, pastDate, testPrisma } from "../helpers/db";
 import {
-  createAppointmentScenario,
-  futureDate,
-  pastDate,
-  testPrisma,
-} from "../helpers/db";
+  getCasablancaDayRange,
+  parsePlanningDate,
+} from "@/features/planning/server/casablanca-day";
 import { loginAsAdmin, loginAsEmployee } from "../helpers/auth";
 import { organizationCard, serviceCard } from "../helpers/ui";
+
+function organizationTodayDate() {
+  const today = parsePlanningDate(undefined, new Date());
+  const { start } = getCasablancaDayRange(today);
+
+  return new Date(start.getTime() + 14 * 60 * 60_000);
+}
 
 test.describe("Recette métier — parcours critique", () => {
   test("parcours complet : organiser → réaliser → encaisser → clôturer", async ({
@@ -16,7 +22,7 @@ test.describe("Recette métier — parcours critique", () => {
     const s = await createAppointmentScenario({
       assignedEmployeeId: null,
       roomId: null,
-      scheduledStart: futureDate(24 * 60),
+      scheduledStart: organizationTodayDate(),
     });
 
     await loginAsAdmin(page);
@@ -132,6 +138,7 @@ test.describe("Recette métier — parcours critique", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
@@ -162,6 +169,10 @@ test.describe("Recette métier — parcours critique", () => {
   test("un rendez-vous totalement organisé reste consultable", async ({
     page,
   }) => {
+    await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
+    });
+
     await loginAsAdmin(page);
     await page.goto("/organize");
 

@@ -3,6 +3,10 @@ import type { CurrentUser } from "@/server/permissions";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { prisma } from "@/server/db/prisma";
 import {
+  getCasablancaDayRange,
+  parsePlanningDate,
+} from "@/features/planning/server/casablanca-day";
+import {
   getAppointmentEnd,
   intervalsOverlap,
 } from "@/server/services/resources/appointment-interval";
@@ -38,7 +42,8 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
   const user = await getAuthoritativeCurrentUser(currentUser);
 
   const now = new Date();
-  const horizon = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const today = parsePlanningDate(undefined, now);
+  const { start: dayStart, end: dayEnd } = getCasablancaDayRange(today);
 
   const [services, employees, rooms, currentEmployee, skillModeMarker] =
     await Promise.all([
@@ -50,7 +55,7 @@ export async function getOrganizationQueue(currentUser: CurrentUser) {
           appointment: {
             salonId: user.salonId,
             status: { in: ["PLANNED", "IN_PROGRESS"] },
-            scheduledStart: { lte: horizon },
+            scheduledStart: { gte: dayStart, lt: dayEnd },
           },
         },
         orderBy: { appointment: { scheduledStart: "asc" } },

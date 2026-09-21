@@ -69,7 +69,7 @@ export async function addAppointmentServiceAction(
       );
     }
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -86,7 +86,7 @@ export async function removeAppointmentServiceAction(
 
     const appointment = await removeAppointmentService(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -102,7 +102,7 @@ export async function assignEmployeeToServiceAction(
 
     const service = await assignEmployeeToService(currentUser, data);
 
-    revalidateAppointmentViews();
+    await revalidateAppointmentViews(currentUser.salonId);
 
     return {
       appointmentServiceId: service.id,
@@ -116,7 +116,7 @@ export async function assignRoomToServiceAction(input: AssignRoomActionInput) {
 
     const service = await assignRoomToService(currentUser, data);
 
-    revalidateAppointmentViews();
+    await revalidateAppointmentViews(currentUser.salonId);
 
     return {
       appointmentServiceId: service.id,
@@ -132,7 +132,7 @@ export async function takeUnassignedServiceAction(
 
     const service = await takeUnassignedService(currentUser, data);
 
-    revalidateAppointmentViews();
+    await revalidateAppointmentViews(currentUser.salonId);
 
     return {
       appointmentServiceId: service.id,
@@ -148,7 +148,7 @@ export async function startAppointmentServiceAction(
 
     const service = await startAppointmentService(currentUser, data);
 
-    revalidateAppointmentViews();
+    await revalidateAppointmentViews(currentUser.salonId);
 
     return {
       appointmentServiceId: service.id,
@@ -164,7 +164,7 @@ export async function completeAppointmentServiceAction(
 
     const service = await completeAppointmentService(currentUser, data);
 
-    revalidateAppointmentViews();
+    await revalidateAppointmentViews(currentUser.salonId);
 
     return {
       appointmentServiceId: service.id,

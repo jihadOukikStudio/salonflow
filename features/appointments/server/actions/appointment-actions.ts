@@ -79,7 +79,7 @@ export async function createAppointmentAction(
 
     const appointment = await createAppointment(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -95,7 +95,10 @@ export async function createAppointmentWithClientAction(
 
     const result = await createAppointmentWithClient(currentUser, data);
 
-    revalidateAppointmentViews(result.appointment.id);
+    await revalidateAppointmentViews(
+      currentUser.salonId,
+      result.appointment.id,
+    );
 
     return {
       appointmentId: result.appointment.id,
@@ -113,7 +116,7 @@ export async function updateAppointmentScheduleAction(
 
     const appointment = await updateAppointmentSchedule(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -129,7 +132,7 @@ export async function updateAppointmentDetailsAction(
 
     const appointment = await updateAppointmentDetails(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -143,7 +146,7 @@ export async function cancelAppointmentAction(input: AppointmentIdActionInput) {
 
     const appointment = await cancelAppointment(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -159,7 +162,7 @@ export async function markAppointmentPaidAction(
 
     const payment = await markAppointmentPaid(currentUser, data);
 
-    revalidateAppointmentViews(data.appointmentId);
+    await revalidateAppointmentViews(currentUser.salonId, data.appointmentId);
 
     return {
       appointmentId: data.appointmentId,
@@ -175,7 +178,7 @@ export async function closeAppointmentAction(input: AppointmentIdActionInput) {
 
     const appointment = await closeAppointment(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,

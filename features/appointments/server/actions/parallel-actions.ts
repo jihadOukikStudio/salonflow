@@ -22,7 +22,7 @@ export async function createParallelGroupAction(
 
     const appointment = await createParallelGroup(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,
@@ -38,7 +38,7 @@ export async function removeParallelGroupAction(
 
     const appointment = await removeParallelGroup(currentUser, data);
 
-    revalidateAppointmentViews(appointment.id);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
 
     return {
       appointmentId: appointment.id,

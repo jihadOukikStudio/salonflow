@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { publishRealtimeEvent } from "@/server/realtime/publish-realtime-event";
 import {
   createEmployeeActionSchema,
   updateEmployeeActionSchema,
@@ -23,11 +24,20 @@ import {
   saveEmployeeSkills,
 } from "@/server/services/employees";
 
-function revalidateEmployeeViews() {
+async function revalidateEmployeeViews(
+  salonId: string,
+  type: "employee.changed" | "access.changed" = "employee.changed",
+  entityId?: string,
+) {
   revalidatePath("/employees");
   revalidatePath("/organize");
   revalidatePath("/planning");
   revalidatePath("/appointments", "layout");
+  await publishRealtimeEvent({
+    salonId,
+    type,
+    ...(entityId ? { entityId } : {}),
+  });
 }
 
 export async function createEmployeeAction(input: CreateEmployeeActionInput) {
@@ -36,7 +46,11 @@ export async function createEmployeeAction(input: CreateEmployeeActionInput) {
       currentUser,
       createEmployeeActionSchema.parse(input),
     );
-    revalidateEmployeeViews();
+    await revalidateEmployeeViews(
+      currentUser.salonId,
+      "employee.changed",
+      employee.id,
+    );
     return { employeeId: employee.id };
   });
 }
@@ -47,7 +61,11 @@ export async function updateEmployeeAction(input: UpdateEmployeeActionInput) {
       currentUser,
       updateEmployeeActionSchema.parse(input),
     );
-    revalidateEmployeeViews();
+    await revalidateEmployeeViews(
+      currentUser.salonId,
+      "employee.changed",
+      employee.id,
+    );
     return { employeeId: employee.id };
   });
 }
@@ -60,7 +78,11 @@ export async function setEmployeeActiveAction(
       currentUser,
       setEmployeeActiveActionSchema.parse(input),
     );
-    revalidateEmployeeViews();
+    await revalidateEmployeeViews(
+      currentUser.salonId,
+      "access.changed",
+      employee.id,
+    );
     return { employeeId: employee.id };
   });
 }
@@ -73,7 +95,11 @@ export async function saveEmployeeAccessAction(
       currentUser,
       saveEmployeeAccessActionSchema.parse(input),
     );
-    revalidateEmployeeViews();
+    await revalidateEmployeeViews(
+      currentUser.salonId,
+      "access.changed",
+      access.id,
+    );
     return { userId: access.id };
   });
 }
@@ -86,7 +112,7 @@ export async function saveEmployeeSkillsAction(
       currentUser,
       saveEmployeeSkillsActionSchema.parse(input),
     );
-    revalidateEmployeeViews();
+    await revalidateEmployeeViews(currentUser.salonId, "employee.changed");
     return result;
   });
 }

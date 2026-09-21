@@ -5,14 +5,26 @@ import {
   createSecondAppointment,
   testPrisma,
 } from "../helpers/db";
+import {
+  getCasablancaDayRange,
+  parsePlanningDate,
+} from "@/features/planning/server/casablanca-day";
 import { loginAsAdmin } from "../helpers/auth";
 import { organizationCard } from "../helpers/ui";
+
+function organizationTodayDate() {
+  const today = parsePlanningDate(undefined, new Date());
+  const { start } = getCasablancaDayRange(today);
+
+  return new Date(start.getTime() + 14 * 60 * 60_000);
+}
 
 test.describe("Phase 12.8 — concurrence réelle navigateur", () => {
   test("deux navigateurs ne peuvent pas prendre la même dernière employée sur deux RDV chevauchants", async ({
     browser,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
       requiredRoomType: null,
@@ -93,6 +105,7 @@ test.describe("Phase 12.8 — concurrence réelle navigateur", () => {
     browser,
   }) => {
     const s = await createAppointmentScenario({
+      scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });

@@ -28,9 +28,9 @@ export default async function OrganizePage() {
               Organisation
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Les points à régler et l’organisation déjà confirmée, au même
-              endroit. Vous gardez toujours la visibilité sur qui fait quoi et
-              dans quelle salle.
+              Aujourd’hui uniquement : les points à régler et l’organisation
+              déjà confirmée, au même endroit. Vous gardez la visibilité sur qui
+              fait quoi et dans quelle salle.
             </p>
           </div>
 

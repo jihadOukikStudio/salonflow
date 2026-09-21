@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { publishRealtimeEvent } from "@/server/realtime/publish-realtime-event";
 import {
   createClientActionSchema,
   searchClientsActionSchema,
@@ -18,6 +19,11 @@ export async function createClientAction(input: CreateClientActionInput) {
 
     revalidatePath("/appointments/new");
     revalidatePath("/clients");
+    await publishRealtimeEvent({
+      salonId: currentUser.salonId,
+      type: "client.changed",
+      entityId: client.id,
+    });
 
     return {
       client: {
