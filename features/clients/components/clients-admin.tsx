@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -20,14 +21,13 @@ const appointmentStatusLabels: Record<string, string> = {
 };
 
 function formatAppointmentDate(value: Date | string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 type ClientRow = {

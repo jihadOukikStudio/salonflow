@@ -1,6 +1,7 @@
 "use server";
 
 import { runAuthenticatedAction } from "@/server/actions/run-authenticated-action";
+import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
 
 import {
   appointmentIdActionSchema,
@@ -35,6 +36,20 @@ import { closeAppointment } from "@/server/services/appointments/close-appointme
 
 import { revalidateAppointmentViews } from "@/features/appointments/server/revalidate-appointment-views";
 
+function resolveCasablancaScheduledStart(input: {
+  scheduledStart: Date;
+  dateKey?: string;
+  timeValue?: string;
+}): Date {
+  if (input.dateKey && input.timeValue) {
+    return new Date(
+      casablancaLocalDateTimeToIso(input.dateKey, input.timeValue),
+    );
+  }
+
+  return input.scheduledStart;
+}
+
 export async function checkBookingFeasibilityAction(
   input: CheckBookingFeasibilityActionInput,
 ) {
@@ -46,7 +61,7 @@ export async function checkBookingFeasibilityAction(
     return prisma.$transaction((tx) =>
       checkBookingFeasibilityInDb(tx, {
         salonId: authoritativeUser.salonId,
-        scheduledStart: data.scheduledStart,
+        scheduledStart: resolveCasablancaScheduledStart(data),
         serviceIds: data.serviceIds,
       }),
     );
@@ -64,7 +79,7 @@ export async function findNextAvailableSlotsAction(
     return prisma.$transaction((tx) =>
       findNextAvailableSlotsInDb(tx, {
         salonId: authoritativeUser.salonId,
-        scheduledStart: data.scheduledStart,
+        scheduledStart: resolveCasablancaScheduledStart(data),
         serviceIds: data.serviceIds,
       }),
     );
@@ -92,8 +107,14 @@ export async function createAppointmentWithClientAction(
 ) {
   return runAuthenticatedAction(async (currentUser) => {
     const data = createAppointmentWithClientActionSchema.parse(input);
+    const scheduledStart = resolveCasablancaScheduledStart(data);
 
-    const result = await createAppointmentWithClient(currentUser, data);
+    const result = await createAppointmentWithClient(currentUser, {
+      client: data.client,
+      scheduledStart,
+      internalNote: data.internalNote,
+      services: data.services,
+    });
 
     await revalidateAppointmentViews(
       currentUser.salonId,

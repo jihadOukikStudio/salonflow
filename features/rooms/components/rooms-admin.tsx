@@ -9,16 +9,18 @@ import {
   createRoomUnavailabilityAction,
   deleteRoomUnavailabilityAction,
 } from "@/features/unavailability/server/actions/unavailability-actions";
-import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
+import {
+  casablancaLocalDateTimeToIso,
+  formatSalonDateTime,
+} from "@/features/appointments/lib/casablanca-local-datetime";
 function formatCasablancaDateTime(value: Date | string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 const inputClass =

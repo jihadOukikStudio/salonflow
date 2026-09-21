@@ -1,79 +1,7 @@
-const TIME_ZONE = "Africa/Casablanca";
-
-type DateParts = {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-};
-
-function getTimeZoneParts(date: Date, timeZone: string): DateParts {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  });
-
-  const parts = formatter.formatToParts(date);
-
-  const value = (type: Intl.DateTimeFormatPartTypes) => {
-    const part = parts.find((item) => item.type === type);
-
-    if (!part) {
-      throw new Error(`Impossible de lire la partie de date "${type}".`);
-    }
-
-    return Number(part.value);
-  };
-
-  return {
-    year: value("year"),
-    month: value("month"),
-    day: value("day"),
-    hour: value("hour"),
-    minute: value("minute"),
-    second: value("second"),
-  };
-}
-
-function zonedDateTimeToUtc(parts: DateParts, timeZone: string): Date {
-  const targetAsUtc = Date.UTC(
-    parts.year,
-    parts.month - 1,
-    parts.day,
-    parts.hour,
-    parts.minute,
-    parts.second,
-  );
-
-  let candidate = new Date(targetAsUtc);
-
-  // Deux passes suffisent pour stabiliser l'offset autour des transitions DST.
-  for (let index = 0; index < 2; index += 1) {
-    const actual = getTimeZoneParts(candidate, timeZone);
-
-    const actualAsUtc = Date.UTC(
-      actual.year,
-      actual.month - 1,
-      actual.day,
-      actual.hour,
-      actual.minute,
-      actual.second,
-    );
-
-    const difference = targetAsUtc - actualAsUtc;
-    candidate = new Date(candidate.getTime() + difference);
-  }
-
-  return candidate;
-}
+import {
+  casablancaLocalDateTimeToIso,
+  getCasablancaDateTimeFields,
+} from "@/features/appointments/lib/casablanca-local-datetime";
 
 export function parsePlanningDate(
   value: string | undefined,
@@ -99,13 +27,7 @@ export function parsePlanningDate(
     }
   }
 
-  const parts = getTimeZoneParts(now, TIME_ZONE);
-
-  return [
-    String(parts.year).padStart(4, "0"),
-    String(parts.month).padStart(2, "0"),
-    String(parts.day).padStart(2, "0"),
-  ].join("-");
+  return getCasablancaDateTimeFields(now).dateKey;
 }
 
 export function getCasablancaDayRange(dateKey: string): {
@@ -124,30 +46,15 @@ export function getCasablancaDayRange(dateKey: string): {
 
   const nextDay = new Date(Date.UTC(year, month - 1, day + 1));
 
-  return {
-    start: zonedDateTimeToUtc(
-      {
-        year,
-        month,
-        day,
-        hour: 0,
-        minute: 0,
-        second: 0,
-      },
-      TIME_ZONE,
-    ),
+  const nextDateKey = [
+    String(nextDay.getUTCFullYear()).padStart(4, "0"),
+    String(nextDay.getUTCMonth() + 1).padStart(2, "0"),
+    String(nextDay.getUTCDate()).padStart(2, "0"),
+  ].join("-");
 
-    end: zonedDateTimeToUtc(
-      {
-        year: nextDay.getUTCFullYear(),
-        month: nextDay.getUTCMonth() + 1,
-        day: nextDay.getUTCDate(),
-        hour: 0,
-        minute: 0,
-        second: 0,
-      },
-      TIME_ZONE,
-    ),
+  return {
+    start: new Date(casablancaLocalDateTimeToIso(dateKey, "00:00")),
+    end: new Date(casablancaLocalDateTimeToIso(nextDateKey, "00:00")),
   };
 }
 

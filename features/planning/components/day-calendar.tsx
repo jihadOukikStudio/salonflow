@@ -1,5 +1,6 @@
 "use client";
 
+import { getCasablancaDateTimeFields } from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import { CircleAlert, Clock3, DoorOpen, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -48,22 +49,14 @@ const APPOINTMENT_CARD_WIDTH = "min(82%, 320px)";
 const APPOINTMENT_CARD_STEP_PX = 328;
 
 function casablancaParts(value: string | Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Casablanca",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date(value));
-
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "00";
+  const fields = getCasablancaDateTimeFields(
+    value instanceof Date ? value : new Date(value),
+  );
+  const [hour, minute] = fields.timeValue.split(":").map(Number);
 
   return {
-    dateKey: `${get("year")}-${get("month")}-${get("day")}`,
-    minutes: Number(get("hour")) * 60 + Number(get("minute")),
+    dateKey: fields.dateKey,
+    minutes: hour * 60 + minute,
   };
 }
 

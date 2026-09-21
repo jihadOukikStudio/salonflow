@@ -1,4 +1,30 @@
-const CASABLANCA_TIME_ZONE = "Africa/Casablanca";
+export const CASABLANCA_TIME_ZONE = "Africa/Casablanca";
+
+/**
+ * Le Maroc a abandonné définitivement GMT+1 le 20/09/2026.
+ * Les runtimes (Node/Chromium/Safari) peuvent embarquer une base IANA antérieure
+ * au décret 2.26.530 et continuer à considérer Africa/Casablanca en UTC+1.
+ * Après la bascule légale, on utilise donc explicitement UTC (GMT).
+ */
+export const MOROCCO_PERMANENT_GMT_FROM = new Date("2026-09-20T01:00:00.000Z");
+
+export function getSalonTimeZone(date: Date): string {
+  return date.getTime() >= MOROCCO_PERMANENT_GMT_FROM.getTime()
+    ? "UTC"
+    : CASABLANCA_TIME_ZONE;
+}
+
+export function formatSalonDateTime(
+  value: Date | string,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  const date = value instanceof Date ? value : new Date(value);
+  return new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: getSalonTimeZone(date),
+  }).format(date);
+}
 
 type DateTimeParts = {
   year: number;
@@ -19,7 +45,7 @@ function pad(value: number): string {
 
 function readZonedParts(date: Date): DateTimeParts {
   const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: CASABLANCA_TIME_ZONE,
+    timeZone: getSalonTimeZone(date),
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -124,6 +150,15 @@ export function casablancaLocalDateTimeToIso(
     0,
     0,
   );
+
+  // Depuis le 20/09/2026 à 02:00 heure légale, Marrakech est définitivement
+  // en GMT. Pour les horaires métier du salon (>= 10:00), l'heure murale est
+  // donc exactement l'heure UTC. Ne pas dépendre d'une tzdata potentiellement
+  // obsolète du navigateur ou du serveur.
+  const permanentGmtLocalStart = Date.UTC(2026, 8, 20, 2, 0, 0, 0);
+  if (targetAsUtc >= permanentGmtLocalStart) {
+    return new Date(targetAsUtc).toISOString();
+  }
 
   let candidate = new Date(targetAsUtc);
 

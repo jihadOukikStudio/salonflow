@@ -12,6 +12,7 @@ import {
 import { searchClientsAction } from "@/features/clients/server/actions";
 import {
   casablancaLocalDateTimeToIso,
+  formatSalonDateTime,
   getMinimumBookableCasablancaDateTime,
   isFutureCasablancaLocalDateTime,
   type CasablancaDateTimeFields,
@@ -411,13 +412,8 @@ export function NewAppointmentForm({
   }
 
   function formatRequestedRange(start: string, end: string) {
-    const formatter = new Intl.DateTimeFormat("fr-MA", {
-      timeZone: "Africa/Casablanca",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return `${formatter.format(new Date(start))} → ${formatter.format(new Date(end))}`;
+    const options = { hour: "2-digit", minute: "2-digit" } as const;
+    return `${formatSalonDateTime(start, "fr-MA", options)} → ${formatSalonDateTime(end, "fr-MA", options)}`;
   }
 
   function toggleService(service: NewAppointmentServiceOption) {
@@ -474,11 +470,10 @@ export function NewAppointmentForm({
         }
 
         const feasibility = result.data;
-        const end = new Intl.DateTimeFormat("fr-MA", {
-          timeZone: "Africa/Casablanca",
+        const end = formatSalonDateTime(feasibility.scheduledEnd, "fr-MA", {
           hour: "2-digit",
           minute: "2-digit",
-        }).format(new Date(feasibility.scheduledEnd));
+        });
 
         if (!feasibility.canCreate) {
           const candidateServiceIds = [...selectedServiceIds, service.id];
@@ -527,12 +522,11 @@ export function NewAppointmentForm({
       return slot.timeValue;
     }
 
-    const day = new Intl.DateTimeFormat("fr-MA", {
-      timeZone: "Africa/Casablanca",
+    const day = formatSalonDateTime(slot.scheduledStart, "fr-MA", {
       weekday: "short",
       day: "2-digit",
       month: "2-digit",
-    }).format(new Date(slot.scheduledStart));
+    });
 
     return `${day} · ${slot.timeValue}`;
   }

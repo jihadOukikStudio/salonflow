@@ -1,3 +1,4 @@
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import {
   Banknote,
@@ -22,11 +23,10 @@ function money(value: number) {
 }
 
 function salonTime(value: string) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 function StateDot({ state }: { state: "FREE" | "BUSY" | "UNAVAILABLE" }) {

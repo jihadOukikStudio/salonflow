@@ -33,4 +33,14 @@ describe("Casablanca planning date helpers", () => {
 
     expect(shiftPlanningDate("2026-12-31", 1)).toBe("2027-01-01");
   });
+
+  it("utilise GMT pour les journées après le changement légal du 20 septembre 2026", () => {
+    expect(
+      parsePlanningDate(undefined, new Date("2026-09-21T00:30:00.000Z")),
+    ).toBe("2026-09-21");
+
+    const range = getCasablancaDayRange("2026-09-21");
+    expect(range.start.toISOString()).toBe("2026-09-21T00:00:00.000Z");
+    expect(range.end.toISOString()).toBe("2026-09-22T00:00:00.000Z");
+  });
 });

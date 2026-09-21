@@ -75,4 +75,31 @@ describe("booking date guards", () => {
       true,
     );
   });
+  it("applique le GMT légal permanent après le 20 septembre 2026 même avec une tzdata obsolète", () => {
+    const fields = getCasablancaDateTimeFields(
+      new Date("2026-09-21T09:50:00.000Z"),
+    );
+
+    expect(fields.dateKey).toBe("2026-09-21");
+    expect(fields.timeValue).toBe("09:50");
+    expect(casablancaLocalDateTimeToIso("2026-09-21", "10:00")).toBe(
+      "2026-09-21T10:00:00.000Z",
+    );
+  });
+
+  it("propose 10h00 comme prochain quart quand il est 09h50 GMT au Maroc", () => {
+    const fields = getMinimumBookableCasablancaDateTime(
+      new Date("2026-09-21T09:50:00.000Z"),
+    );
+
+    expect(fields.dateKey).toBe("2026-09-21");
+    expect(fields.timeValue).toBe("09:51");
+    expect(
+      isFutureCasablancaLocalDateTime(
+        "2026-09-21",
+        "10:00",
+        new Date("2026-09-21T09:50:00.000Z"),
+      ),
+    ).toBe(true);
+  });
 });

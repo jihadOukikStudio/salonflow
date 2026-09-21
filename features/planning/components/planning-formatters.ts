@@ -1,9 +1,9 @@
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 export function formatPlanningTime(value: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 export function formatPlanningMoney(value: number): string {

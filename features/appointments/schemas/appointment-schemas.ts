@@ -36,6 +36,14 @@ const bookingServicesSchema = z
   .min(1, "Le rendez-vous doit contenir au moins une prestation.")
   .max(50, "Le rendez-vous contient trop de prestations.");
 
+const casablancaDateKeySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "La date du rendez-vous est invalide.");
+
+const casablancaTimeValueSchema = z
+  .string()
+  .regex(/^\d{2}:\d{2}$/, "L'heure du rendez-vous est invalide.");
+
 function addDuplicateServiceIssue(
   services: Array<{ serviceId: string }>,
   context: z.RefinementCtx,
@@ -82,6 +90,10 @@ export const createAppointmentWithClientActionSchema = z
         .strict(),
     ]),
     scheduledStart: dateTimeSchema,
+    // Heure murale choisie dans l'UI. Le serveur la reconvertit lui-même vers
+    // UTC afin de ne jamais dépendre du fuseau/offset du navigateur.
+    dateKey: casablancaDateKeySchema.optional(),
+    timeValue: casablancaTimeValueSchema.optional(),
     internalNote: internalNoteSchema.optional(),
     services: bookingServicesSchema,
   })
@@ -93,6 +105,10 @@ export const createAppointmentWithClientActionSchema = z
 export const checkBookingFeasibilityActionSchema = z
   .object({
     scheduledStart: dateTimeSchema,
+    // Même principe que pour la création : si ces champs sont présents,
+    // l'heure de Marrakech est reconstruite côté serveur.
+    dateKey: casablancaDateKeySchema.optional(),
+    timeValue: casablancaTimeValueSchema.optional(),
     serviceIds: z
       .array(uuidSchema)
       .min(1, "Sélectionnez au moins une prestation.")

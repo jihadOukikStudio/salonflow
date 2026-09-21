@@ -1,5 +1,7 @@
 "use client";
 
+import { getCasablancaDateTimeFields } from "@/features/appointments/lib/casablanca-local-datetime";
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import { Check, ChevronDown, DoorOpen, UserRound } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
@@ -23,24 +25,20 @@ type Props = {
 };
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     weekday: "short",
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 function isToday(value: string) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Casablanca",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  return formatter.format(new Date(value)) === formatter.format(new Date());
+  return (
+    getCasablancaDateTimeFields(new Date(value)).dateKey ===
+    getCasablancaDateTimeFields(new Date()).dateKey
+  );
 }
 
 const urgencyLabel = {

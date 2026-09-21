@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -24,11 +25,10 @@ import {
 } from "@/features/appointments/server/actions/service-actions";
 
 function time(value: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 function longDate(dateKey: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -56,19 +57,17 @@ function money(value: number) {
 }
 
 function dateTime(value: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     dateStyle: "full",
     timeStyle: "short",
-  }).format(new Date(value));
+  });
 }
 
 function timeOnly(value: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    timeZone: "Africa/Casablanca",
+  return formatSalonDateTime(value, "fr-MA", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(value));
+  });
 }
 
 function statusLabel(status: AppointmentDetail["status"]) {

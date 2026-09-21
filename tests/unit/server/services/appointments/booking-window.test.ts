@@ -45,4 +45,15 @@ describe("validateBookingWindow", () => {
       validateBookingWindow(local("2026-09-10", "20:15"), 90, now),
     ).toThrow(/Dernier début possible : 20:00/);
   });
+
+  it("accepte 10h00 aujourd'hui quand il est 09h50 au Maroc après le passage permanent à GMT", () => {
+    const current = new Date("2026-09-21T09:50:00.000Z");
+    const result = validateBookingWindow(
+      local("2026-09-21", "10:00"),
+      30,
+      current,
+    );
+
+    expect(result.latestStartTimeValue).toBe("21:00");
+  });
 });
