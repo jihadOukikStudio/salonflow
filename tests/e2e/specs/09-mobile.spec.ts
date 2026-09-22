@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { createAppointmentScenario } from "../helpers/db";
-import { loginAsAdmin } from "../helpers/auth";
+import { loginAsAdmin, loginAsEmployee } from "../helpers/auth";
 import { expectNoHorizontalOverflow } from "../helpers/ui";
 
 // Important: ne pas utiliser devices["iPhone ..."] ici.
@@ -35,19 +35,14 @@ test.describe("Phase 12.9 — responsive mobile Chromium", () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test("Organisation utilisable sans débordement horizontal", async ({
+  test("Ma journée employée est utilisable sans débordement horizontal", async ({
     page,
   }) => {
-    await createAppointmentScenario({
-      assignedEmployeeId: null,
-      roomId: null,
-    });
-    await loginAsAdmin(page);
-    await page.goto("/organize");
+    await createAppointmentScenario();
+    await loginAsEmployee(page);
+    await page.goto("/my-day");
 
-    await expect(
-      page.getByRole("heading", { name: /^organisation$/i }),
-    ).toBeVisible();
+    await expect(page.locator("body")).toContainText(/ma journée/i);
     await expectNoHorizontalOverflow(page);
   });
 

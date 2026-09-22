@@ -31,6 +31,7 @@ export type AppointmentDetail = {
     room: { id: string; name: string; type: "HAMAM" | "TREATMENT_ROOM" } | null;
     actualStartedAt: string | null;
     actualFinishedAt: string | null;
+    employeeComment: string | null;
     parallelGroupId: string | null;
   }>;
   parallelGroups: Array<{
@@ -109,6 +110,7 @@ export async function getAppointmentDetail(
               requiredRoomTypeSnapshot: true,
               actualStartedAt: true,
               actualFinishedAt: true,
+              employeeComment: true,
               assignedEmployee: {
                 select: { id: true, firstName: true, lastName: true },
               },
@@ -369,6 +371,7 @@ export async function getAppointmentDetail(
     room: service.room,
     actualStartedAt: service.actualStartedAt?.toISOString() ?? null,
     actualFinishedAt: service.actualFinishedAt?.toISOString() ?? null,
+    employeeComment: service.employeeComment,
     parallelGroupId: service.parallelGroupLinks[0]?.parallelGroupId ?? null,
   }));
 

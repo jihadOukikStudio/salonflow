@@ -27,6 +27,8 @@ export type PlanningServiceItem = {
   } | null;
   requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
   needsOrganization: boolean;
+  scheduledStart: string;
+  scheduledEnd: string;
 };
 
 export type PlanningAppointmentItem = {
@@ -128,6 +130,7 @@ export async function getPlanningDay(
             id: true,
             serviceNameSnapshot: true,
             durationMinutes: true,
+            scheduledStart: true,
             price: true,
             status: true,
             requiredRoomTypeSnapshot: true,
@@ -145,6 +148,7 @@ export async function getPlanningDay(
                 type: true,
               },
             },
+            parallelGroupLinks: { select: { parallelGroupId: true } },
           },
         },
       },
@@ -213,12 +217,16 @@ export async function getPlanningDay(
         );
       }
 
+
       const services = appointment.services.map(
         (service): PlanningServiceItem => {
           const needsEmployee = service.assignedEmployee === null;
           const needsRoom =
             service.requiredRoomTypeSnapshot !== null && service.room === null;
-
+          const serviceStart = service.scheduledStart;
+          const serviceEnd = new Date(
+            serviceStart.getTime() + service.durationMinutes * 60_000,
+          );
           return {
             id: service.id,
             name: service.serviceNameSnapshot,
@@ -240,6 +248,8 @@ export async function getPlanningDay(
               : null,
             requiredRoomType: service.requiredRoomTypeSnapshot,
             needsOrganization: needsEmployee || needsRoom,
+            scheduledStart: serviceStart.toISOString(),
+            scheduledEnd: serviceEnd.toISOString(),
           };
         },
       );

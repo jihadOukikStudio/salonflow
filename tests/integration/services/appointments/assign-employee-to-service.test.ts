@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { CurrentUser } from "@/server/permissions";
+import { PermissionDeniedError } from "@/server/permissions";
 import { assignEmployeeToService } from "@/server/services/appointments/assign-employee-to-service";
 import {
   BusinessRuleError,
@@ -129,18 +130,18 @@ describe("assignEmployeeToService", () => {
     expect(result.assignedEmployeeId).toBe(context.employee.id);
   });
 
-  it("allows a standard employee to assign operationally", async () => {
+  it("rejects a standard employee assigning operationally", async () => {
     const context = await createContext({
       role: "EMPLOYEE",
       canManageSalon: false,
     });
 
-    const result = await assignEmployeeToService(context.currentUser, {
-      appointmentServiceId: context.appointmentService.id,
-      employeeId: context.employee.id,
-    });
-
-    expect(result.assignedEmployeeId).toBe(context.employee.id);
+    await expect(
+      assignEmployeeToService(context.currentUser, {
+        appointmentServiceId: context.appointmentService.id,
+        employeeId: context.employee.id,
+      }),
+    ).rejects.toBeInstanceOf(PermissionDeniedError);
   });
 
   it("rejects an employee belonging to another salon", async () => {

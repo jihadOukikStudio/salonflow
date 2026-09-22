@@ -6,7 +6,6 @@ import { useState } from "react";
 import {
   CalendarCheck2,
   CalendarDays,
-  ClipboardList,
   DoorOpen,
   LayoutDashboard,
   LogOut,
@@ -39,36 +38,31 @@ type NavItem = {
   visible: boolean;
 };
 
-export function AppShell({
-  user,
-  organizationIssueCount,
-  children,
-}: AppShellProps) {
+export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isAdmin = user.role === "ADMIN";
   const canManage = isAdmin || user.canManageSalon;
-  const homeHref = canManage ? "/dashboard" : "/my-day";
+  const homeHref = canManage ? "/planning" : "/my-day";
 
   const items: NavItem[] = [
-    {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      visible: canManage,
-    },
     {
       href: "/my-day",
       label: "Ma journée",
       icon: CalendarCheck2,
       visible: user.role === "EMPLOYEE",
     },
-    { href: "/planning", label: "Planning", icon: CalendarDays, visible: true },
     {
-      href: "/organize",
-      label: "Organisation",
-      icon: ClipboardList,
-      visible: true,
+      href: "/planning",
+      label: "Planning",
+      icon: CalendarDays,
+      visible: canManage,
+    },
+    {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      visible: isAdmin,
     },
     {
       href: "/clients",
@@ -76,11 +70,16 @@ export function AppShell({
       icon: UsersRound,
       visible: canManage,
     },
-    { href: "/employees", label: "Équipe", icon: UserRound, visible: isAdmin },
+    {
+      href: "/employees",
+      label: "Équipe",
+      icon: UserRound,
+      visible: canManage,
+    },
     { href: "/rooms", label: "Salles", icon: DoorOpen, visible: canManage },
     {
       href: "/services",
-      label: "Prestations",
+      label: "Catalogue",
       icon: Sparkles,
       visible: isAdmin,
     },
@@ -124,20 +123,6 @@ export function AppShell({
                 >
                   <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.8} />
                   <span>{item.label}</span>
-                  {item.href === "/organize" && organizationIssueCount > 0 ? (
-                    <span
-                      aria-label={`${organizationIssueCount} élément${organizationIssueCount > 1 ? "s" : ""} à organiser`}
-                      className={`ml-auto inline-flex min-w-6 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums ${
-                        active
-                          ? "bg-white/20 text-white"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {organizationIssueCount > 99
-                        ? "99+"
-                        : organizationIssueCount}
-                    </span>
-                  ) : null}
                 </Link>
               );
             })}
@@ -230,16 +215,12 @@ export function AppShell({
             >
               {(canManage
                 ? [
-                    items.find((item) => item.href === "/dashboard"),
                     items.find((item) => item.href === "/planning"),
-                    items.find((item) => item.href === "/organize"),
                     items.find((item) => item.href === "/clients"),
+                    items.find((item) => item.href === "/employees"),
+                    items.find((item) => item.href === "/services"),
                   ]
-                : [
-                    items.find((item) => item.href === "/my-day"),
-                    items.find((item) => item.href === "/planning"),
-                    items.find((item) => item.href === "/organize"),
-                  ]
+                : [items.find((item) => item.href === "/my-day")]
               )
                 .filter((item): item is NavItem => Boolean(item?.visible))
                 .map((item) => {
@@ -257,14 +238,6 @@ export function AppShell({
                       <span className="max-w-full truncate">
                         {item.label === "Dashboard" ? "Accueil" : item.label}
                       </span>
-                      {item.href === "/organize" &&
-                      organizationIssueCount > 0 ? (
-                        <span className="absolute right-2 top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
-                          {organizationIssueCount > 9
-                            ? "9+"
-                            : organizationIssueCount}
-                        </span>
-                      ) : null}
                     </Link>
                   );
                 })}

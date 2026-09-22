@@ -6,7 +6,6 @@ import { expectNoHorizontalOverflow } from "../helpers/ui";
 
 const adminRoutes = [
   "/planning",
-  "/organize",
   "/dashboard",
   "/clients",
   "/services",
@@ -50,17 +49,13 @@ test.describe("Recette responsive — mobile", () => {
 test.describe("Recette responsive — desktop large", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("planning, organisation et détail n'ont pas d'erreur de rendu majeure", async ({
+  test("planning et détail n'ont pas d'erreur de rendu majeure", async ({
     page,
   }) => {
     const s = await createAppointmentScenario();
     await loginAsAdmin(page);
 
-    for (const route of [
-      "/planning",
-      "/organize",
-      `/appointments/${s.appointment.id}`,
-    ]) {
+    for (const route of ["/planning", `/appointments/${s.appointment.id}`]) {
       await page.goto(route);
       await expect(page.locator("body")).not.toContainText(
         /application error|internal server error|page not found/i,

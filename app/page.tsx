@@ -11,7 +11,5 @@ export default async function HomePage() {
     redirect("/my-day");
   }
 
-  redirect(
-    user.role === "ADMIN" || user.canManageSalon ? "/dashboard" : "/planning",
-  );
+  redirect("/planning");
 }

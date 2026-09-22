@@ -108,9 +108,8 @@ export async function assignRoomToService(
     await validateRoomAvailability(tx, {
       salonId,
       roomId: room.id,
-      scheduledStart: appointmentService.appointment.scheduledStart,
-      estimatedDurationMinutes:
-        appointmentService.appointment.estimatedDurationMinutes,
+      scheduledStart: appointmentService.scheduledStart,
+      estimatedDurationMinutes: appointmentService.durationMinutes,
       requiredRoomType: appointmentService.requiredRoomTypeSnapshot,
       excludeAppointmentId: appointmentService.appointmentId,
     });

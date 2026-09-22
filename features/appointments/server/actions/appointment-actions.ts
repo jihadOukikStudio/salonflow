@@ -9,6 +9,7 @@ import {
   markAppointmentPaidActionSchema,
   createAppointmentActionSchema,
   createAppointmentWithClientActionSchema,
+  createPlannedAppointmentActionSchema,
   updateAppointmentDetailsActionSchema,
   updateAppointmentScheduleActionSchema,
   type AppointmentIdActionInput,
@@ -16,6 +17,7 @@ import {
   type MarkAppointmentPaidActionInput,
   type CreateAppointmentActionInput,
   type CreateAppointmentWithClientActionInput,
+  type CreatePlannedAppointmentActionInput,
   type UpdateAppointmentDetailsActionInput,
   type UpdateAppointmentScheduleActionInput,
 } from "@/features/appointments/schemas";
@@ -28,6 +30,7 @@ import { requirePermission } from "@/server/permissions";
 
 import { createAppointment } from "@/server/services/appointments/create-appointment";
 import { createAppointmentWithClient } from "@/server/services/appointments/create-appointment-with-client";
+import { createPlannedAppointment } from "@/server/services/appointments/create-planned-appointment";
 import { updateAppointmentSchedule } from "@/server/services/appointments/update-appointment-schedule";
 import { updateAppointmentDetails } from "@/server/services/appointments/update-appointment-details";
 import { cancelAppointment } from "@/server/services/appointments/cancel-appointment";
@@ -204,5 +207,16 @@ export async function closeAppointmentAction(input: AppointmentIdActionInput) {
     return {
       appointmentId: appointment.id,
     };
+  });
+}
+
+export async function createPlannedAppointmentAction(
+  input: CreatePlannedAppointmentActionInput,
+) {
+  return runAuthenticatedAction(async (currentUser) => {
+    const data = createPlannedAppointmentActionSchema.parse(input);
+    const appointment = await createPlannedAppointment(currentUser, data);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
+    return { appointmentId: appointment.id };
   });
 }

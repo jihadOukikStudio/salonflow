@@ -70,41 +70,23 @@ export async function validateRoomAvailability(
     );
   }
 
-  const candidates = await tx.appointment.findMany({
+  const candidates = await tx.appointmentService.findMany({
     where: {
-      salonId: input.salonId,
-      ...(input.excludeAppointmentId
-        ? {
-            id: {
-              not: input.excludeAppointmentId,
-            },
-          }
-        : {}),
-      status: {
-        notIn: ["CANCELLED", "CLOSED"],
-      },
-      scheduledStart: {
-        lt: interval.endAt,
-      },
-      services: {
-        some: {
-          roomId: input.roomId,
-        },
+      roomId: input.roomId,
+      scheduledStart: { lt: interval.endAt },
+      appointment: {
+        salonId: input.salonId,
+        ...(input.excludeAppointmentId ? { id: { not: input.excludeAppointmentId } } : {}),
+        status: { notIn: ["CANCELLED", "CLOSED"] },
       },
     },
-    select: {
-      scheduledStart: true,
-      estimatedDurationMinutes: true,
-    },
+    select: { scheduledStart: true, durationMinutes: true },
   });
 
   const conflict = candidates.some((candidate) =>
     intervalsOverlap(interval, {
       startAt: candidate.scheduledStart,
-      endAt: getAppointmentEnd(
-        candidate.scheduledStart,
-        candidate.estimatedDurationMinutes,
-      ),
+      endAt: getAppointmentEnd(candidate.scheduledStart, candidate.durationMinutes),
     }),
   );
 

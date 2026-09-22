@@ -1,21 +1,28 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { CurrentUser } from "@/server/permissions";
+
 import { PermissionDeniedError } from "@/server/permissions";
+
 import { takeUnassignedService } from "@/server/services/appointments/take-unassigned-service";
 
 import {
   BusinessRuleError,
   ResourceNotFoundError,
 } from "@/server/services/errors";
+
 import { testPrisma } from "../helpers/prisma";
+
 import { cleanDatabase } from "../helpers/database";
 
 async function createEmployeeAccount(
   salonId: string,
+
   params?: {
     firstName?: string;
+
     canManageSalon?: boolean;
+
     isActive?: boolean;
   },
 ) {
@@ -24,11 +31,17 @@ async function createEmployeeAccount(
   const user = await testPrisma.user.create({
     data: {
       salonId,
+
       email: `${crypto.randomUUID()}@test.local`,
+
       passwordHash: "test-hash",
+
       firstName,
+
       role: "EMPLOYEE",
+
       canManageSalon: params?.canManageSalon ?? false,
+
       isActive: params?.isActive ?? true,
     },
   });
@@ -36,40 +49,53 @@ async function createEmployeeAccount(
   const employee = await testPrisma.employee.create({
     data: {
       salonId,
+
       userId: user.id,
+
       firstName,
+
       isActive: params?.isActive ?? true,
     },
   });
 
   const currentUser: CurrentUser = {
     id: user.id,
+
     salonId,
+
     role: user.role,
+
     canManageSalon: user.canManageSalon,
+
     isActive: user.isActive,
   };
 
   return {
     user,
+
     employee,
+
     currentUser,
   };
 }
 
-async function createContext() {
+async function createContext(params?: { canManageSalon?: boolean }) {
   const salon = await testPrisma.salon.create({
     data: {
       name: `Salon ${crypto.randomUUID()}`,
     },
   });
 
-  const employeeAccount = await createEmployeeAccount(salon.id);
+  const employeeAccount = await createEmployeeAccount(salon.id, {
+    canManageSalon: params?.canManageSalon ?? true,
+  });
 
   const client = await testPrisma.client.create({
     data: {
       salonId: salon.id,
+
       name: "Cliente",
+
       phone: `+212${crypto.randomUUID().replaceAll("-", "").slice(0, 9)}`,
     },
   });
@@ -77,6 +103,7 @@ async function createContext() {
   const appointment = await testPrisma.appointment.create({
     data: {
       salonId: salon.id,
+
       clientId: client.id,
 
       scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
@@ -88,7 +115,9 @@ async function createContext() {
       services: {
         create: {
           serviceNameSnapshot: "Brushing",
+
           durationMinutes: 60,
+
           price: 100,
         },
       },
@@ -107,9 +136,13 @@ async function createContext() {
 
   return {
     salon,
+
     client,
+
     appointment,
+
     appointmentService,
+
     ...employeeAccount,
   };
 }
@@ -121,19 +154,28 @@ describe("takeUnassignedService", () => {
 
   afterAll(async () => {
     await cleanDatabase();
+
     await testPrisma.$disconnect();
   });
 
-  it("allows a standard employee to take an unassigned service", async () => {
-    const context = await createContext();
-
-    const result = await takeUnassignedService(context.currentUser, {
-      appointmentServiceId: context.appointmentService.id,
+  it("rejects a standard employee taking an unassigned service", async () => {
+    const context = await createContext({
+      canManageSalon: false,
     });
 
-    expect(result.assignedEmployeeId).toBe(context.employee.id);
+    await expect(
+      takeUnassignedService(context.currentUser, {
+        appointmentServiceId: context.appointmentService.id,
+      }),
+    ).rejects.toBeInstanceOf(PermissionDeniedError);
 
-    expect(result.assignedEmployee?.id).toBe(context.employee.id);
+    const service = await testPrisma.appointmentService.findUnique({
+      where: {
+        id: context.appointmentService.id,
+      },
+    });
+
+    expect(service?.assignedEmployeeId).toBeNull();
   });
 
   it("allows an employee with salon management access to take an unassigned service", async () => {
@@ -143,6 +185,7 @@ describe("takeUnassignedService", () => {
       where: {
         id: context.user.id,
       },
+
       data: {
         canManageSalon: true,
       },
@@ -150,6 +193,7 @@ describe("takeUnassignedService", () => {
 
     const currentUser: CurrentUser = {
       ...context.currentUser,
+
       canManageSalon: true,
     };
 
@@ -165,6 +209,7 @@ describe("takeUnassignedService", () => {
 
     const inactiveCurrentUser: CurrentUser = {
       ...context.currentUser,
+
       isActive: false,
     };
 
@@ -189,19 +234,28 @@ describe("takeUnassignedService", () => {
     const admin = await testPrisma.user.create({
       data: {
         salonId: context.salon.id,
+
         email: `${crypto.randomUUID()}@test.local`,
+
         passwordHash: "test-hash",
+
         firstName: "Admin",
+
         role: "ADMIN",
+
         canManageSalon: true,
       },
     });
 
     const adminCurrentUser: CurrentUser = {
       id: admin.id,
+
       salonId: context.salon.id,
+
       role: admin.role,
+
       canManageSalon: admin.canManageSalon,
+
       isActive: admin.isActive,
     };
 
@@ -227,6 +281,7 @@ describe("takeUnassignedService", () => {
       where: {
         id: context.employee.id,
       },
+
       data: {
         isActive: false,
       },
@@ -261,7 +316,9 @@ describe("takeUnassignedService", () => {
     const clientB = await testPrisma.client.create({
       data: {
         salonId: salonB.id,
+
         name: "Cliente B",
+
         phone: "+212600002001",
       },
     });
@@ -269,6 +326,7 @@ describe("takeUnassignedService", () => {
     const appointmentB = await testPrisma.appointment.create({
       data: {
         salonId: salonB.id,
+
         clientId: clientB.id,
 
         scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
@@ -280,7 +338,9 @@ describe("takeUnassignedService", () => {
         services: {
           create: {
             serviceNameSnapshot: "Massage",
+
             durationMinutes: 60,
+
             price: 350,
           },
         },
@@ -390,6 +450,7 @@ describe("takeUnassignedService", () => {
     await testPrisma.employeeUnavailability.create({
       data: {
         employeeId: context.employee.id,
+
         type: "ABSENCE",
 
         startAt: new Date("2026-09-10T09:30:00.000Z"),
@@ -421,6 +482,7 @@ describe("takeUnassignedService", () => {
     await testPrisma.employeeUnavailability.create({
       data: {
         employeeId: context.employee.id,
+
         type: "BREAK",
 
         startAt: new Date("2026-09-10T11:00:00.000Z"),
@@ -444,7 +506,9 @@ describe("takeUnassignedService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600002002",
       },
     });
@@ -452,6 +516,7 @@ describe("takeUnassignedService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
 
         scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
@@ -463,8 +528,11 @@ describe("takeUnassignedService", () => {
         services: {
           create: {
             serviceNameSnapshot: "Coupe",
+
             durationMinutes: 60,
+
             price: 200,
+
             assignedEmployeeId: context.employee.id,
           },
         },
@@ -492,7 +560,9 @@ describe("takeUnassignedService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600002003",
       },
     });
@@ -500,6 +570,7 @@ describe("takeUnassignedService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
 
         scheduledStart: new Date("2026-09-10T09:00:00.000Z"),
@@ -511,8 +582,11 @@ describe("takeUnassignedService", () => {
         services: {
           create: {
             serviceNameSnapshot: "Coupe",
+
             durationMinutes: 60,
+
             price: 200,
+
             assignedEmployeeId: context.employee.id,
           },
         },
@@ -536,6 +610,7 @@ describe("takeUnassignedService", () => {
     const logs = await testPrisma.activityLog.findMany({
       where: {
         salonId: context.salon.id,
+
         entityId: context.appointmentService.id,
       },
     });
@@ -552,6 +627,7 @@ describe("takeUnassignedService", () => {
 
     const employeeB = await createEmployeeAccount(context.salon.id, {
       firstName: "Sara",
+      canManageSalon: true,
     });
 
     const results = await Promise.allSettled([
@@ -569,6 +645,7 @@ describe("takeUnassignedService", () => {
     const rejected = results.filter((result) => result.status === "rejected");
 
     expect(fulfilled).toHaveLength(1);
+
     expect(rejected).toHaveLength(1);
 
     const rejectedResult = rejected[0];
@@ -592,15 +669,12 @@ describe("takeUnassignedService", () => {
     const logs = await testPrisma.activityLog.findMany({
       where: {
         salonId: context.salon.id,
+
         entityId: context.appointmentService.id,
+
         action: "APPOINTMENT_SERVICE_TAKEN",
       },
     });
-
-    /*
-     * Une seule employée a gagné.
-     * Donc une seule trace métier.
-     */
     expect(logs).toHaveLength(1);
   });
 
@@ -610,7 +684,9 @@ describe("takeUnassignedService", () => {
     const secondClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Cliente B",
+
         phone: "+212600002004",
       },
     });
@@ -618,6 +694,7 @@ describe("takeUnassignedService", () => {
     const secondAppointment = await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: secondClient.id,
 
         scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
@@ -629,7 +706,9 @@ describe("takeUnassignedService", () => {
         services: {
           create: {
             serviceNameSnapshot: "Soin visage",
+
             durationMinutes: 60,
+
             price: 500,
           },
         },
@@ -661,6 +740,7 @@ describe("takeUnassignedService", () => {
     const rejected = results.filter((result) => result.status === "rejected");
 
     expect(fulfilled).toHaveLength(1);
+
     expect(rejected).toHaveLength(1);
 
     const rejectedResult = rejected[0];

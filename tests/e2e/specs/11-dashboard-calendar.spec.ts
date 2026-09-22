@@ -45,17 +45,17 @@ test.describe("Phase 12.6 — dashboard et calendrier", () => {
     ).toHaveCount(0);
   });
 
-  test("le planning expose les trois vues calendrier", async ({ page }) => {
+  test("le planning expose la vue principale par employée", async ({
+    page,
+  }) => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
     await page.goto("/planning");
     await expect(
       page.getByRole("link", { name: /planning/i }).first(),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /employées/i })).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /salles/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/une colonne par employée/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /employées/i })).toHaveCount(0);
     await expect(
       page.getByText(/la hauteur des blocs représente la durée/i),
     ).toBeVisible();
@@ -158,7 +158,7 @@ test.describe("Lot 1 — création depuis le planning", () => {
     ).toHaveValue("10:00");
   });
 
-  test("un créneau futur ouvre la popup avec des horaires de 15 minutes et les catégories pliables", async ({
+  test("la création future propose des horaires de 15 minutes et les catégories pliables", async ({
     page,
   }) => {
     await createAppointmentScenario();
@@ -166,9 +166,7 @@ test.describe("Lot 1 — création depuis le planning", () => {
 
     const tomorrowKey = dateKey(1);
     await page.goto(`/planning?date=${tomorrowKey}&view=planning&period=day`);
-    await page
-      .getByRole("link", { name: "Créer un rendez-vous à 10:00" })
-      .click();
+    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
 
     await expect(
       page.getByRole("dialog", { name: "Nouveau rendez-vous" }),

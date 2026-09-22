@@ -1,6 +1,8 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
 export async function expectNoHorizontalOverflow(page: Page) {
+  await page.waitForLoadState("domcontentloaded");
+  await expect(page.locator("body")).toBeVisible();
   const hasOverflow = await page.evaluate(() => {
     const root = document.documentElement;
     return root.scrollWidth > root.clientWidth + 2;

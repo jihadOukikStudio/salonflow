@@ -28,33 +28,19 @@ test.describe("Phase 12 — permissions de navigation", () => {
     });
   }
 
-  test("l'employée standard ne voit pas les écrans d'administration réservés dans le planning", async ({
-    page,
-  }) => {
+  test("l'employée standard est limitée à Ma journée", async ({ page }) => {
     await loginAsEmployee(page);
     await page.goto("/planning");
 
+    await expect(page).toHaveURL(/\/my-day/);
+    await expect(page.locator("body")).toContainText(/ma journée/i);
     await expect(page.locator('a[href="/clients"]')).toHaveCount(0);
     await expect(page.locator('a[href="/employees"]')).toHaveCount(0);
     await expect(page.locator('a[href="/rooms"]')).toHaveCount(0);
     await expect(page.locator('a[href="/services"]')).toHaveCount(0);
-    await expect(page.locator('a[href="/appointments/new"]')).toHaveCount(0);
-
     await expect(
       page.getByRole("link", { name: "Organisation", exact: true }),
-    ).toBeVisible();
-
-    const planningViews = page.getByRole("navigation", {
-      name: "Vue du planning",
-    });
-
-    await expect(
-      planningViews.getByRole("link", { name: "Employées", exact: true }),
-    ).toBeVisible();
-
-    await expect(
-      planningViews.getByRole("link", { name: "Salles", exact: true }),
-    ).toBeVisible();
+    ).toHaveCount(0);
   });
 
   for (const route of [
@@ -71,19 +57,18 @@ test.describe("Phase 12 — permissions de navigation", () => {
       await loginAsEmployee(page);
       await page.goto(route);
 
-      await expect(page).toHaveURL(/\/planning(?:\?|$)/);
+      await expect(page).toHaveURL(/\/my-day(?:\?|$)/);
       await expect(page.locator("body")).not.toContainText(
         /permissiondeniederror|seule la gérante peut gérer|uncaught/i,
       );
     });
   }
 
-  test("À organiser ne propose pas le raccourci Équipe à l'employée standard", async ({
+  test("l'ancien écran Organisation redirige aussi l'employée vers Ma journée", async ({
     page,
   }) => {
     await loginAsEmployee(page);
     await page.goto("/organize");
-
-    await expect(page.locator('a[href="/employees"]')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/my-day(?:\?|$)/);
   });
 });

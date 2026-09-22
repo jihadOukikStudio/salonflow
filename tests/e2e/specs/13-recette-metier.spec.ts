@@ -6,7 +6,7 @@ import {
   parsePlanningDate,
 } from "@/features/planning/server/casablanca-day";
 import { loginAsAdmin, loginAsEmployee } from "../helpers/auth";
-import { organizationCard, serviceCard } from "../helpers/ui";
+import { serviceCard } from "../helpers/ui";
 
 function organizationTodayDate() {
   const today = parsePlanningDate(undefined, new Date());
@@ -20,43 +20,10 @@ test.describe("Recette métier — parcours critique", () => {
     page,
   }) => {
     const s = await createAppointmentScenario({
-      assignedEmployeeId: null,
-      roomId: null,
       scheduledStart: organizationTodayDate(),
     });
 
     await loginAsAdmin(page);
-    await page.goto("/organize");
-
-    const card = organizationCard(page, "Soin visage E2E");
-    await expect(card).toBeVisible();
-
-    await card.locator("select").first().selectOption(s.amina.id);
-    await expect
-      .poll(async () => {
-        const row = await testPrisma.appointmentService.findUnique({
-          where: { id: s.appointmentService.id },
-          select: { assignedEmployeeId: true },
-        });
-        return row?.assignedEmployeeId;
-      })
-      .toBe(s.amina.id);
-
-    const refreshedCard = organizationCard(page, "Soin visage E2E");
-    await refreshedCard
-      .locator("select")
-      .last()
-      .selectOption(s.treatmentRoom1.id);
-
-    await expect
-      .poll(async () => {
-        const row = await testPrisma.appointmentService.findUnique({
-          where: { id: s.appointmentService.id },
-          select: { roomId: true },
-        });
-        return row?.roomId;
-      })
-      .toBe(s.treatmentRoom1.id);
 
     // Pour tester l'exécution sans attendre le lendemain.
     await testPrisma.appointment.update({
@@ -134,54 +101,30 @@ test.describe("Recette métier — parcours critique", () => {
     expect(actions.length).toBeGreaterThan(0);
   });
 
-  test("un rendez-vous incomplet reste visible dans Organisation", async ({
+  test("un rendez-vous incomplet est signalé dans le planning", async ({
     page,
   }) => {
-    const s = await createAppointmentScenario({
+    await createAppointmentScenario({
       scheduledStart: organizationTodayDate(),
       assignedEmployeeId: null,
       roomId: null,
     });
-
     await loginAsAdmin(page);
-    await page.goto("/organize");
-
-    const card = organizationCard(page, "Soin visage E2E");
-    await expect(card).toBeVisible();
-    await expect(card.locator("select")).toHaveCount(2);
-
-    await card.locator("select").first().selectOption(s.sara.id);
-
-    await expect
-      .poll(async () => {
-        const row = await testPrisma.appointmentService.findUnique({
-          where: { id: s.appointmentService.id },
-          select: { assignedEmployeeId: true, roomId: true },
-        });
-        return row;
-      })
-      .toMatchObject({ assignedEmployeeId: s.sara.id, roomId: null });
-
-    // Il reste une décision à régler : la salle.
-    await expect(organizationCard(page, "Soin visage E2E")).toBeVisible();
+    await page.goto("/planning");
+    await expect(page.locator("body")).toContainText(/à organiser\s*1/i);
+    await expect(page.getByText("Soin visage E2E")).toHaveCount(0);
   });
 
-  test("un rendez-vous totalement organisé reste consultable", async ({
+  test("un rendez-vous totalement organisé reste consultable dans le planning", async ({
     page,
   }) => {
     await createAppointmentScenario({
       scheduledStart: organizationTodayDate(),
     });
-
     await loginAsAdmin(page);
-    await page.goto("/organize");
-
-    await expect(page.locator("body")).toContainText(
-      /organisé|tout est organisé/i,
-    );
-    await expect(
-      page.getByRole("link", { name: /cliente e2e|voir/i }).first(),
-    ).toBeVisible();
+    await page.goto("/planning");
+    await expect(page.locator("body")).toContainText(/à organiser\s*0/i);
+    await expect(page.locator("body")).toContainText("Soin visage E2E");
   });
 
   test("l'employée peut exécuter uniquement sa prestation affectée", async ({

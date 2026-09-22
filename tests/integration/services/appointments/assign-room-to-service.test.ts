@@ -1,18 +1,24 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { CurrentUser } from "@/server/permissions";
+import { PermissionDeniedError } from "@/server/permissions";
+
 import { assignRoomToService } from "@/server/services/appointments/assign-room-to-service";
+
 import {
   BusinessRuleError,
   ResourceNotFoundError,
 } from "@/server/services/errors";
 
 import { cleanDatabase } from "../../helpers/database";
+
 import { testPrisma } from "../../helpers/prisma";
 
 async function createContext(params?: {
   role?: "ADMIN" | "EMPLOYEE";
+
   canManageSalon?: boolean;
+
   requiredRoomType?: "HAMAM" | "TREATMENT_ROOM" | null;
 }) {
   const salon = await testPrisma.salon.create({
@@ -24,10 +30,15 @@ async function createContext(params?: {
   const user = await testPrisma.user.create({
     data: {
       salonId: salon.id,
+
       email: `${crypto.randomUUID()}@test.local`,
+
       passwordHash: "test-hash",
+
       firstName: "User",
+
       role: params?.role ?? "ADMIN",
+
       canManageSalon: params?.canManageSalon ?? true,
     },
   });
@@ -35,7 +46,9 @@ async function createContext(params?: {
   const client = await testPrisma.client.create({
     data: {
       salonId: salon.id,
+
       name: "Cliente",
+
       phone: `+212${crypto.randomUUID().replaceAll("-", "").slice(0, 9)}`,
     },
   });
@@ -43,8 +56,11 @@ async function createContext(params?: {
   const room = await testPrisma.room.create({
     data: {
       salonId: salon.id,
+
       name: "Salle de soins 1",
+
       type: "TREATMENT_ROOM",
+
       capacity: 1,
     },
   });
@@ -52,8 +68,11 @@ async function createContext(params?: {
   const hamamRoom = await testPrisma.room.create({
     data: {
       salonId: salon.id,
+
       name: "Hamam individuel",
+
       type: "HAMAM",
+
       capacity: 1,
     },
   });
@@ -61,16 +80,23 @@ async function createContext(params?: {
   const appointment = await testPrisma.appointment.create({
     data: {
       salonId: salon.id,
+
       clientId: client.id,
+
       scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+
       estimatedDurationMinutes: 60,
+
       createdByUserId: user.id,
 
       services: {
         create: {
           serviceNameSnapshot: "Massage",
+
           durationMinutes: 60,
+
           price: 350,
+
           requiredRoomTypeSnapshot:
             params?.requiredRoomType === undefined
               ? "TREATMENT_ROOM"
@@ -92,20 +118,31 @@ async function createContext(params?: {
 
   const currentUser: CurrentUser = {
     id: user.id,
+
     salonId: salon.id,
+
     role: user.role,
+
     canManageSalon: user.canManageSalon,
+
     isActive: user.isActive,
   };
 
   return {
     salon,
+
     user,
+
     currentUser,
+
     client,
+
     room,
+
     hamamRoom,
+
     appointment,
+
     appointmentService,
   };
 }
@@ -117,6 +154,7 @@ describe("assignRoomToService", () => {
 
   afterAll(async () => {
     await cleanDatabase();
+
     await testPrisma.$disconnect();
   });
 
@@ -125,48 +163,54 @@ describe("assignRoomToService", () => {
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
     expect(result.roomId).toBe(context.room.id);
+
     expect(result.room?.id).toBe(context.room.id);
   });
 
   it("allows an employee with salon management access to assign a room", async () => {
     const context = await createContext({
       role: "EMPLOYEE",
+
       canManageSalon: true,
     });
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
     expect(result.roomId).toBe(context.room.id);
   });
 
-  it("allows a standard employee to assign a room operationally", async () => {
+  it("rejects a standard employee assigning a room operationally", async () => {
     const context = await createContext({
       role: "EMPLOYEE",
       canManageSalon: false,
     });
 
-    const result = await assignRoomToService(context.currentUser, {
-      appointmentServiceId: context.appointmentService.id,
-      roomId: context.room.id,
-    });
-
-    expect(result.roomId).toBe(context.room.id);
+    await expect(
+      assignRoomToService(context.currentUser, {
+        appointmentServiceId: context.appointmentService.id,
+        roomId: context.room.id,
+      }),
+    ).rejects.toBeInstanceOf(PermissionDeniedError);
   });
 
   it("rejects a room belonging to another salon", async () => {
     const salonA = await createContext();
+
     const salonB = await createContext();
 
     await expect(
       assignRoomToService(salonA.currentUser, {
         appointmentServiceId: salonA.appointmentService.id,
+
         roomId: salonB.room.id,
       }),
     ).rejects.toBeInstanceOf(ResourceNotFoundError);
@@ -182,11 +226,13 @@ describe("assignRoomToService", () => {
 
   it("rejects an appointment service belonging to another salon", async () => {
     const salonA = await createContext();
+
     const salonB = await createContext();
 
     await expect(
       assignRoomToService(salonA.currentUser, {
         appointmentServiceId: salonB.appointmentService.id,
+
         roomId: salonA.room.id,
       }),
     ).rejects.toBeInstanceOf(ResourceNotFoundError);
@@ -199,6 +245,7 @@ describe("assignRoomToService", () => {
       where: {
         id: context.room.id,
       },
+
       data: {
         isActive: false,
       },
@@ -207,6 +254,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.room.id,
       }),
     ).rejects.toBeInstanceOf(ResourceNotFoundError);
@@ -228,6 +276,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.hamamRoom.id,
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -248,6 +297,7 @@ describe("assignRoomToService", () => {
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.hamamRoom.id,
     });
 
@@ -260,9 +310,13 @@ describe("assignRoomToService", () => {
     await testPrisma.roomUnavailability.create({
       data: {
         roomId: context.room.id,
+
         startAt: new Date("2026-09-10T09:30:00.000Z"),
+
         endAt: new Date("2026-09-10T10:30:00.000Z"),
+
         reason: "Maintenance",
+
         createdByUserId: context.user.id,
       },
     });
@@ -270,6 +324,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.room.id,
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -289,15 +344,20 @@ describe("assignRoomToService", () => {
     await testPrisma.roomUnavailability.create({
       data: {
         roomId: context.room.id,
+
         startAt: new Date("2026-09-10T11:00:00.000Z"),
+
         endAt: new Date("2026-09-10T12:00:00.000Z"),
+
         reason: "Maintenance",
+
         createdByUserId: context.user.id,
       },
     });
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
@@ -310,7 +370,9 @@ describe("assignRoomToService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600000201",
       },
     });
@@ -318,17 +380,25 @@ describe("assignRoomToService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
+
         scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
+
         estimatedDurationMinutes: 60,
+
         createdByUserId: context.user.id,
 
         services: {
           create: {
             serviceNameSnapshot: "Soin visage",
+
             durationMinutes: 60,
+
             price: 500,
+
             requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+
             roomId: context.room.id,
           },
         },
@@ -338,6 +408,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.room.id,
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -357,7 +428,9 @@ describe("assignRoomToService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600000202",
       },
     });
@@ -365,17 +438,25 @@ describe("assignRoomToService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
+
         scheduledStart: new Date("2026-09-10T09:00:00.000Z"),
+
         estimatedDurationMinutes: 60,
+
         createdByUserId: context.user.id,
 
         services: {
           create: {
             serviceNameSnapshot: "Soin visage",
+
             durationMinutes: 60,
+
             price: 500,
+
             requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+
             roomId: context.room.id,
           },
         },
@@ -384,6 +465,7 @@ describe("assignRoomToService", () => {
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
@@ -396,7 +478,9 @@ describe("assignRoomToService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600000203",
       },
     });
@@ -404,18 +488,27 @@ describe("assignRoomToService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
+
         scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
+
         estimatedDurationMinutes: 60,
+
         status: "CANCELLED",
+
         createdByUserId: context.user.id,
 
         services: {
           create: {
             serviceNameSnapshot: "Soin visage",
+
             durationMinutes: 60,
+
             price: 500,
+
             requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+
             roomId: context.room.id,
           },
         },
@@ -424,6 +517,7 @@ describe("assignRoomToService", () => {
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
@@ -436,7 +530,9 @@ describe("assignRoomToService", () => {
     const otherClient = await testPrisma.client.create({
       data: {
         salonId: context.salon.id,
+
         name: "Autre cliente",
+
         phone: "+212600000204",
       },
     });
@@ -444,18 +540,27 @@ describe("assignRoomToService", () => {
     await testPrisma.appointment.create({
       data: {
         salonId: context.salon.id,
+
         clientId: otherClient.id,
+
         scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
+
         estimatedDurationMinutes: 60,
+
         status: "CLOSED",
+
         createdByUserId: context.user.id,
 
         services: {
           create: {
             serviceNameSnapshot: "Soin visage",
+
             durationMinutes: 60,
+
             price: 500,
+
             requiredRoomTypeSnapshot: "TREATMENT_ROOM",
+
             roomId: context.room.id,
           },
         },
@@ -464,6 +569,7 @@ describe("assignRoomToService", () => {
 
     const result = await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
@@ -477,6 +583,7 @@ describe("assignRoomToService", () => {
       where: {
         id: context.appointment.id,
       },
+
       data: {
         status: "CANCELLED",
       },
@@ -485,6 +592,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.room.id,
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -497,6 +605,7 @@ describe("assignRoomToService", () => {
       where: {
         id: context.appointment.id,
       },
+
       data: {
         status: "CLOSED",
       },
@@ -505,6 +614,7 @@ describe("assignRoomToService", () => {
     await expect(
       assignRoomToService(context.currentUser, {
         appointmentServiceId: context.appointmentService.id,
+
         roomId: context.room.id,
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
@@ -515,17 +625,20 @@ describe("assignRoomToService", () => {
 
     await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
     const log = await testPrisma.activityLog.findFirst({
       where: {
         salonId: context.salon.id,
+
         entityId: context.appointmentService.id,
       },
     });
 
     expect(log?.action).toBe("APPOINTMENT_SERVICE_ROOM_ASSIGNED");
+
     expect(log?.userId).toBe(context.user.id);
   });
 
@@ -535,19 +648,24 @@ describe("assignRoomToService", () => {
     const secondRoom = await testPrisma.room.create({
       data: {
         salonId: context.salon.id,
+
         name: "Salle de soins 2",
+
         type: "TREATMENT_ROOM",
+
         capacity: 1,
       },
     });
 
     await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: context.room.id,
     });
 
     await assignRoomToService(context.currentUser, {
       appointmentServiceId: context.appointmentService.id,
+
       roomId: secondRoom.id,
     });
 
@@ -562,8 +680,10 @@ describe("assignRoomToService", () => {
     const logs = await testPrisma.activityLog.findMany({
       where: {
         salonId: context.salon.id,
+
         entityId: context.appointmentService.id,
       },
+
       orderBy: {
         createdAt: "asc",
       },

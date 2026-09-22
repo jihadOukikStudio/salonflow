@@ -46,6 +46,7 @@ export async function searchClientsAction(input: SearchClientsActionInput) {
         id: client.id,
         name: client.name?.trim() || "Cliente sans nom",
         phone: client.phone,
+        internalNote: client.internalNote,
       })),
     };
   });

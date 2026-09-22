@@ -474,13 +474,15 @@ function AppointmentsCalendar({
 }
 
 function ResourceCalendar({
+  dateKey,
   mode,
   appointments,
   employees,
   rooms,
   showNow,
   nowTop,
-}: Omit<Props, "dateKey"> & {
+  canCreateAppointment = false,
+}: Props & {
   showNow: boolean;
   nowTop: number;
 }) {
@@ -613,21 +615,47 @@ function ResourceCalendar({
               >
                 <TimeGrid />
 
-                {entriesFor(column.id).map((appointment) => {
-                  const top = Math.max(0, topFor(appointment.scheduledStart));
-                  const height = Math.min(
-                    heightFor(
-                      appointment.scheduledStart,
-                      appointment.scheduledEnd,
-                    ),
-                    CALENDAR_HEIGHT - top,
-                  );
+                {canCreateAppointment && mode === "employees"
+                  ? Array.from(
+                      { length: (FLEX_END_MINUTE - START_HOUR * 60) / 15 },
+                      (_, index) => START_HOUR * 60 + index * 15,
+                    ).map((minute) => {
+                      const hour = Math.floor(minute / 60);
+                      const mins = minute % 60;
+                      const timeValue = `${String(hour).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+                      return (
+                        <Link
+                          key={`slot-${column.id}-${timeValue}`}
+                          href={`/planning?date=${encodeURIComponent(dateKey)}&view=employees&period=day&new=1&time=${encodeURIComponent(timeValue)}&employee=${encodeURIComponent(column.id)}`}
+                          aria-label={`Préparer un rendez-vous avec ${column.name} à ${timeValue}`}
+                          className="absolute inset-x-0 z-[1] hover:bg-violet-50/60 focus-visible:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-300"
+                          style={{ top: ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT, height: HOUR_HEIGHT / 4 }}
+                        />
+                      );
+                    })
+                  : null}
 
+                {entriesFor(column.id).map((appointment) => {
                   const relevantServices = appointment.services.filter(
                     (service) =>
                       mode === "employees"
                         ? service.assignedEmployee?.id === column.id
                         : service.room?.id === column.id,
+                  );
+                  const relevantStart = relevantServices.reduce(
+                    (value, service) =>
+                      service.scheduledStart < value ? service.scheduledStart : value,
+                    relevantServices[0]?.scheduledStart ?? appointment.scheduledStart,
+                  );
+                  const relevantEnd = relevantServices.reduce(
+                    (value, service) =>
+                      service.scheduledEnd > value ? service.scheduledEnd : value,
+                    relevantServices[0]?.scheduledEnd ?? appointment.scheduledEnd,
+                  );
+                  const top = Math.max(0, topFor(relevantStart));
+                  const height = Math.min(
+                    heightFor(relevantStart, relevantEnd),
+                    CALENDAR_HEIGHT - top,
                   );
 
                   return (
@@ -653,8 +681,8 @@ function ResourceCalendar({
                         </div>
 
                         <p className="mt-0.5 text-[11px] font-semibold text-slate-600">
-                          {formatPlanningTime(appointment.scheduledStart)} –{" "}
-                          {formatPlanningTime(appointment.scheduledEnd)}
+                          {formatPlanningTime(relevantStart)} –{" "}
+                          {formatPlanningTime(relevantEnd)}
                         </p>
 
                         {height >= 66 ? (
@@ -751,12 +779,14 @@ export function DayCalendar({
         />
       ) : (
         <ResourceCalendar
+          dateKey={dateKey}
           mode={mode}
           appointments={appointments}
           employees={employees}
           rooms={rooms}
           showNow={showNow}
           nowTop={nowTop}
+          canCreateAppointment={canCreateAppointment}
         />
       )}
     </div>

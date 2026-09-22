@@ -149,7 +149,7 @@ function ClientCard({
             className={`${inputClass} min-h-24 py-3 sm:col-span-2`}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Note interne"
+            placeholder="Préférences et notes : coloration habituelle, employée préférée, sensibilités…"
           />
           <button
             disabled={pending || !name.trim() || !phone.trim()}
@@ -162,7 +162,7 @@ function ClientCard({
                     phone,
                     internalNote: note || null,
                   }),
-                "Fiche cliente enregistrée.",
+                "Préférences cliente enregistrées.",
               )
             }
             className="w-fit rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"

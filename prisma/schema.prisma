@@ -196,7 +196,7 @@ model Appointment {
   id                       String            @id @default(uuid()) @db.Uuid
   salonId                  String            @db.Uuid
   clientId                 String            @db.Uuid
-  scheduledStart           DateTime
+  scheduledStart           DateTime                   @default(now())
   estimatedDurationMinutes Int
   status                   AppointmentStatus @default(PLANNED)
   internalNote             String?
@@ -228,6 +228,7 @@ model AppointmentService {
   serviceId                String?                  @db.Uuid
   serviceNameSnapshot      String
   durationMinutes          Int
+  scheduledStart           DateTime                   @default(now())
   price                    Decimal                  @db.Decimal(10, 2)
   requiredRoomTypeSnapshot RoomType?
   status                   AppointmentServiceStatus @default(TODO)
@@ -236,6 +237,7 @@ model AppointmentService {
   roomId                   String?                  @db.Uuid
   actualStartedAt          DateTime?
   actualFinishedAt         DateTime?
+  employeeComment          String?                  @db.VarChar(2000)
   createdAt                DateTime                 @default(now())
   updatedAt                DateTime                 @updatedAt
 
@@ -250,6 +252,7 @@ model AppointmentService {
   parallelGroupLinks ParallelGroupService[]
 
   @@index([appointmentId])
+  @@index([scheduledStart])
   @@index([assignedEmployeeId])
   @@index([performedByEmployeeId])
   @@index([roomId])

@@ -1,28 +1,21 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus, X } from "lucide-react";
 
-import { NewAppointmentForm } from "@/features/appointments/new/components";
+import { PlanningAppointmentBuilder } from "@/features/appointments/new/components";
 import { getMinimumBookableCasablancaDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
 import { getNewAppointmentOptions } from "@/features/appointments/new/server";
 import {
   PlanningDateNavigation,
   PlanningSummary,
-  PlanningViewTabs,
 } from "@/features/planning/components";
 import { DayCalendar } from "@/features/planning/components/day-calendar";
-import {
-  PlanningPeriodTabs,
-  type PlanningPeriod,
-} from "@/features/planning/components/planning-period-tabs";
+import { type PlanningPeriod } from "@/features/planning/components/planning-period-tabs";
 import {
   PlanningPeriodView,
   type PlanningPeriodDay,
 } from "@/features/planning/components/planning-period-view";
-import {
-  getPlanningDay,
-  parsePlanningDate,
-  parsePlanningView,
-} from "@/features/planning/server";
+import { getPlanningDay, parsePlanningDate } from "@/features/planning/server";
 import { shiftPlanningDate } from "@/features/planning/server/casablanca-day";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { getCurrentUser } from "@/server/auth/get-current-user";
@@ -34,12 +27,9 @@ type PlanningPageProps = {
     period?: string;
     new?: string;
     time?: string;
+    employee?: string;
   }>;
 };
-
-function parsePeriod(value: string | undefined): PlanningPeriod {
-  return value === "week" || value === "month" ? value : "day";
-}
 
 function mondayOf(dateKey: string) {
   const date = new Date(`${dateKey}T12:00:00.000Z`);
@@ -71,11 +61,13 @@ export default async function PlanningPage({
 }: PlanningPageProps) {
   const currentUser = await getCurrentUser();
   const user = await getAuthoritativeCurrentUser(currentUser);
+  if (user.role === "EMPLOYEE" && !user.canManageSalon) {
+    redirect("/my-day");
+  }
   const params = await searchParams;
   const dateKey = parsePlanningDate(params.date);
-  const view = parsePlanningView(params.view);
-  const requestedPeriod = parsePeriod(params.period);
-  const period: PlanningPeriod = view === "planning" ? requestedPeriod : "day";
+  const view = "employees" as const;
+  const period: PlanningPeriod = "day";
   const planning = await getPlanningDay(user, dateKey);
   const canManageSalon = user.role === "ADMIN" || user.canManageSalon;
   const shouldOpenNewAppointment = canManageSalon && params.new === "1";
@@ -169,12 +161,9 @@ export default async function PlanningPage({
             </Link>
           ) : null}
         </header>
-
-        <div className="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <PlanningViewTabs dateKey={planning.dateKey} view={view} />
-          {view === "planning" ? (
-            <PlanningPeriodTabs dateKey={planning.dateKey} period={period} />
-          ) : null}
+        <div className="mt-5 text-sm text-slate-600">
+          Une colonne par employée · cliquez sur un créneau libre pour créer un
+          rendez-vous.
         </div>
 
         <div className="mt-4">
@@ -260,7 +249,7 @@ export default async function PlanningPage({
                   Nouveau rendez-vous
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Le créneau du planning est prérempli et reste modifiable.
+                  Construisez le rendez-vous au fur et à mesure de l’appel, puis confirmez toutes les affectations en une seule fois.
                 </p>
               </div>
               <Link
@@ -272,16 +261,17 @@ export default async function PlanningPage({
               </Link>
             </div>
 
-            <NewAppointmentForm
+            <PlanningAppointmentBuilder
               services={newAppointmentOptions.services}
-              initialDate={
+              employees={newAppointmentOptions.employees}
+              rooms={newAppointmentOptions.rooms}
+              dateKey={
                 planning.dateKey < minimumBooking.dateKey
                   ? minimumBooking.dateKey
                   : planning.dateKey
               }
               initialTime={requestedTime}
-              initialMinimumBooking={minimumBooking}
-              canConfigureServices={user.role === "ADMIN"}
+              initialEmployeeId={params.employee}
               cancelHref={`/planning?date=${encodeURIComponent(planning.dateKey)}&view=${view}&period=${period}`}
             />
           </div>

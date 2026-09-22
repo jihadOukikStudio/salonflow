@@ -36,20 +36,26 @@ export const createClientActionSchema = z.object({
 
 export const searchClientsActionSchema = z
   .object({
-    phone: z.string().trim().max(30),
+    // `query` alimente le nouveau champ unique nom / téléphone.
+    // phone + name restent acceptés pour ne pas casser l'ancien formulaire.
+    query: z.string().trim().max(120).optional(),
+    phone: z.string().trim().max(30).optional().default(""),
     name: z.string().trim().max(120).optional().default(""),
   })
   .transform((value) => ({
+    query: value.query?.trim() || "",
     phoneDigits: phoneDigits(value.phone),
     name: value.name.trim(),
   }))
   .superRefine((value, context) => {
+    if (value.query) {
+      if (value.query.length < 2) {
+        context.addIssue({ code: "custom", path: ["query"], message: "Saisissez au moins 2 caractères." });
+      }
+      return;
+    }
     if (value.phoneDigits.length < 4) {
-      context.addIssue({
-        code: "custom",
-        path: ["phone"],
-        message: "Saisissez au moins 4 chiffres du téléphone.",
-      });
+      context.addIssue({ code: "custom", path: ["phone"], message: "Saisissez au moins 4 chiffres du téléphone." });
     }
   });
 

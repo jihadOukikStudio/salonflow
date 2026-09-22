@@ -177,6 +177,13 @@ export const appointmentServiceIdActionSchema = z
   })
   .strict();
 
+export const updateAppointmentServiceCommentActionSchema = z
+  .object({
+    appointmentServiceId: uuidSchema,
+    comment: z.string().trim().max(2000, "Le commentaire est trop long.").nullable(),
+  })
+  .strict();
+
 export const assignEmployeeActionSchema = z
   .object({
     appointmentServiceId: uuidSchema,
@@ -257,4 +264,26 @@ export type RemoveParallelGroupActionInput = z.input<
 
 export type CheckBookingFeasibilityActionInput = z.input<
   typeof checkBookingFeasibilityActionSchema
+>;
+
+export const createPlannedAppointmentActionSchema = z
+  .object({
+    client: z.discriminatedUnion("type", [
+      z.object({ type: z.literal("existing"), clientId: uuidSchema, clientNote: internalNoteSchema.optional() }).strict(),
+      z.object({ type: z.literal("new"), name: clientNameSchema, phone: clientPhoneSchema, clientNote: internalNoteSchema.optional() }).strict(),
+    ]),
+    internalNote: internalNoteSchema.optional(),
+    services: z.array(z.object({
+      serviceId: uuidSchema,
+      scheduledStart: dateTimeSchema,
+      employeeId: uuidSchema,
+      roomId: uuidSchema.nullable().optional(),
+      durationMinutes: positiveDurationSchema.optional(),
+      price: moneySchema.optional(),
+    }).strict()).min(1).max(50),
+  })
+  .strict();
+
+export type CreatePlannedAppointmentActionInput = z.input<
+  typeof createPlannedAppointmentActionSchema
 >;

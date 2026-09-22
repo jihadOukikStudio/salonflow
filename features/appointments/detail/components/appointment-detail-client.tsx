@@ -403,6 +403,12 @@ export function AppointmentDetailClient({ detail }: Props) {
                         Réalisée par : {service.performedByEmployee.name}
                       </p>
                     ) : null}
+                    {service.employeeComment ? (
+                      <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                        <span className="font-semibold">Commentaire employée :</span>{" "}
+                        {service.employeeComment}
+                      </div>
+                    ) : null}
                   </div>
 
                   {detail.canManageAppointment &&
@@ -437,7 +443,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <select
                       className={inputClass}
                       value={service.assignedEmployee?.id ?? ""}
-                      disabled={pending || isFinal}
+                      disabled={pending || isFinal || !detail.canManageAppointment}
                       onChange={(event) => {
                         if (!event.target.value) return;
                         run(
@@ -488,7 +494,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                       <select
                         className={inputClass}
                         value={service.room?.id ?? ""}
-                        disabled={pending || isFinal}
+                        disabled={pending || isFinal || !detail.canManageAppointment}
                         onChange={(event) => {
                           if (!event.target.value) return;
                           run(
@@ -517,7 +523,8 @@ export function AppointmentDetailClient({ detail }: Props) {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {!service.assignedEmployee &&
+                  {detail.canManageAppointment &&
+                  !service.assignedEmployee &&
                   detail.currentEmployeeId &&
                   !isFinal ? (
                     <button

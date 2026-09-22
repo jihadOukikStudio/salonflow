@@ -11,9 +11,9 @@ describe("dashboard access", () => {
     expect(canViewDashboardFinance(user)).toBe(true);
   });
 
-  it("autorise la responsable sans finances", () => {
+  it("refuse le dashboard à la responsable", () => {
     const user = { role: "EMPLOYEE" as const, canManageSalon: true };
-    expect(canAccessDashboard(user)).toBe(true);
+    expect(canAccessDashboard(user)).toBe(false);
     expect(canViewDashboardFinance(user)).toBe(false);
   });
 

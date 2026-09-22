@@ -123,12 +123,12 @@ describe("permissions", () => {
       expect(hasPermission(employee, "appointments:cancel")).toBe(false);
     });
 
-    it("can participate in operational assignment", () => {
-      expect(hasPermission(employee, "appointments:assign")).toBe(true);
+    it("cannot participate in operational assignment", () => {
+      expect(hasPermission(employee, "appointments:assign")).toBe(false);
 
       expect(
         hasPermission(employee, "appointments:take-unassigned-service"),
-      ).toBe(true);
+      ).toBe(false);
     });
 
     it("can update the status of their own service", () => {

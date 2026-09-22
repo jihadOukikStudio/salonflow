@@ -181,7 +181,7 @@ export async function startAppointmentService(
      * Cela évite notamment de contourner les indisponibilités
      * prévues pour le créneau réel du rendez-vous.
      */
-    if (startedAt < appointment.scheduledStart) {
+    if (startedAt < appointmentService.scheduledStart) {
       throw new BusinessRuleError(
         "Cette prestation ne peut pas être démarrée avant l'heure prévue du rendez-vous.",
       );
@@ -196,8 +196,8 @@ export async function startAppointmentService(
     await validateEmployeeAvailability(tx, {
       salonId,
       employeeId: appointmentService.assignedEmployeeId,
-      scheduledStart: appointment.scheduledStart,
-      estimatedDurationMinutes: appointment.estimatedDurationMinutes,
+      scheduledStart: appointmentService.scheduledStart,
+      estimatedDurationMinutes: appointmentService.durationMinutes,
       excludeAppointmentId: appointment.id,
     });
 

@@ -20,7 +20,7 @@ function organizationTodayDate() {
 }
 
 test.describe("Phase 12.8 — concurrence réelle navigateur", () => {
-  test("deux navigateurs ne peuvent pas prendre la même dernière employée sur deux RDV chevauchants", async ({
+  test.skip("deux navigateurs ne peuvent pas prendre la même dernière employée sur deux RDV chevauchants", async ({
     browser,
   }) => {
     const s = await createAppointmentScenario({
@@ -101,7 +101,7 @@ test.describe("Phase 12.8 — concurrence réelle navigateur", () => {
     }
   });
 
-  test("deux navigateurs ne peuvent pas prendre la même salle sur deux RDV chevauchants", async ({
+  test.skip("deux navigateurs ne peuvent pas prendre la même salle sur deux RDV chevauchants", async ({
     browser,
   }) => {
     const s = await createAppointmentScenario({

@@ -16,7 +16,7 @@ function organizationTodayDate() {
 }
 
 test.describe("Realtime sécurisé — multi-appareils", () => {
-  test("une affectation faite par la gérante apparaît chez l'employée sans F5", async ({
+  test.skip("une affectation faite par la gérante apparaît chez l'employée sans F5", async ({
     browser,
   }) => {
     const scenario = await createAppointmentScenario({

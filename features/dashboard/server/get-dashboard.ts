@@ -40,26 +40,38 @@ async function completedServicesByEmployee(
   end: Date,
   employeeNames: Map<string, string>,
 ) {
-  const rows = await prisma.appointmentService.groupBy({
-    by: ["performedByEmployeeId"],
+  const rows = await prisma.appointmentService.findMany({
     where: {
       status: "DONE",
       performedByEmployeeId: { not: null },
-      appointment: {
-        salonId,
-        scheduledStart: { gte: start, lt: end },
-      },
+      appointment: { salonId, scheduledStart: { gte: start, lt: end } },
     },
-    _count: { _all: true },
+    select: {
+      performedByEmployeeId: true,
+      appointmentId: true,
+      serviceNameSnapshot: true,
+    },
   });
-
-  return rows
-    .filter((row) => row.performedByEmployeeId !== null)
-    .map((row) => ({
-      employeeId: row.performedByEmployeeId as string,
-      name:
-        employeeNames.get(row.performedByEmployeeId as string) ?? "Employée",
-      completedServices: row._count._all,
+  const byEmployee = new Map<
+    string,
+    { appointmentIds: Set<string>; services: string[] }
+  >();
+  for (const row of rows) {
+    if (!row.performedByEmployeeId) continue;
+    const value = byEmployee.get(row.performedByEmployeeId) ?? {
+      appointmentIds: new Set<string>(),
+      services: [],
+    };
+    value.appointmentIds.add(row.appointmentId);
+    value.services.push(row.serviceNameSnapshot);
+    byEmployee.set(row.performedByEmployeeId, value);
+  }
+  return [...byEmployee.entries()]
+    .map(([employeeId, value]) => ({
+      employeeId,
+      name: employeeNames.get(employeeId) ?? "Employée",
+      completedServices: value.services.length,
+      appointmentCount: value.appointmentIds.size,
     }))
     .sort(
       (a, b) =>

@@ -48,7 +48,7 @@ export default async function ClientsPage({
             name="q"
             defaultValue={q ?? ""}
             className="min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200"
-            placeholder="Téléphone ou nom..."
+            placeholder="Rechercher par nom ou téléphone…"
           />
         </form>
         <ClientsAdmin clients={clients} canManage={canManage} />

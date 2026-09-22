@@ -750,6 +750,10 @@ export async function addAppointmentService(
         serviceNameSnapshot: service.name,
 
         durationMinutes,
+        scheduledStart: new Date(
+          appointment.scheduledStart.getTime() +
+            appointment.estimatedDurationMinutes * 60_000,
+        ),
         price,
 
         requiredRoomTypeSnapshot: service.requiredRoomType,

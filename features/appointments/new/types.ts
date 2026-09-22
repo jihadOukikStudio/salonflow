@@ -2,6 +2,7 @@ export type NewAppointmentClientOption = {
   id: string;
   name: string;
   phone: string;
+  internalNote: string | null;
 };
 
 export type NewAppointmentServiceOption = {
@@ -15,6 +16,21 @@ export type NewAppointmentServiceOption = {
   requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
 };
 
+export type NewAppointmentEmployeeOption = {
+  id: string;
+  name: string;
+  serviceIds: string[];
+};
+
+export type NewAppointmentRoomOption = {
+  id: string;
+  name: string;
+  type: "HAMAM" | "TREATMENT_ROOM";
+  capacity: number;
+};
+
 export type NewAppointmentOptions = {
   services: NewAppointmentServiceOption[];
+  employees: NewAppointmentEmployeeOption[];
+  rooms: NewAppointmentRoomOption[];
 };

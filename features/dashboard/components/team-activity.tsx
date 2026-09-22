@@ -7,6 +7,7 @@ type ActivityItem = {
   employeeId: string;
   name: string;
   completedServices: number;
+  appointmentCount?: number;
 };
 
 type TeamActivityProps = {
@@ -101,6 +102,9 @@ export function TeamActivity({ activity }: TeamActivityProps) {
                 {item.completedServices} prestation
                 {item.completedServices > 1 ? "s" : ""} terminée
                 {item.completedServices > 1 ? "s" : ""}
+                {item.appointmentCount !== undefined
+                  ? ` · ${item.appointmentCount} RDV`
+                  : ""}
               </p>
             </div>
           ))}

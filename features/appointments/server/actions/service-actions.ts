@@ -7,6 +7,7 @@ import { runAuthenticatedAction } from "@/server/actions/run-authenticated-actio
 import {
   addAppointmentServiceActionSchema,
   appointmentServiceIdActionSchema,
+  updateAppointmentServiceCommentActionSchema,
   assignEmployeeActionSchema,
   assignRoomActionSchema,
   type AddAppointmentServiceActionInput,
@@ -22,6 +23,7 @@ import { assignRoomToService } from "@/server/services/appointments/assign-room-
 import { takeUnassignedService } from "@/server/services/appointments/take-unassigned-service";
 import { startAppointmentService } from "@/server/services/appointments/start-appointment-service";
 import { completeAppointmentService } from "@/server/services/appointments/complete-appointment-service";
+import { updateAppointmentServiceComment } from "@/server/services/appointments/update-appointment-service-comment";
 import { checkAddServiceFeasibility } from "@/server/services/appointments/check-add-service-feasibility";
 
 import { revalidateAppointmentViews } from "@/features/appointments/server/revalidate-appointment-views";
@@ -169,5 +171,14 @@ export async function completeAppointmentServiceAction(
     return {
       appointmentServiceId: service.id,
     };
+  });
+}
+
+export async function updateAppointmentServiceCommentAction(input: { appointmentServiceId: string; comment: string | null }) {
+  return runAuthenticatedAction(async (currentUser) => {
+    const data = updateAppointmentServiceCommentActionSchema.parse(input);
+    const service = await updateAppointmentServiceComment(currentUser, data);
+    await revalidateAppointmentViews(currentUser.salonId);
+    return { appointmentServiceId: service.id };
   });
 }

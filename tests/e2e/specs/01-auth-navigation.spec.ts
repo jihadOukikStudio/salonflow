@@ -15,19 +15,21 @@ test.describe("Phase 12.1 — authentification et navigation", () => {
     await expect(page.locator("body")).toContainText(/planning|rendez-vous/i);
   });
 
-  test("l'employée se connecte et ouvre le planning", async ({ page }) => {
+  test("l'employée se connecte et ouvre Ma journée", async ({ page }) => {
     await loginAsEmployee(page);
     await page.goto("/planning");
-    await expect(page).toHaveURL(/\/planning/);
-    await expect(page.locator("body")).toContainText(/planning|rendez-vous/i);
+    await expect(page).toHaveURL(/\/my-day/);
+    await expect(page.locator("body")).toContainText(/ma journée/i);
   });
 
-  test("la gérante accède à Organisation", async ({ page }) => {
+  test("Organisation n'est plus un écran principal", async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto("/organize");
+    await page.goto("/planning");
     await expect(
-      page.getByRole("heading", { name: /^organisation$/i }),
-    ).toBeVisible();
+      page.getByRole("link", { name: "Organisation", exact: true }),
+    ).toHaveCount(0);
+    await page.goto("/organize");
+    await expect(page).toHaveURL(/\/planning(?:\?|$)/);
   });
 
   test("la gérante accède aux écrans structurels", async ({ page }) => {

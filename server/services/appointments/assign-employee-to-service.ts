@@ -118,9 +118,8 @@ export async function assignEmployeeToService(
     await validateEmployeeAvailability(tx, {
       salonId,
       employeeId: employee.id,
-      scheduledStart: appointmentService.appointment.scheduledStart,
-      estimatedDurationMinutes:
-        appointmentService.appointment.estimatedDurationMinutes,
+      scheduledStart: appointmentService.scheduledStart,
+      estimatedDurationMinutes: appointmentService.durationMinutes,
       excludeAppointmentId: appointmentService.appointmentId,
     });
 

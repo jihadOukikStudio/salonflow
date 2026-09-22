@@ -64,22 +64,12 @@ const managerEmployeePermissions: Permission[] = [
 ];
 
 const standardEmployeePermissions: Permission[] = [
+  // Employée : sa journée uniquement. Aucune affectation/réaffectation.
   "appointments:view",
-  "appointments:assign",
   "appointments:update-own-service-status",
-  "appointments:take-unassigned-service",
-
-  "clients:view",
-
-  "employees:view",
-
   "employee-unavailability:view",
   "employee-unavailability:create-own",
-
   "services:view",
-
-  "rooms:view",
-  "rooms:assign",
 ];
 
 export function getPermissions(user: CurrentUser): Permission[] {

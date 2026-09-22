@@ -9,14 +9,13 @@ test.describe("Recette non-régression — accès, erreurs et PWA", () => {
   }) => {
     for (const route of [
       "/planning",
-      "/organize",
       "/dashboard",
       "/clients",
       "/services",
       "/employees",
       "/rooms",
     ]) {
-      await page.goto(route);
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveURL(/\/login/);
     }
   });
@@ -28,8 +27,18 @@ test.describe("Recette non-régression — accès, erreurs et PWA", () => {
     await loginAsEmployee(page);
 
     for (const route of ["/employees", "/services", "/rooms", "/clients"]) {
-      await page.goto(route);
-      await expect(page).not.toHaveURL(new RegExp(`${route}$`));
+      await page
+        .goto(route, { waitUntil: "commit" })
+        .catch((error: unknown) => {
+          if (
+            !(error instanceof Error) ||
+            !error.message.includes("net::ERR_ABORTED")
+          ) {
+            throw error;
+          }
+        });
+
+      await expect(page).toHaveURL(/\/my-day(?:\?|$)/);
     }
   });
 
@@ -58,11 +67,10 @@ test.describe("Recette non-régression — accès, erreurs et PWA", () => {
 
     for (const route of [
       "/planning",
-      "/organize",
       `/appointments/${s.appointment.id}`,
       "/dashboard",
     ]) {
-      await page.goto(route);
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page.locator("body")).not.toContainText(
         /application error|internal server error/i,
       );

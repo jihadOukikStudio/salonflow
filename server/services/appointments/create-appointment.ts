@@ -125,6 +125,7 @@ export async function createAppointmentInTransaction(
       serviceId: service.id,
       serviceNameSnapshot: service.name,
       durationMinutes,
+      scheduledStart: input.scheduledStart,
       price,
       requiredRoomTypeSnapshot: service.requiredRoomType,
     };
