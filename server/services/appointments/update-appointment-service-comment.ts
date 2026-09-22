@@ -21,6 +21,6 @@ export async function updateAppointmentServiceComment(currentUser: CurrentUser, 
     throw new BusinessRuleError("Vous ne pouvez commenter que vos propres prestations.");
   return prisma.appointmentService.update({
     where: { id: service.id },
-    data: { employeeComment: input.comment?.trim() || null },
+    data: { employeeComment: input.comment?.trim() || null, priceReviewedAt: null },
   });
 }

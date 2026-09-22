@@ -145,8 +145,9 @@ export function PlanningAppointmentBuilder({ services, employees, rooms, dateKey
           </div>
 
           {client ? (
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm">
+            <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm">
               <div className="flex items-start justify-between gap-3"><div><strong>{client.name}</strong><p className="text-slate-600">{client.phone}</p></div><button type="button" onClick={clearSelectedClient} className="font-semibold text-slate-700">Changer</button></div>
+              {client.internalNote ? <div className="mt-3 rounded-xl border border-rose-100 bg-white/80 p-3"><p className="text-xs font-bold uppercase tracking-wide text-rose-700">♥ Préférences connues</p><p className="mt-1 whitespace-pre-wrap text-sm leading-5 text-slate-800">{client.internalNote}</p></div> : null}
             </div>
           ) : clientQuery.trim().length >= 2 && clients.length === 0 && !pending ? (
             <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">

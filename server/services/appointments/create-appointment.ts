@@ -127,6 +127,7 @@ export async function createAppointmentInTransaction(
       durationMinutes,
       scheduledStart: input.scheduledStart,
       price,
+      basePriceSnapshot: price,
       requiredRoomTypeSnapshot: service.requiredRoomType,
     };
   });

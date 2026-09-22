@@ -287,3 +287,16 @@ export const createPlannedAppointmentActionSchema = z
 export type CreatePlannedAppointmentActionInput = z.input<
   typeof createPlannedAppointmentActionSchema
 >;
+
+
+export const updateAppointmentServicePriceActionSchema = z
+  .object({
+    appointmentServiceId: uuidSchema,
+    price: moneySchema,
+    reason: z.string().trim().max(500).nullable().optional(),
+  })
+  .strict();
+
+export type UpdateAppointmentServicePriceActionInput = z.input<
+  typeof updateAppointmentServicePriceActionSchema
+>;

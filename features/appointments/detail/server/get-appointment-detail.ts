@@ -17,13 +17,18 @@ export type AppointmentDetail = {
     id: string;
     name: string;
     phone: string;
+    internalNote: string | null;
   };
   services: Array<{
     id: string;
     serviceId: string | null;
     name: string;
     durationMinutes: number;
+    scheduledStart: string;
     price: number;
+    basePrice: number;
+    priceAdjustmentReason: string | null;
+    priceReviewedAt: string | null;
     status: "TODO" | "IN_PROGRESS" | "DONE";
     requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
     assignedEmployee: { id: string; name: string } | null;
@@ -94,7 +99,7 @@ export async function getAppointmentDetail(
           estimatedDurationMinutes: true,
           status: true,
           internalNote: true,
-          client: { select: { id: true, name: true, phone: true } },
+          client: { select: { id: true, name: true, phone: true, internalNote: true } },
           payment: {
             select: { status: true, amount: true, paidAt: true },
           },
@@ -105,7 +110,11 @@ export async function getAppointmentDetail(
               serviceId: true,
               serviceNameSnapshot: true,
               durationMinutes: true,
+              scheduledStart: true,
               price: true,
+              basePriceSnapshot: true,
+              priceAdjustmentReason: true,
+              priceReviewedAt: true,
               status: true,
               requiredRoomTypeSnapshot: true,
               actualStartedAt: true,
@@ -238,6 +247,16 @@ export async function getAppointmentDetail(
         return `${actor} a ajouté une prestation au rendez-vous.`;
       case "APPOINTMENT_SERVICE_REMOVED":
         return `${actor} a retiré une prestation du rendez-vous.`;
+      case "APPOINTMENT_SERVICE_PRICE_REVIEWED": {
+        const metadata =
+          log.metadata && typeof log.metadata === "object"
+            ? (log.metadata as Record<string, unknown>)
+            : null;
+        const applied = metadata?.appliedPrice;
+        return `${actor} a vérifié le montant de${target}${
+          typeof applied === "number" ? ` : ${applied} MAD` : ""
+        }.`;
+      }
       case "APPOINTMENT_PAYMENT_RECORDED": {
         const metadata =
           log.metadata && typeof log.metadata === "object"
@@ -353,7 +372,11 @@ export async function getAppointmentDetail(
     serviceId: service.serviceId,
     name: service.serviceNameSnapshot,
     durationMinutes: service.durationMinutes,
+    scheduledStart: service.scheduledStart.toISOString(),
     price: Number(service.price),
+    basePrice: Number(service.basePriceSnapshot ?? service.price),
+    priceAdjustmentReason: service.priceAdjustmentReason,
+    priceReviewedAt: service.priceReviewedAt?.toISOString() ?? null,
     status: service.status,
     requiredRoomType: service.requiredRoomTypeSnapshot,
     assignedEmployee: service.assignedEmployee

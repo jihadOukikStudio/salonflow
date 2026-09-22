@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-
+import { useMemo, useState, useTransition } from "react";
+import { ArrowLeft, ChevronRight, Clock3, Search } from "lucide-react";
 import { updateServiceDefaultsAction } from "@/features/services/server/actions";
 
 type ServiceItem = {
@@ -12,200 +12,99 @@ type ServiceItem = {
   isStartingPrice: boolean;
   requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
 };
+type CategoryItem = { id: string; name: string; services: ServiceItem[] };
 
-type CategoryItem = {
-  id: string;
-  name: string;
-  services: ServiceItem[];
-};
+const field =
+  "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
 
-type Props = {
-  categories: CategoryItem[];
-};
+function durationLabel(minutes:number|null) {
+  if (!minutes) return "Durée à compléter";
+  const h=Math.floor(minutes/60), m=minutes%60;
+  return [h?`${h} h`:"",m?`${m} min`:""].filter(Boolean).join(" ");
+}
+function money(v:number){return `${new Intl.NumberFormat("fr-MA",{maximumFractionDigits:2}).format(v)} DH`}
 
-const inputClassName =
-  "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm font-semibold text-slate-950 placeholder:text-slate-500 shadow-sm outline-none transition [color-scheme:light] focus:border-violet-600 focus:ring-4 focus:ring-violet-100";
+export function ServiceCatalogForm({categories}:{categories:CategoryItem[]}) {
+  const [query,setQuery]=useState("");
+  const [categoryId,setCategoryId]=useState("all");
+  const [selectedId,setSelectedId]=useState<string|null>(null);
 
-function roomLabel(roomType: ServiceItem["requiredRoomType"]): string | null {
-  if (roomType === "HAMAM") return "Hamam";
-  if (roomType === "TREATMENT_ROOM") return "Salle de soins";
-  return null;
+  const all=useMemo(()=>categories.flatMap(c=>c.services.map(s=>({...s,categoryId:c.id,categoryName:c.name}))),[categories]);
+  const selected=all.find(s=>s.id===selectedId)??null;
+  const filtered=all.filter(s=>{
+    const categoryOk=categoryId==="all"||s.categoryId===categoryId;
+    const q=query.trim().toLocaleLowerCase("fr");
+    return categoryOk&&(!q||`${s.name} ${s.categoryName}`.toLocaleLowerCase("fr").includes(q));
+  });
+
+  if(selected) return <ServiceEditor service={selected} onBack={()=>setSelectedId(null)}/>;
+
+  return <div className="space-y-5">
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/>
+      <input className={`${field} pl-10`} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Rechercher une prestation…"/>
+    </div>
+
+    <div className="flex gap-2 overflow-x-auto pb-1">
+      <button onClick={()=>setCategoryId("all")} className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${categoryId==="all"?"border-rose-300 bg-rose-50 text-rose-800":"border-slate-200 bg-white text-slate-600"}`}>Toutes</button>
+      {categories.map(c=><button key={c.id} onClick={()=>setCategoryId(c.id)} className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${categoryId===c.id?"border-rose-300 bg-rose-50 text-rose-800":"border-slate-200 bg-white text-slate-600"}`}>{c.name}</button>)}
+    </div>
+
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      {filtered.length===0?<p className="p-10 text-center text-sm text-slate-500">Aucune prestation trouvée.</p>:
+      filtered.map((s,i)=><button key={s.id} onClick={()=>setSelectedId(s.id)} className={`group flex w-full items-center gap-4 p-4 text-left hover:bg-rose-50/40 sm:p-5 ${i?"border-t border-slate-100":""}`}>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold text-slate-950">{s.name}</h3>
+            {s.requiredRoomType?<span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{s.requiredRoomType==="HAMAM"?"Hamam":"Salle de soins"}</span>:null}
+          </div>
+          <p className="mt-1 text-xs text-slate-500">{s.categoryName} · {durationLabel(s.defaultDurationMinutes)}</p>
+        </div>
+        <p className="shrink-0 font-bold text-slate-950">{money(s.defaultPrice)}</p>
+        <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 group-hover:text-rose-600"/>
+      </button>)}
+    </div>
+  </div>;
 }
 
-function ServiceRow({ service }: { service: ServiceItem }) {
-  const [duration, setDuration] = useState(
-    service.defaultDurationMinutes?.toString() ?? "",
-  );
-  const [price, setPrice] = useState(service.defaultPrice.toString());
-  const [isStartingPrice, setIsStartingPrice] = useState(
-    service.isStartingPrice,
-  );
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+function ServiceEditor({service,onBack}:{service:ServiceItem&{categoryName:string};onBack:()=>void}) {
+  const [duration,setDuration]=useState(service.defaultDurationMinutes?.toString()??"");
+  const [price,setPrice]=useState(String(service.defaultPrice));
+  const [pending,startTransition]=useTransition();
+  const [message,setMessage]=useState<string|null>(null);
 
-  function save() {
-    const durationNumber = Number(duration);
-    const priceNumber = Number(price);
-
-    if (!Number.isInteger(durationNumber) || durationNumber <= 0) {
-      setError("Renseignez une durée valide en minutes.");
-      setMessage(null);
-      return;
-    }
-
-    if (!Number.isFinite(priceNumber) || priceNumber < 0) {
-      setError("Renseignez un prix valide.");
-      setMessage(null);
-      return;
-    }
-
-    startTransition(async () => {
-      setError(null);
-      setMessage(null);
-
-      const result = await updateServiceDefaultsAction({
-        serviceId: service.id,
-        defaultDurationMinutes: durationNumber,
-        defaultPrice: priceNumber,
-        isStartingPrice,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setMessage("Enregistré");
+  const save=()=>{
+    const d=Number(duration), p=Number(price);
+    if(!Number.isInteger(d)||d<=0||!Number.isFinite(p)||p<0){setMessage("Vérifiez la durée et le prix.");return;}
+    startTransition(async()=>{
+      const r=await updateServiceDefaultsAction({serviceId:service.id,defaultDurationMinutes:d,defaultPrice:p,isStartingPrice:false});
+      setMessage(r.ok?"Prestation enregistrée.":r.message);
     });
-  }
+  };
 
-  const requiredRoom = roomLabel(service.requiredRoomType);
-
-  return (
-    <div className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold text-slate-950">{service.name}</h3>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold">
-            {requiredRoom ? (
-              <span className="rounded-full bg-pink-50 px-2.5 py-1 text-pink-800">
-                {requiredRoom}
-              </span>
-            ) : null}
-            {service.defaultDurationMinutes === null ? (
-              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-amber-900">
-                Durée manquante
-              </span>
-            ) : null}
-          </div>
+  return <div className="space-y-5">
+    <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"><ArrowLeft className="h-4 w-4"/>Prestations</button>
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div>
+        <p className="text-sm font-semibold text-rose-700">{service.categoryName}</p>
+        <h2 className="mt-1 text-2xl font-bold text-slate-950">{service.name}</h2>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <div className="rounded-2xl bg-slate-50 px-4 py-3"><p className="text-xs text-slate-500">Prix de base</p><p className="mt-1 text-xl font-bold">{money(Number(price)||0)}</p></div>
+          <div className="rounded-2xl bg-slate-50 px-4 py-3"><p className="text-xs text-slate-500">Durée habituelle</p><p className="mt-1 flex items-center gap-1 text-xl font-bold"><Clock3 className="h-4 w-4"/>{durationLabel(Number(duration)||null)}</p></div>
         </div>
       </div>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-[160px_180px_minmax(0,1fr)_auto] sm:items-end">
-        <label>
-          <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-600">
-            Durée (min)
-          </span>
-          <input
-            type="number"
-            min={1}
-            max={1440}
-            value={duration}
-            onChange={(event) => setDuration(event.target.value)}
-            placeholder="Ex. 45"
-            className={inputClassName}
-          />
-        </label>
-
-        <label>
-          <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-600">
-            Prix catalogue (MAD)
-          </span>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            className={inputClassName}
-          />
-        </label>
-
-        <label className="flex min-h-11 items-center gap-3 rounded-xl border border-slate-300 bg-slate-50 px-4">
-          <input
-            type="checkbox"
-            checked={isStartingPrice}
-            onChange={(event) => setIsStartingPrice(event.target.checked)}
-            className="h-4 w-4 accent-violet-600"
-          />
-          <span className="text-sm font-semibold text-slate-800">
-            Prix « à partir de »
-          </span>
-        </label>
-
-        <button
-          type="button"
-          onClick={save}
-          disabled={isPending}
-          className="min-h-11 rounded-xl bg-violet-600 px-5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-60"
-        >
-          {isPending ? "Enregistrement…" : "Enregistrer"}
-        </button>
+      <div className="mt-6 border-t border-slate-100 pt-6">
+        <h3 className="font-bold text-slate-950">Informations</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-semibold text-slate-700">Durée en minutes<input className={`${field} mt-1`} type="number" min="1" value={duration} onChange={e=>setDuration(e.target.value)}/></label>
+          <label className="text-sm font-semibold text-slate-700">Prix de base (DH)<input className={`${field} mt-1`} type="number" min="0" step="0.01" value={price} onChange={e=>setPrice(e.target.value)}/></label>
+        </div>
+        <div className="mt-4 rounded-2xl bg-rose-50 p-4 text-sm leading-6 text-rose-950">
+          Ce prix est proposé automatiquement au rendez-vous. Si une prestation nécessite exceptionnellement un autre montant, la gérante l’ajuste uniquement sur ce rendez-vous : le catalogue ne change pas.
+        </div>
+        {message?<p className="mt-4 text-sm font-semibold text-slate-700">{message}</p>:null}
+        <button disabled={pending} onClick={save} className="mt-4 min-h-11 rounded-xl bg-rose-700 px-5 text-sm font-semibold text-white hover:bg-rose-800 disabled:opacity-50">Enregistrer</button>
       </div>
-
-      {error ? (
-        <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>
-      ) : message ? (
-        <p className="mt-3 text-sm font-semibold text-emerald-700">{message}</p>
-      ) : null}
-    </div>
-  );
-}
-
-export function ServiceCatalogForm({ categories }: Props) {
-  if (categories.length === 0) {
-    return (
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
-        <p className="font-semibold text-slate-900">
-          Aucune prestation configurée
-        </p>
-        <p className="mt-1 text-sm text-slate-600">
-          Le catalogue doit contenir les prestations proposées par le salon.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {categories.map((category) => (
-        <details
-          key={category.id}
-          className="group rounded-2xl border border-slate-200 bg-white shadow-sm"
-        >
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
-            <span>
-              <span className="block text-lg font-semibold text-slate-950">
-                {category.name}
-              </span>
-              <span className="mt-0.5 block text-xs font-semibold text-slate-500">
-                {category.services.length} prestation
-                {category.services.length > 1 ? "s" : ""}
-              </span>
-            </span>
-            <span className="text-lg text-slate-400 transition-transform group-open:rotate-180">
-              ⌄
-            </span>
-          </summary>
-
-          <div className="space-y-3 border-t border-slate-100 p-4">
-            {category.services.map((service) => (
-              <ServiceRow key={service.id} service={service} />
-            ))}
-          </div>
-        </details>
-      ))}
-    </div>
-  );
+    </section>
+  </div>;
 }

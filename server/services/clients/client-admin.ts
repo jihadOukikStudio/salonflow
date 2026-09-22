@@ -20,7 +20,7 @@ async function requireClientManager(currentUser: CurrentUser) {
 export async function getClients(currentUser: CurrentUser, query?: string) {
   const user = await getAuthoritativeCurrentUser(currentUser);
   const q = query?.trim();
-  return prisma.client.findMany({
+  const clients = await prisma.client.findMany({
     where: {
       salonId: user.salonId,
       ...(q
@@ -44,10 +44,40 @@ export async function getClients(currentUser: CurrentUser, query?: string) {
       appointments: {
         orderBy: { scheduledStart: "desc" },
         take: 5,
-        select: { id: true, scheduledStart: true, status: true },
+        select: {
+          id: true,
+          scheduledStart: true,
+          status: true,
+          payment: { select: { status: true, amount: true } },
+          services: {
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              serviceNameSnapshot: true,
+              price: true,
+              assignedEmployee: { select: { firstName: true, lastName: true } },
+              performedByEmployee: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
       },
     },
   });
+
+  // Client Components must receive serializable primitives, not Prisma Decimal objects.
+  return clients.map((client) => ({
+    ...client,
+    appointments: client.appointments.map((appointment) => ({
+      ...appointment,
+      payment: appointment.payment
+        ? { ...appointment.payment, amount: Number(appointment.payment.amount) }
+        : null,
+      services: appointment.services.map((service) => ({
+        ...service,
+        price: Number(service.price),
+      })),
+    })),
+  }));
 }
 
 export async function updateClient(

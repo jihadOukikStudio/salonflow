@@ -20,6 +20,7 @@ import {
   removeAppointmentServiceAction,
   startAppointmentServiceAction,
   takeUnassignedServiceAction,
+  updateAppointmentServicePriceAction,
 } from "@/features/appointments/server/actions/service-actions";
 import {
   createParallelGroupAction,
@@ -94,6 +95,104 @@ function serviceStatusLabel(
   status: AppointmentDetail["services"][number]["status"],
 ) {
   return { TODO: "À faire", IN_PROGRESS: "En cours", DONE: "Terminée" }[status];
+}
+
+
+function PriceReview({
+  service,
+  pending,
+  run,
+  compact = false,
+}: {
+  service: AppointmentDetail["services"][number];
+  pending: boolean;
+  compact?: boolean;
+  run: (
+    action: () => Promise<{ ok: true; data: unknown } | { ok: false; message: string; code: string }>,
+    successMessage: string,
+    onSuccess?: () => void,
+  ) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [price, setPrice] = useState(String(service.price));
+  const [reason, setReason] = useState(service.priceAdjustmentReason ?? "");
+
+  if (!editing) {
+    return (
+      <div className={compact ? "mt-3" : "mt-3 flex flex-wrap gap-2"}>
+        {service.employeeComment && !service.priceReviewedAt ? (
+          <button
+            type="button"
+            disabled={pending}
+            className={`${buttonClass} border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50`}
+            onClick={() =>
+              run(
+                () =>
+                  updateAppointmentServicePriceAction({
+                    appointmentServiceId: service.id,
+                    price: service.price,
+                    reason: service.priceAdjustmentReason,
+                  }),
+                "Montant vérifié.",
+              )
+            }
+          >
+            Garder {money(service.price)}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          disabled={pending}
+          className={`${buttonClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+          onClick={() => setEditing(true)}
+        >
+          Ajuster le montant
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Ajustement pour ce rendez-vous uniquement
+      </p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="text-xs font-semibold text-slate-700">
+          Nouveau montant (DH)
+          <input className={`${inputClass} mt-1`} type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+        </label>
+        <label className="text-xs font-semibold text-slate-700">
+          Motif
+          <input className={`${inputClass} mt-1`} value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Ex. produit supplémentaire" />
+        </label>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={pending || !Number.isFinite(Number(price)) || Number(price) < 0}
+          className={`${buttonClass} bg-violet-700 text-white hover:bg-violet-800`}
+          onClick={() =>
+            run(
+              () =>
+                updateAppointmentServicePriceAction({
+                  appointmentServiceId: service.id,
+                  price: Number(price),
+                  reason: reason.trim() || null,
+                }),
+              "Montant de la prestation mis à jour.",
+              () => setEditing(false),
+            )
+          }
+        >
+          Appliquer {Number.isFinite(Number(price)) ? money(Number(price)) : ""}
+        </button>
+        <button type="button" className={`${buttonClass} text-slate-600 hover:bg-slate-100`} onClick={() => setEditing(false)}>
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function AppointmentDetailClient({ detail }: Props) {
@@ -290,6 +389,13 @@ export function AppointmentDetailClient({ detail }: Props) {
               <p className="mt-1 text-sm font-medium text-slate-700">
                 {detail.client.phone}
               </p>
+              {detail.client.internalNote ? (
+                <div className="mt-3 max-w-2xl rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-rose-700">♥ Préférences cliente</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-800">{detail.client.internalNote}</p>
+                  <Link href="/clients" className="mt-2 inline-block text-xs font-semibold text-rose-700 hover:underline">Voir la fiche cliente</Link>
+                </div>
+              ) : null}
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-950">
@@ -338,14 +444,13 @@ export function AppointmentDetailClient({ detail }: Props) {
 
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold text-slate-600">
-            Montant catalogue
+            Total actuel
           </p>
           <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
             {money(catalogTotal)}
           </p>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Les prix sont les snapshots enregistrés au moment de la réservation.
-            Le montant réellement encaissé est défini au paiement.
+            Le total reprend les montants appliqués à chaque prestation de ce rendez-vous.
           </p>
         </aside>
       </section>
@@ -396,18 +501,47 @@ export function AppointmentDetailClient({ detail }: Props) {
                       ) : null}
                     </div>
                     <p className="mt-1 text-sm text-slate-600">
-                      {service.durationMinutes} min · {money(service.price)}
+                      {timeOnly(service.scheduledStart)} · {service.durationMinutes} min
                     </p>
+                    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                      <span className="text-slate-600">
+                        Prix de base : <strong className="text-slate-900">{money(service.basePrice)}</strong>
+                      </span>
+                      <span className="text-slate-600">
+                        Montant appliqué : <strong className="text-slate-950">{money(service.price)}</strong>
+                      </span>
+                      {service.price !== service.basePrice ? (
+                        <span className="font-semibold text-violet-700">
+                          {service.price > service.basePrice ? "+" : ""}{money(service.price - service.basePrice)}
+                        </span>
+                      ) : null}
+                    </div>
                     {service.performedByEmployee ? (
                       <p className="mt-1 text-xs font-medium text-emerald-700">
                         Réalisée par : {service.performedByEmployee.name}
                       </p>
                     ) : null}
                     {service.employeeComment ? (
-                      <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-                        <span className="font-semibold">Commentaire employée :</span>{" "}
-                        {service.employeeComment}
+                      <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950">
+                        <p className="font-semibold">Remarque employée</p>
+                        <p className="mt-1">{service.employeeComment}</p>
+                        {detail.canManageAppointment && !isPaid && !isFinal ? (
+                          <PriceReview
+                            service={service}
+                            pending={pending}
+                            run={run}
+                          />
+                        ) : service.priceReviewedAt ? (
+                          <p className="mt-2 text-xs font-semibold text-emerald-700">✓ Montant vérifié</p>
+                        ) : null}
                       </div>
+                    ) : detail.canManageAppointment && !isPaid && !isFinal ? (
+                      <PriceReview service={service} pending={pending} run={run} compact />
+                    ) : null}
+                    {service.priceAdjustmentReason ? (
+                      <p className="mt-2 text-xs text-slate-600">
+                        Motif de l’ajustement : {service.priceAdjustmentReason}
+                      </p>
                     ) : null}
                   </div>
 
@@ -946,117 +1080,77 @@ export function AppointmentDetailClient({ detail }: Props) {
       <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-semibold text-slate-950">Paiement</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Vérifiez les montants prestation par prestation avant l’encaissement.
+          </p>
+
+          <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
+            {detail.services.map((service, index) => (
+              <div key={service.id} className={`flex items-center justify-between gap-4 px-4 py-3 ${index ? "border-t border-slate-100" : ""}`}>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{service.name}</p>
+                  {service.price !== service.basePrice ? (
+                    <p className="text-xs text-slate-500">Base {money(service.basePrice)} · montant ajusté</p>
+                  ) : null}
+                </div>
+                <p className="font-bold text-slate-950">{money(service.price)}</p>
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-4">
+              <p className="font-bold text-slate-950">Total à payer</p>
+              <p className="text-xl font-bold text-slate-950">{money(catalogTotal)}</p>
+            </div>
+          </div>
+
+          {detail.services.some((service) => service.employeeComment && !service.priceReviewedAt) && detail.payment?.status !== "PAID" ? (
+            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+              <p className="font-semibold">Remarque à vérifier avant l’encaissement</p>
+              <p className="mt-1">Vous pouvez garder le prix de base ou ajuster la prestation depuis l’onglet Prestations ci-dessus.</p>
+            </div>
+          ) : null}
 
           {detail.payment?.status === "PAID" ? (
             <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="font-semibold text-emerald-900">
-                Espèces encaissées : {money(detail.payment.amount)}
-              </p>
-              {detail.payment.paidAt ? (
-                <p className="mt-1 text-sm text-emerald-800">
-                  {dateTime(detail.payment.paidAt)}
-                </p>
-              ) : null}
+              <p className="font-semibold text-emerald-900">Espèces encaissées : {money(detail.payment.amount)}</p>
+              {detail.payment.paidAt ? <p className="mt-1 text-sm text-emerald-800">{dateTime(detail.payment.paidAt)}</p> : null}
             </div>
           ) : (
-            <div className="mt-4 grid gap-3 sm:grid-cols-[220px_auto] sm:items-end">
-              <label>
-                <span className="mb-2 block text-sm font-semibold text-slate-800">
-                  Montant réellement encaissé (MAD)
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className={inputClass}
-                  value={paymentAmount}
-                  disabled={
-                    !detail.canRecordPayment ||
-                    detail.status !== "COMPLETED" ||
-                    pending
-                  }
-                  onChange={(event) =>
-                    setPaymentAmountOverride(event.target.value)
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                disabled={
-                  pending ||
-                  !detail.canRecordPayment ||
-                  detail.status !== "COMPLETED" ||
-                  !Number.isFinite(Number(paymentAmount)) ||
-                  Number(paymentAmount) < 0
-                }
-                className={`${buttonClass} bg-emerald-700 text-white hover:bg-emerald-800`}
-                onClick={() =>
-                  run(
-                    () =>
-                      markAppointmentPaidAction({
-                        appointmentId: detail.id,
-                        amount: Number(paymentAmount),
-                      }),
-                    "Paiement enregistré.",
-                  )
-                }
-              >
-                Espèces encaissées
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={
+                pending ||
+                !detail.canRecordPayment ||
+                detail.status !== "COMPLETED" ||
+                detail.services.some((service) => service.employeeComment && !service.priceReviewedAt)
+              }
+              className={`${buttonClass} mt-4 bg-emerald-700 text-white hover:bg-emerald-800`}
+              onClick={() =>
+                run(
+                  () => markAppointmentPaidAction({ appointmentId: detail.id, amount: catalogTotal }),
+                  "Paiement enregistré.",
+                )
+              }
+            >
+              Encaisser {money(catalogTotal)} en espèces
+            </button>
           )}
 
-          {detail.status !== "COMPLETED" &&
-          detail.payment?.status !== "PAID" ? (
-            <p className="mt-3 text-sm text-slate-600">
-              Le paiement devient disponible lorsque toutes les prestations sont
-              terminées.
-            </p>
+          {detail.status !== "COMPLETED" && detail.payment?.status !== "PAID" ? (
+            <p className="mt-3 text-sm text-slate-600">Le paiement devient disponible lorsque toutes les prestations sont terminées.</p>
           ) : null}
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-950">Finalisation</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Toutes les prestations doivent être terminées et le paiement
-            encaissé avant la clôture.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Toutes les prestations doivent être terminées et le paiement encaissé avant la clôture.</p>
           <button
             type="button"
-            disabled={
-              pending ||
-              !detail.canManageAppointment ||
-              detail.status !== "COMPLETED" ||
-              detail.payment?.status !== "PAID" ||
-              !allDone
-            }
+            disabled={pending || !detail.canManageAppointment || detail.status !== "COMPLETED" || detail.payment?.status !== "PAID" || !allDone}
             className={`${buttonClass} mt-4 w-full bg-slate-950 text-white hover:bg-slate-800`}
-            onClick={() =>
-              run(
-                () =>
-                  closeAppointmentAction({
-                    appointmentId: detail.id,
-                  }),
-                "Rendez-vous clôturé.",
-              )
-            }
+            onClick={() => run(() => closeAppointmentAction({ appointmentId: detail.id }), "Rendez-vous clôturé.")}
           >
             Clôturer le rendez-vous
           </button>
-
-          {detail.canManageAppointment && detail.status === "PLANNED" ? (
-            <button
-              type="button"
-              disabled={pending}
-              className={`${buttonClass} mt-3 w-full border border-red-300 bg-white text-red-700 hover:bg-red-50`}
-              onClick={() => {
-                setMessage(null);
-                setCancelDialogOpen(true);
-              }}
-            >
-              Annuler le rendez-vous
-            </button>
-          ) : null}
         </aside>
       </section>
 

@@ -170,6 +170,7 @@ export async function createPlannedAppointment(
             durationMinutes,
             scheduledStart: item.scheduledStart,
             price,
+            basePriceSnapshot: price,
             requiredRoomTypeSnapshot: service.requiredRoomType,
             assignedEmployeeId: item.employeeId,
             roomId: item.roomId ?? null,

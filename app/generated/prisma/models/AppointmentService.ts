@@ -29,11 +29,13 @@ export type AggregateAppointmentService = {
 export type AppointmentServiceAvgAggregateOutputType = {
   durationMinutes: number | null
   price: runtime.Decimal | null
+  basePriceSnapshot: runtime.Decimal | null
 }
 
 export type AppointmentServiceSumAggregateOutputType = {
   durationMinutes: number | null
   price: runtime.Decimal | null
+  basePriceSnapshot: runtime.Decimal | null
 }
 
 export type AppointmentServiceMinAggregateOutputType = {
@@ -44,6 +46,9 @@ export type AppointmentServiceMinAggregateOutputType = {
   durationMinutes: number | null
   scheduledStart: Date | null
   price: runtime.Decimal | null
+  basePriceSnapshot: runtime.Decimal | null
+  priceAdjustmentReason: string | null
+  priceReviewedAt: Date | null
   requiredRoomTypeSnapshot: $Enums.RoomType | null
   status: $Enums.AppointmentServiceStatus | null
   assignedEmployeeId: string | null
@@ -64,6 +69,9 @@ export type AppointmentServiceMaxAggregateOutputType = {
   durationMinutes: number | null
   scheduledStart: Date | null
   price: runtime.Decimal | null
+  basePriceSnapshot: runtime.Decimal | null
+  priceAdjustmentReason: string | null
+  priceReviewedAt: Date | null
   requiredRoomTypeSnapshot: $Enums.RoomType | null
   status: $Enums.AppointmentServiceStatus | null
   assignedEmployeeId: string | null
@@ -84,6 +92,9 @@ export type AppointmentServiceCountAggregateOutputType = {
   durationMinutes: number
   scheduledStart: number
   price: number
+  basePriceSnapshot: number
+  priceAdjustmentReason: number
+  priceReviewedAt: number
   requiredRoomTypeSnapshot: number
   status: number
   assignedEmployeeId: number
@@ -101,11 +112,13 @@ export type AppointmentServiceCountAggregateOutputType = {
 export type AppointmentServiceAvgAggregateInputType = {
   durationMinutes?: true
   price?: true
+  basePriceSnapshot?: true
 }
 
 export type AppointmentServiceSumAggregateInputType = {
   durationMinutes?: true
   price?: true
+  basePriceSnapshot?: true
 }
 
 export type AppointmentServiceMinAggregateInputType = {
@@ -116,6 +129,9 @@ export type AppointmentServiceMinAggregateInputType = {
   durationMinutes?: true
   scheduledStart?: true
   price?: true
+  basePriceSnapshot?: true
+  priceAdjustmentReason?: true
+  priceReviewedAt?: true
   requiredRoomTypeSnapshot?: true
   status?: true
   assignedEmployeeId?: true
@@ -136,6 +152,9 @@ export type AppointmentServiceMaxAggregateInputType = {
   durationMinutes?: true
   scheduledStart?: true
   price?: true
+  basePriceSnapshot?: true
+  priceAdjustmentReason?: true
+  priceReviewedAt?: true
   requiredRoomTypeSnapshot?: true
   status?: true
   assignedEmployeeId?: true
@@ -156,6 +175,9 @@ export type AppointmentServiceCountAggregateInputType = {
   durationMinutes?: true
   scheduledStart?: true
   price?: true
+  basePriceSnapshot?: true
+  priceAdjustmentReason?: true
+  priceReviewedAt?: true
   requiredRoomTypeSnapshot?: true
   status?: true
   assignedEmployeeId?: true
@@ -263,6 +285,9 @@ export type AppointmentServiceGroupByOutputType = {
   durationMinutes: number
   scheduledStart: Date
   price: runtime.Decimal
+  basePriceSnapshot: runtime.Decimal | null
+  priceAdjustmentReason: string | null
+  priceReviewedAt: Date | null
   requiredRoomTypeSnapshot: $Enums.RoomType | null
   status: $Enums.AppointmentServiceStatus
   assignedEmployeeId: string | null
@@ -306,6 +331,9 @@ export type AppointmentServiceWhereInput = {
   durationMinutes?: Prisma.IntFilter<"AppointmentService"> | number
   scheduledStart?: Prisma.DateTimeFilter<"AppointmentService"> | Date | string
   price?: Prisma.DecimalFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.DecimalNullableFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.StringNullableFilter<"AppointmentService"> | string | null
+  priceReviewedAt?: Prisma.DateTimeNullableFilter<"AppointmentService"> | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.EnumRoomTypeNullableFilter<"AppointmentService"> | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFilter<"AppointmentService"> | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.UuidNullableFilter<"AppointmentService"> | string | null
@@ -332,6 +360,9 @@ export type AppointmentServiceOrderByWithRelationInput = {
   durationMinutes?: Prisma.SortOrder
   scheduledStart?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  priceAdjustmentReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  priceReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requiredRoomTypeSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   assignedEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -361,6 +392,9 @@ export type AppointmentServiceWhereUniqueInput = Prisma.AtLeast<{
   durationMinutes?: Prisma.IntFilter<"AppointmentService"> | number
   scheduledStart?: Prisma.DateTimeFilter<"AppointmentService"> | Date | string
   price?: Prisma.DecimalFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.DecimalNullableFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.StringNullableFilter<"AppointmentService"> | string | null
+  priceReviewedAt?: Prisma.DateTimeNullableFilter<"AppointmentService"> | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.EnumRoomTypeNullableFilter<"AppointmentService"> | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFilter<"AppointmentService"> | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.UuidNullableFilter<"AppointmentService"> | string | null
@@ -387,6 +421,9 @@ export type AppointmentServiceOrderByWithAggregationInput = {
   durationMinutes?: Prisma.SortOrder
   scheduledStart?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  priceAdjustmentReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  priceReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requiredRoomTypeSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   assignedEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -415,6 +452,9 @@ export type AppointmentServiceScalarWhereWithAggregatesInput = {
   durationMinutes?: Prisma.IntWithAggregatesFilter<"AppointmentService"> | number
   scheduledStart?: Prisma.DateTimeWithAggregatesFilter<"AppointmentService"> | Date | string
   price?: Prisma.DecimalWithAggregatesFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.DecimalNullableWithAggregatesFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.StringNullableWithAggregatesFilter<"AppointmentService"> | string | null
+  priceReviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AppointmentService"> | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.EnumRoomTypeNullableWithAggregatesFilter<"AppointmentService"> | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusWithAggregatesFilter<"AppointmentService"> | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.UuidNullableWithAggregatesFilter<"AppointmentService"> | string | null
@@ -433,6 +473,9 @@ export type AppointmentServiceCreateInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -456,6 +499,9 @@ export type AppointmentServiceUncheckedCreateInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -475,6 +521,9 @@ export type AppointmentServiceUpdateInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -498,6 +547,9 @@ export type AppointmentServiceUncheckedUpdateInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -519,6 +571,9 @@ export type AppointmentServiceCreateManyInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -537,6 +592,9 @@ export type AppointmentServiceUpdateManyMutationInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -554,6 +612,9 @@ export type AppointmentServiceUncheckedUpdateManyInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -584,6 +645,9 @@ export type AppointmentServiceCountOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   scheduledStart?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrder
+  priceAdjustmentReason?: Prisma.SortOrder
+  priceReviewedAt?: Prisma.SortOrder
   requiredRoomTypeSnapshot?: Prisma.SortOrder
   status?: Prisma.SortOrder
   assignedEmployeeId?: Prisma.SortOrder
@@ -599,6 +663,7 @@ export type AppointmentServiceCountOrderByAggregateInput = {
 export type AppointmentServiceAvgOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrder
 }
 
 export type AppointmentServiceMaxOrderByAggregateInput = {
@@ -609,6 +674,9 @@ export type AppointmentServiceMaxOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   scheduledStart?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrder
+  priceAdjustmentReason?: Prisma.SortOrder
+  priceReviewedAt?: Prisma.SortOrder
   requiredRoomTypeSnapshot?: Prisma.SortOrder
   status?: Prisma.SortOrder
   assignedEmployeeId?: Prisma.SortOrder
@@ -629,6 +697,9 @@ export type AppointmentServiceMinOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   scheduledStart?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrder
+  priceAdjustmentReason?: Prisma.SortOrder
+  priceReviewedAt?: Prisma.SortOrder
   requiredRoomTypeSnapshot?: Prisma.SortOrder
   status?: Prisma.SortOrder
   assignedEmployeeId?: Prisma.SortOrder
@@ -644,6 +715,7 @@ export type AppointmentServiceMinOrderByAggregateInput = {
 export type AppointmentServiceSumOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  basePriceSnapshot?: Prisma.SortOrder
 }
 
 export type AppointmentServiceScalarRelationFilter = {
@@ -819,6 +891,14 @@ export type AppointmentServiceUncheckedUpdateManyWithoutAppointmentNestedInput =
   deleteMany?: Prisma.AppointmentServiceScalarWhereInput | Prisma.AppointmentServiceScalarWhereInput[]
 }
 
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
 export type EnumAppointmentServiceStatusFieldUpdateOperationsInput = {
   set?: $Enums.AppointmentServiceStatus
 }
@@ -885,6 +965,9 @@ export type AppointmentServiceCreateWithoutAssignedEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -907,6 +990,9 @@ export type AppointmentServiceUncheckedCreateWithoutAssignedEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   performedByEmployeeId?: string | null
@@ -935,6 +1021,9 @@ export type AppointmentServiceCreateWithoutPerformedByEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -957,6 +1046,9 @@ export type AppointmentServiceUncheckedCreateWithoutPerformedByEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1006,6 +1098,9 @@ export type AppointmentServiceScalarWhereInput = {
   durationMinutes?: Prisma.IntFilter<"AppointmentService"> | number
   scheduledStart?: Prisma.DateTimeFilter<"AppointmentService"> | Date | string
   price?: Prisma.DecimalFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.DecimalNullableFilter<"AppointmentService"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.StringNullableFilter<"AppointmentService"> | string | null
+  priceReviewedAt?: Prisma.DateTimeNullableFilter<"AppointmentService"> | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.EnumRoomTypeNullableFilter<"AppointmentService"> | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFilter<"AppointmentService"> | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.UuidNullableFilter<"AppointmentService"> | string | null
@@ -1040,6 +1135,9 @@ export type AppointmentServiceCreateWithoutServiceInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -1061,6 +1159,9 @@ export type AppointmentServiceUncheckedCreateWithoutServiceInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1106,6 +1207,9 @@ export type AppointmentServiceCreateWithoutAppointmentInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -1127,6 +1231,9 @@ export type AppointmentServiceUncheckedCreateWithoutAppointmentInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1172,6 +1279,9 @@ export type AppointmentServiceCreateWithoutParallelGroupLinksInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -1194,6 +1304,9 @@ export type AppointmentServiceUncheckedCreateWithoutParallelGroupLinksInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1228,6 +1341,9 @@ export type AppointmentServiceUpdateWithoutParallelGroupLinksInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1250,6 +1366,9 @@ export type AppointmentServiceUncheckedUpdateWithoutParallelGroupLinksInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1268,6 +1387,9 @@ export type AppointmentServiceCreateWithoutRoomInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   actualStartedAt?: Date | string | null
@@ -1290,6 +1412,9 @@ export type AppointmentServiceUncheckedCreateWithoutRoomInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1336,6 +1461,9 @@ export type AppointmentServiceCreateManyAssignedEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   performedByEmployeeId?: string | null
@@ -1355,6 +1483,9 @@ export type AppointmentServiceCreateManyPerformedByEmployeeInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1372,6 +1503,9 @@ export type AppointmentServiceUpdateWithoutAssignedEmployeeInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1394,6 +1528,9 @@ export type AppointmentServiceUncheckedUpdateWithoutAssignedEmployeeInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   performedByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1414,6 +1551,9 @@ export type AppointmentServiceUncheckedUpdateManyWithoutAssignedEmployeeInput = 
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   performedByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1431,6 +1571,9 @@ export type AppointmentServiceUpdateWithoutPerformedByEmployeeInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1453,6 +1596,9 @@ export type AppointmentServiceUncheckedUpdateWithoutPerformedByEmployeeInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1473,6 +1619,9 @@ export type AppointmentServiceUncheckedUpdateManyWithoutPerformedByEmployeeInput
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1491,6 +1640,9 @@ export type AppointmentServiceCreateManyServiceInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1509,6 +1661,9 @@ export type AppointmentServiceUpdateWithoutServiceInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1530,6 +1685,9 @@ export type AppointmentServiceUncheckedUpdateWithoutServiceInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1550,6 +1708,9 @@ export type AppointmentServiceUncheckedUpdateManyWithoutServiceInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1569,6 +1730,9 @@ export type AppointmentServiceCreateManyAppointmentInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1587,6 +1751,9 @@ export type AppointmentServiceUpdateWithoutAppointmentInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1608,6 +1775,9 @@ export type AppointmentServiceUncheckedUpdateWithoutAppointmentInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1628,6 +1798,9 @@ export type AppointmentServiceUncheckedUpdateManyWithoutAppointmentInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1648,6 +1821,9 @@ export type AppointmentServiceCreateManyRoomInput = {
   durationMinutes: number
   scheduledStart?: Date | string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: string | null
+  priceReviewedAt?: Date | string | null
   requiredRoomTypeSnapshot?: $Enums.RoomType | null
   status?: $Enums.AppointmentServiceStatus
   assignedEmployeeId?: string | null
@@ -1665,6 +1841,9 @@ export type AppointmentServiceUpdateWithoutRoomInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   actualStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1687,6 +1866,9 @@ export type AppointmentServiceUncheckedUpdateWithoutRoomInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1707,6 +1889,9 @@ export type AppointmentServiceUncheckedUpdateManyWithoutRoomInput = {
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduledStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  basePriceSnapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  priceAdjustmentReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiredRoomTypeSnapshot?: Prisma.NullableEnumRoomTypeFieldUpdateOperationsInput | $Enums.RoomType | null
   status?: Prisma.EnumAppointmentServiceStatusFieldUpdateOperationsInput | $Enums.AppointmentServiceStatus
   assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1757,6 +1942,9 @@ export type AppointmentServiceSelect<ExtArgs extends runtime.Types.Extensions.In
   durationMinutes?: boolean
   scheduledStart?: boolean
   price?: boolean
+  basePriceSnapshot?: boolean
+  priceAdjustmentReason?: boolean
+  priceReviewedAt?: boolean
   requiredRoomTypeSnapshot?: boolean
   status?: boolean
   assignedEmployeeId?: boolean
@@ -1784,6 +1972,9 @@ export type AppointmentServiceSelectCreateManyAndReturn<ExtArgs extends runtime.
   durationMinutes?: boolean
   scheduledStart?: boolean
   price?: boolean
+  basePriceSnapshot?: boolean
+  priceAdjustmentReason?: boolean
+  priceReviewedAt?: boolean
   requiredRoomTypeSnapshot?: boolean
   status?: boolean
   assignedEmployeeId?: boolean
@@ -1809,6 +2000,9 @@ export type AppointmentServiceSelectUpdateManyAndReturn<ExtArgs extends runtime.
   durationMinutes?: boolean
   scheduledStart?: boolean
   price?: boolean
+  basePriceSnapshot?: boolean
+  priceAdjustmentReason?: boolean
+  priceReviewedAt?: boolean
   requiredRoomTypeSnapshot?: boolean
   status?: boolean
   assignedEmployeeId?: boolean
@@ -1834,6 +2028,9 @@ export type AppointmentServiceSelectScalar = {
   durationMinutes?: boolean
   scheduledStart?: boolean
   price?: boolean
+  basePriceSnapshot?: boolean
+  priceAdjustmentReason?: boolean
+  priceReviewedAt?: boolean
   requiredRoomTypeSnapshot?: boolean
   status?: boolean
   assignedEmployeeId?: boolean
@@ -1846,7 +2043,7 @@ export type AppointmentServiceSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AppointmentServiceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appointmentId" | "serviceId" | "serviceNameSnapshot" | "durationMinutes" | "scheduledStart" | "price" | "requiredRoomTypeSnapshot" | "status" | "assignedEmployeeId" | "performedByEmployeeId" | "roomId" | "actualStartedAt" | "actualFinishedAt" | "employeeComment" | "createdAt" | "updatedAt", ExtArgs["result"]["appointmentService"]>
+export type AppointmentServiceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appointmentId" | "serviceId" | "serviceNameSnapshot" | "durationMinutes" | "scheduledStart" | "price" | "basePriceSnapshot" | "priceAdjustmentReason" | "priceReviewedAt" | "requiredRoomTypeSnapshot" | "status" | "assignedEmployeeId" | "performedByEmployeeId" | "roomId" | "actualStartedAt" | "actualFinishedAt" | "employeeComment" | "createdAt" | "updatedAt", ExtArgs["result"]["appointmentService"]>
 export type AppointmentServiceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   appointment?: boolean | Prisma.AppointmentDefaultArgs<ExtArgs>
   service?: boolean | Prisma.AppointmentService$serviceArgs<ExtArgs>
@@ -1889,6 +2086,9 @@ export type $AppointmentServicePayload<ExtArgs extends runtime.Types.Extensions.
     durationMinutes: number
     scheduledStart: Date
     price: runtime.Decimal
+    basePriceSnapshot: runtime.Decimal | null
+    priceAdjustmentReason: string | null
+    priceReviewedAt: Date | null
     requiredRoomTypeSnapshot: $Enums.RoomType | null
     status: $Enums.AppointmentServiceStatus
     assignedEmployeeId: string | null
@@ -2335,6 +2535,9 @@ export interface AppointmentServiceFieldRefs {
   readonly durationMinutes: Prisma.FieldRef<"AppointmentService", 'Int'>
   readonly scheduledStart: Prisma.FieldRef<"AppointmentService", 'DateTime'>
   readonly price: Prisma.FieldRef<"AppointmentService", 'Decimal'>
+  readonly basePriceSnapshot: Prisma.FieldRef<"AppointmentService", 'Decimal'>
+  readonly priceAdjustmentReason: Prisma.FieldRef<"AppointmentService", 'String'>
+  readonly priceReviewedAt: Prisma.FieldRef<"AppointmentService", 'DateTime'>
   readonly requiredRoomTypeSnapshot: Prisma.FieldRef<"AppointmentService", 'RoomType'>
   readonly status: Prisma.FieldRef<"AppointmentService", 'AppointmentServiceStatus'>
   readonly assignedEmployeeId: Prisma.FieldRef<"AppointmentService", 'String'>

@@ -755,6 +755,7 @@ export async function addAppointmentService(
             appointment.estimatedDurationMinutes * 60_000,
         ),
         price,
+        basePriceSnapshot: price,
 
         requiredRoomTypeSnapshot: service.requiredRoomType,
 

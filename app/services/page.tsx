@@ -38,15 +38,13 @@ export default async function ServicesPage() {
           <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-violet-600">
-                Administration
+                Catalogue
               </p>
               <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
                 Prestations
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                La gérante définit ici la durée de référence et le prix
-                catalogue. La prise de rendez-vous réutilise ensuite
-                automatiquement ces valeurs.
+                Retrouvez rapidement les prestations du salon, leur durée habituelle et leur prix de base.
               </p>
             </div>
 
