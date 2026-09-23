@@ -9,6 +9,7 @@ import { validateEmployeeAvailability } from "@/server/services/resources/valida
 import { validateRoomAvailability } from "@/server/services/resources/validate-room-availability";
 import { assertEmployeeCanPerformServiceInDb } from "@/server/services/employees/skill-policy";
 import { BusinessRuleError, ResourceNotFoundError } from "@/server/services/errors";
+import { validateBookingWindow } from "@/server/services/appointments/booking-window";
 
 export type PlannedClientChoice =
   | { type: "existing"; clientId: string; clientNote?: string | null }
@@ -65,9 +66,12 @@ export async function createPlannedAppointment(
       if (!durationMinutes || !Number.isInteger(durationMinutes) || durationMinutes <= 0) {
         throw new BusinessRuleError(`La durée de « ${service.name} » doit être configurée.`);
       }
-      if (Number.isNaN(item.scheduledStart.getTime()) || item.scheduledStart <= new Date()) {
-        throw new BusinessRuleError(`Le créneau de « ${service.name} » doit être dans le futur.`);
+      if (Number.isNaN(item.scheduledStart.getTime())) {
+        throw new BusinessRuleError(`Le créneau de « ${service.name} » est invalide.`);
       }
+      // Source de vérité commune : futur, heure Marrakech, pas de 15 min,
+      // début entre 10:00 et 21:00 et fin au plus tard à 21:30.
+      validateBookingWindow(item.scheduledStart, durationMinutes);
       const basePrice = service.defaultPrice.toNumber();
       const price = item.price ?? basePrice;
       return { item, service, durationMinutes, price, basePrice };

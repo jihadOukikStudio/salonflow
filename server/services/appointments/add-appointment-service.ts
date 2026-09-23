@@ -21,6 +21,7 @@ import { assertEmployeeCanPerformServiceInDb } from "@/server/services/employees
 import { validateRoomAvailability } from "@/server/services/resources/validate-room-availability";
 
 import { calculateAppointmentDuration } from "@/server/services/appointments/calculate-appointment-duration";
+import { validateBookingWindow } from "@/server/services/appointments/booking-window";
 import { checkEmployeeCapacityInDb } from "@/server/services/appointments/check-employee-capacity";
 
 import {
@@ -31,6 +32,7 @@ import {
 type AddAppointmentServiceInput = {
   appointmentId: string;
   serviceId: string;
+  scheduledStart?: Date;
   durationMinutes?: number;
   price?: number;
   employeeId?: string;
@@ -258,6 +260,15 @@ export async function addAppointmentService(
       );
     }
 
+    const scheduledStart =
+      input.scheduledStart ??
+      new Date(
+        appointment.scheduledStart.getTime() +
+          appointment.estimatedDurationMinutes * 60_000,
+      );
+
+    validateBookingWindow(scheduledStart, durationMinutes);
+
     /*
      * Snapshot prix.
      */
@@ -424,7 +435,15 @@ export async function addAppointmentService(
         salonId,
         employeeId,
         scheduledStart: appointment.scheduledStart,
-        estimatedDurationMinutes: newEstimatedDurationMinutes,
+        estimatedDurationMinutes: Math.max(
+          newEstimatedDurationMinutes,
+          Math.ceil(
+            (scheduledStart.getTime() +
+              durationMinutes * 60_000 -
+              appointment.scheduledStart.getTime()) /
+              60_000,
+          ),
+        ),
         excludeAppointmentId: appointment.id,
       });
     }
@@ -750,10 +769,7 @@ export async function addAppointmentService(
         serviceNameSnapshot: service.name,
 
         durationMinutes,
-        scheduledStart: new Date(
-          appointment.scheduledStart.getTime() +
-            appointment.estimatedDurationMinutes * 60_000,
-        ),
+        scheduledStart,
         price,
         basePriceSnapshot: price,
 

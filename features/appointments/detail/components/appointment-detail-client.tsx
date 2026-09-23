@@ -1,6 +1,10 @@
 "use client";
 
-import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
+import {
+  casablancaLocalDateTimeToIso,
+  formatSalonDateTime,
+  getMinimumBookableCasablancaDateTime,
+} from "@/features/appointments/lib/casablanca-local-datetime";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -206,6 +210,9 @@ export function AppointmentDetailClient({ detail }: Props) {
   >(null);
   const [note, setNote] = useState(detail.internalNote ?? "");
   const [serviceToAdd, setServiceToAdd] = useState("");
+  const minimumAddSlot = getMinimumBookableCasablancaDateTime();
+  const [serviceAddDate, setServiceAddDate] = useState(minimumAddSlot.dateKey);
+  const [serviceAddTime, setServiceAddTime] = useState(minimumAddSlot.timeValue);
   const [feasibility, setFeasibility] = useState<Feasibility | null>(null);
   const [feasibilityMessage, setFeasibilityMessage] = useState<string | null>(
     null,
@@ -252,6 +259,9 @@ export function AppointmentDetailClient({ detail }: Props) {
     void checkAddAppointmentServiceFeasibilityAction({
       appointmentId: detail.id,
       serviceId: selectedCatalogService.id,
+      scheduledStart: new Date(
+        casablancaLocalDateTimeToIso(serviceAddDate, serviceAddTime),
+      ),
     })
       .then((result) => {
         if (requestId !== feasibilityRequestId.current) return;
@@ -276,7 +286,13 @@ export function AppointmentDetailClient({ detail }: Props) {
           setCheckingFeasibility(false);
         }
       });
-  }, [canChangeStructure, detail.id, selectedCatalogService]);
+  }, [
+    canChangeStructure,
+    detail.id,
+    selectedCatalogService,
+    serviceAddDate,
+    serviceAddTime,
+  ]);
 
   useEffect(() => {
     if (!cancelDialogOpen) return;
@@ -846,6 +862,52 @@ export function AppointmentDetailClient({ detail }: Props) {
               </div>
             ) : null}
 
+            <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50/50 p-4">
+              <p className="text-sm font-semibold text-slate-950">Quand réaliser cette prestation ?</p>
+              <p className="mt-1 text-xs text-slate-600">
+                Les créneaux sont proposés par pas de 15 minutes. Les horaires passés ne sont jamais réservables.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="text-xs font-semibold text-slate-600">
+                  Date
+                  <input
+                    type="date"
+                    min={minimumAddSlot.dateKey}
+                    className={`${inputClass} mt-1`}
+                    value={serviceAddDate}
+                    onChange={(event) => {
+                      const date = event.target.value;
+                      setServiceAddDate(date);
+                      if (date === minimumAddSlot.dateKey && serviceAddTime < minimumAddSlot.timeValue) {
+                        setServiceAddTime(minimumAddSlot.timeValue);
+                      }
+                      setFeasibility(null);
+                    }}
+                  />
+                </label>
+                <label className="text-xs font-semibold text-slate-600">
+                  Heure
+                  <select
+                    className={`${inputClass} mt-1`}
+                    value={serviceAddTime}
+                    onChange={(event) => {
+                      setServiceAddTime(event.target.value);
+                      setFeasibility(null);
+                    }}
+                  >
+                    {Array.from({ length: 45 }, (_, index) => {
+                      const total = 10 * 60 + index * 15;
+                      const value = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+                      const duration = selectedCatalogService?.defaultDurationMinutes ?? 0;
+                      const beforeNow = serviceAddDate === minimumAddSlot.dateKey && value < minimumAddSlot.timeValue;
+                      const endsAfterClosing = duration > 0 && total + duration > 21 * 60 + 30;
+                      return <option key={value} value={value} disabled={beforeNow || endsAfterClosing}>{value}</option>;
+                    })}
+                  </select>
+                </label>
+              </div>
+            </div>
+
             <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
               <select
                 className={inputClass}
@@ -907,10 +969,16 @@ export function AppointmentDetailClient({ detail }: Props) {
                       addAppointmentServiceAction({
                         appointmentId: detail.id,
                         serviceId: selectedCatalogService.id,
+                        scheduledStart: new Date(
+                          casablancaLocalDateTimeToIso(serviceAddDate, serviceAddTime),
+                        ),
                       }),
                     "Prestation ajoutée. Affectez maintenant les ressources nécessaires.",
                     () => {
                       setServiceToAdd("");
+                      const nextMinimum = getMinimumBookableCasablancaDateTime();
+                      setServiceAddDate(nextMinimum.dateKey);
+                      setServiceAddTime(nextMinimum.timeValue);
                       setPaymentAmountOverride(null);
                       setFeasibility(null);
                       setFeasibilityMessage(null);

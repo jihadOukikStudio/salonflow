@@ -77,12 +77,9 @@ export default async function PlanningPage({
   const newAppointmentOptions = shouldOpenNewAppointment
     ? await getNewAppointmentOptions(user)
     : null;
-  const minimumBooking = shouldOpenNewAppointment
-    ? getMinimumBookableCasablancaDateTime()
-    : null;
+  const minimumBooking = getMinimumBookableCasablancaDateTime();
   const isPastCreationDate = Boolean(
     shouldOpenNewAppointment &&
-    minimumBooking &&
     planning.dateKey < minimumBooking.dateKey,
   );
 
@@ -152,7 +149,7 @@ export default async function PlanningPage({
               period={period}
             />
           </div>
-          {canManageSalon ? (
+          {canManageSalon && planning.dateKey >= minimumBooking.dateKey ? (
             <Link
               href={`/planning?date=${encodeURIComponent(planning.dateKey)}&view=${view}&period=${period}&new=1`}
               className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 sm:w-auto"
@@ -183,7 +180,10 @@ export default async function PlanningPage({
               appointments={planning.appointments}
               employees={planning.employees}
               rooms={planning.rooms}
-              canCreateAppointment={canManageSalon}
+              canCreateAppointment={
+                canManageSalon && planning.dateKey >= minimumBooking.dateKey
+              }
+              minimumBooking={minimumBooking}
             />
           ) : (
             <PlanningPeriodView period={period} days={periodDays} />

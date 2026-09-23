@@ -14,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { formatSalonDateTime } from "@/features/appointments/lib/casablanca-local-datetime";
+import { appointmentUi } from "@/features/ui/status-visuals";
 import {
   setClientActiveAdminAction,
   updateClientAdminAction,
@@ -529,7 +530,7 @@ function AppointmentCard({ appointment }: { appointment: AppointmentRow }) {
             {date(appointment.scheduledStart)}
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            {statusLabels[appointment.status] ?? appointment.status}
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-bold ${appointmentUi(appointment.status).badge}`}><span className={`h-1.5 w-1.5 rounded-full ${appointmentUi(appointment.status).dot}`}/>{statusLabels[appointment.status] ?? appointment.status}</span>
           </p>
         </div>
         {appointment.payment?.status === "PAID" ? (

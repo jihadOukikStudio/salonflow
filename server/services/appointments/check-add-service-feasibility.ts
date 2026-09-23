@@ -5,6 +5,7 @@ import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-cur
 import { prisma } from "@/server/db/prisma";
 
 import { calculateAppointmentDuration } from "@/server/services/appointments/calculate-appointment-duration";
+import { validateBookingWindow } from "@/server/services/appointments/booking-window";
 import {
   getAppointmentEnd,
   intervalsOverlap,
@@ -18,6 +19,7 @@ import {
 type CheckAddServiceFeasibilityInput = {
   appointmentId: string;
   serviceId: string;
+  scheduledStart?: Date;
 };
 
 export type AddServiceFeasibility = {
@@ -154,6 +156,19 @@ export async function checkAddServiceFeasibility(
     );
   }
 
+  const proposedStart =
+    input.scheduledStart ??
+    getAppointmentEnd(
+      appointment.scheduledStart,
+      appointment.estimatedDurationMinutes,
+    );
+
+  validateBookingWindow(proposedStart, durationMinutes);
+
+  const proposedEnd = new Date(
+    proposedStart.getTime() + durationMinutes * 60_000,
+  );
+
   const newDurationMinutes = calculateAppointmentDuration([
     ...appointment.services.map((service) => ({
       id: service.id,
@@ -177,8 +192,8 @@ export async function checkAddServiceFeasibility(
   );
 
   const interval = {
-    startAt: appointment.scheduledStart,
-    endAt: newEnd,
+    startAt: proposedStart,
+    endAt: proposedEnd,
   };
 
   const [employees, rooms] = await Promise.all([
@@ -225,8 +240,8 @@ export async function checkAddServiceFeasibility(
       ? prisma.employeeUnavailability.findMany({
           where: {
             employeeId: { in: employeeIds },
-            startAt: { lt: newEnd },
-            endAt: { gt: appointment.scheduledStart },
+            startAt: { lt: proposedEnd },
+            endAt: { gt: proposedStart },
           },
           select: {
             employeeId: true,
@@ -239,7 +254,7 @@ export async function checkAddServiceFeasibility(
             salonId,
             id: { not: appointment.id },
             status: { notIn: ["CANCELLED", "CLOSED"] },
-            scheduledStart: { lt: newEnd },
+            scheduledStart: { lt: proposedEnd },
             services: {
               some: {
                 assignedEmployeeId: { in: employeeIds },
@@ -264,8 +279,8 @@ export async function checkAddServiceFeasibility(
       ? prisma.roomUnavailability.findMany({
           where: {
             roomId: { in: roomIds },
-            startAt: { lt: newEnd },
-            endAt: { gt: appointment.scheduledStart },
+            startAt: { lt: proposedEnd },
+            endAt: { gt: proposedStart },
           },
           select: {
             roomId: true,
@@ -278,7 +293,7 @@ export async function checkAddServiceFeasibility(
             salonId,
             id: { not: appointment.id },
             status: { notIn: ["CANCELLED", "CLOSED"] },
-            scheduledStart: { lt: newEnd },
+            scheduledStart: { lt: proposedEnd },
             services: {
               some: {
                 roomId: { in: roomIds },
@@ -465,7 +480,7 @@ export async function checkAddServiceFeasibility(
     currentDurationMinutes: appointment.estimatedDurationMinutes,
     newDurationMinutes,
     currentEnd: currentEnd.toISOString(),
-    newEnd: newEnd.toISOString(),
+    newEnd: proposedEnd.toISOString(),
     extraMinutes: newDurationMinutes - appointment.estimatedDurationMinutes,
     availableEmployees,
     availableRooms,

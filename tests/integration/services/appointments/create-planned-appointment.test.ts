@@ -108,4 +108,33 @@ describe("createPlannedAppointment — planning prestation par prestation",()=>{
     ]})).rejects.toBeInstanceOf(BusinessRuleError);
   });
 
+  it("refuse une prestation qui démarre hors de la grille de 15 minutes",async()=>{
+    const c=await setup();
+    await expect(createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T10:07:00.000Z"),employeeId:c.employee.id},
+    ]})).rejects.toThrow(/15 minutes/);
+  });
+
+  it("refuse un début de prestation après 21h00",async()=>{
+    const c=await setup();
+    await expect(createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T21:15:00.000Z"),employeeId:c.employee.id},
+    ]})).rejects.toThrow(/10h00 et 21h00/);
+  });
+
+  it("autorise une prestation qui finit exactement à 21h30",async()=>{
+    const c=await setup();
+    const result=await createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T21:00:00.000Z"),employeeId:c.employee.id},
+    ]});
+    expect(result.services).toHaveLength(1);
+  });
+
+  it("refuse une prestation qui finit après 21h30",async()=>{
+    const c=await setup();
+    await expect(createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.soin.id,scheduledStart:new Date("2099-09-10T21:00:00.000Z"),employeeId:c.employee.id,roomId:c.room.id},
+    ]})).rejects.toThrow(/21h30/);
+  });
+
 });

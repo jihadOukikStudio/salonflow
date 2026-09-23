@@ -166,6 +166,7 @@ export const addAppointmentServiceActionSchema = z
   .object({
     appointmentId: uuidSchema,
     serviceId: uuidSchema,
+    scheduledStart: dateTimeSchema.optional(),
     durationMinutes: positiveDurationSchema.optional(),
     price: moneySchema.optional(),
   })

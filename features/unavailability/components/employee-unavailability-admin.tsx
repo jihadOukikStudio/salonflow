@@ -1,4 +1,6 @@
 "use client";
+
+import { employeeUnavailabilityVisual } from "@/features/ui/status-visuals";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -209,11 +211,12 @@ export function EmployeeUnavailabilityAdmin({
                   employee.unavailabilities.map((u) => (
                     <div
                       key={u.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-3"
+                      className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 ${employeeUnavailabilityVisual(u.type).block}`}
                     >
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {labels[u.type] ?? u.type}
+                        <p className="flex items-center gap-2 text-sm font-semibold">
+                          <span className={`h-2.5 w-2.5 rounded-full ${employeeUnavailabilityVisual(u.type).dot}`} />
+                          {employeeUnavailabilityVisual(u.type).label}
                         </p>
                         <p className="text-xs text-slate-600">
                           {formatCasablancaDateTime(u.startAt)} →{" "}

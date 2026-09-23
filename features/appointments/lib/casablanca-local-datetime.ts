@@ -97,13 +97,31 @@ export function getCasablancaDateTimeFields(
 }
 
 /**
- * Valeur minimale ergonomique pour le formulaire : la minute suivante.
- * La règle de sécurité reste vérifiée côté serveur avec l'heure réelle.
+ * Valeur minimale ergonomique pour le formulaire : prochain quart d'heure
+ * selon l'heure métier de Marrakech. La règle de sécurité reste vérifiée
+ * côté serveur avec l'instant réel.
  */
 export function getMinimumBookableCasablancaDateTime(
   now: Date = new Date(),
 ): CasablancaDateTimeFields {
-  return getCasablancaDateTimeFields(new Date(now.getTime() + 60_000));
+  const nextMinute = new Date(now.getTime() + 60_000);
+  const fields = getCasablancaDateTimeFields(nextMinute);
+  const [hours, minutes] = fields.timeValue.split(":").map(Number);
+  const roundedMinutes = Math.ceil((hours * 60 + minutes) / 15) * 15;
+  const dayOffset = Math.floor(roundedMinutes / (24 * 60));
+  const minuteOfDay = roundedMinutes % (24 * 60);
+  const roundedTime = `${String(Math.floor(minuteOfDay / 60)).padStart(2, "0")}:${String(minuteOfDay % 60).padStart(2, "0")}`;
+
+  if (dayOffset === 0) {
+    return { dateKey: fields.dateKey, timeValue: roundedTime };
+  }
+
+  const date = new Date(`${fields.dateKey}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + dayOffset);
+  return {
+    dateKey: date.toISOString().slice(0, 10),
+    timeValue: roundedTime,
+  };
 }
 
 export function casablancaLocalDateTimeToIso(

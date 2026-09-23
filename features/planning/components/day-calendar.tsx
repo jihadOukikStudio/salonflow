@@ -492,6 +492,7 @@ function ResourceCalendar({
   showNow,
   nowTop,
   canCreateAppointment = false,
+  minimumBooking,
 }: Props & {
   showNow: boolean;
   nowTop: number;
@@ -677,15 +678,24 @@ function ResourceCalendar({
                           new Date(item.startAt).getTime() < slotEndMs &&
                           new Date(item.endAt).getTime() > slotStartMs,
                       );
+                      const beforeNow =
+                        minimumBooking &&
+                        (dateKey < minimumBooking.dateKey ||
+                          (dateKey === minimumBooking.dateKey &&
+                            timeValue < minimumBooking.timeValue));
                       const style = {
                         top:
                           ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT / 4,
                       };
-                      return unavailable ? (
+                      return unavailable || beforeNow ? (
                         <div
                           key={`slot-${column.id}-${timeValue}`}
-                          aria-label={`${column.name} indisponible à ${timeValue}`}
+                          aria-label={
+                            beforeNow
+                              ? `Créneau passé à ${timeValue}`
+                              : `${column.name} indisponible à ${timeValue}`
+                          }
                           className="absolute inset-x-0 z-[9] cursor-not-allowed"
                           style={style}
                         />
@@ -777,6 +787,7 @@ export function DayCalendar({
   employees,
   rooms,
   canCreateAppointment = false,
+  minimumBooking,
 }: Props) {
   const [now, setNow] = useState(() => new Date());
 
@@ -809,6 +820,7 @@ export function DayCalendar({
           nowDateKey={nowParts.dateKey}
           nowMinute={nowParts.minutes}
           canCreateAppointment={canCreateAppointment}
+          minimumBooking={minimumBooking}
         />
       ) : (
         <ResourceCalendar
@@ -820,6 +832,7 @@ export function DayCalendar({
           showNow={showNow}
           nowTop={nowTop}
           canCreateAppointment={canCreateAppointment}
+          minimumBooking={minimumBooking}
         />
       )}
     </div>

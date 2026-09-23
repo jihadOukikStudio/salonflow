@@ -51,6 +51,7 @@ export async function checkAddAppointmentServiceFeasibilityAction(
     return checkAddServiceFeasibility(currentUser, {
       appointmentId: data.appointmentId,
       serviceId: data.serviceId,
+      scheduledStart: data.scheduledStart,
     });
   });
 }

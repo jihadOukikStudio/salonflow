@@ -57,12 +57,12 @@ describe("booking date guards", () => {
     expect(fields.timeValue).toBe("14:10");
   });
 
-  it("propose au minimum la minute suivante", () => {
+  it("propose le prochain quart d’heure à Marrakech", () => {
     const fields = getMinimumBookableCasablancaDateTime(
       new Date("2026-09-05T13:10:30.000Z"),
     );
 
-    expect(fields.timeValue).toBe("14:11");
+    expect(fields.timeValue).toBe("14:15");
   });
 
   it("refuse un créneau passé et accepte un créneau futur", () => {
@@ -93,7 +93,7 @@ describe("booking date guards", () => {
     );
 
     expect(fields.dateKey).toBe("2026-09-21");
-    expect(fields.timeValue).toBe("09:51");
+    expect(fields.timeValue).toBe("10:00");
     expect(
       isFutureCasablancaLocalDateTime(
         "2026-09-21",
