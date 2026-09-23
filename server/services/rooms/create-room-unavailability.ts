@@ -118,43 +118,25 @@ export async function createRoomUnavailability(
     const candidateAssignments = await tx.appointmentService.findMany({
       where: {
         roomId: lockedRoom.id,
-
+        scheduledStart: { lt: input.endAt },
         appointment: {
           salonId,
-
-          status: {
-            notIn: ["CANCELLED", "CLOSED"],
-          },
-
-          scheduledStart: {
-            lt: input.endAt,
-          },
+          status: { notIn: ["CANCELLED", "CLOSED"] },
         },
       },
-
       select: {
         id: true,
-
-        appointment: {
-          select: {
-            id: true,
-            scheduledStart: true,
-            estimatedDurationMinutes: true,
-          },
-        },
+        scheduledStart: true,
+        durationMinutes: true,
       },
     });
 
-    const conflictingAssignment = candidateAssignments.find(
-      ({ appointment }) => {
-        const appointmentEnd = new Date(
-          appointment.scheduledStart.getTime() +
-            appointment.estimatedDurationMinutes * 60_000,
-        );
-
-        return appointmentEnd > input.startAt;
-      },
-    );
+    const conflictingAssignment = candidateAssignments.find((service) => {
+      const serviceEnd = new Date(
+        service.scheduledStart.getTime() + service.durationMinutes * 60_000,
+      );
+      return serviceEnd > input.startAt;
+    });
 
     if (conflictingAssignment) {
       throw new BusinessRuleError(

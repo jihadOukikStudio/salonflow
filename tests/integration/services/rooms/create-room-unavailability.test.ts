@@ -277,4 +277,101 @@ describe("createRoomUnavailability", () => {
 
     expect(log).not.toBeNull();
   });
+  it("checks the exact room service interval instead of the whole appointment", async () => {
+    const { salon, admin, room } = await createContext();
+
+    const category = await testPrisma.serviceCategory.create({
+      data: { salonId: salon.id, name: "Soins" },
+    });
+    const service = await testPrisma.service.create({
+      data: {
+        salonId: salon.id,
+        categoryId: category.id,
+        name: "Soin visage",
+        defaultDurationMinutes: 30,
+        defaultPrice: 200,
+        requiredRoomType: "TREATMENT_ROOM",
+      },
+    });
+    const client = await testPrisma.client.create({
+      data: { salonId: salon.id, name: "Cliente", phone: "+212600009901" },
+    });
+    const appointment = await testPrisma.appointment.create({
+      data: {
+        salonId: salon.id,
+        clientId: client.id,
+        scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
+        estimatedDurationMinutes: 180,
+        status: "CONFIRMED",
+      },
+    });
+    await testPrisma.appointmentService.create({
+      data: {
+        appointmentId: appointment.id,
+        serviceId: service.id,
+        roomId: room.id,
+        scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
+        durationMinutes: 30,
+        price: 200,
+      },
+    });
+
+    await expect(
+      createRoomUnavailability(admin, {
+        roomId: room.id,
+        startAt: new Date("2099-09-23T10:00:00.000Z"),
+        endAt: new Date("2099-09-23T11:00:00.000Z"),
+        reason: "Maintenance",
+      }),
+    ).resolves.toMatchObject({ roomId: room.id });
+  });
+
+  it("refuses an unavailability overlapping the exact service use of the room", async () => {
+    const { salon, admin, room } = await createContext();
+
+    const category = await testPrisma.serviceCategory.create({
+      data: { salonId: salon.id, name: "Soins" },
+    });
+    const service = await testPrisma.service.create({
+      data: {
+        salonId: salon.id,
+        categoryId: category.id,
+        name: "Soin visage",
+        defaultDurationMinutes: 60,
+        defaultPrice: 200,
+        requiredRoomType: "TREATMENT_ROOM",
+      },
+    });
+    const client = await testPrisma.client.create({
+      data: { salonId: salon.id, name: "Cliente", phone: "+212600009902" },
+    });
+    const appointment = await testPrisma.appointment.create({
+      data: {
+        salonId: salon.id,
+        clientId: client.id,
+        scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
+        estimatedDurationMinutes: 120,
+        status: "CONFIRMED",
+      },
+    });
+    await testPrisma.appointmentService.create({
+      data: {
+        appointmentId: appointment.id,
+        serviceId: service.id,
+        roomId: room.id,
+        scheduledStart: new Date("2099-09-23T10:00:00.000Z"),
+        durationMinutes: 60,
+        price: 200,
+      },
+    });
+
+    await expect(
+      createRoomUnavailability(admin, {
+        roomId: room.id,
+        startAt: new Date("2099-09-23T10:30:00.000Z"),
+        endAt: new Date("2099-09-23T11:30:00.000Z"),
+      }),
+    ).rejects.toBeInstanceOf(BusinessRuleError);
+  });
+
 });
