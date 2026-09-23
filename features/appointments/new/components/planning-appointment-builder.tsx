@@ -2,206 +2,77 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock3, Plus, Trash2, UserRound, DoorOpen } from "lucide-react";
 import { searchClientsAction } from "@/features/clients/server/actions";
 import { createPlannedAppointmentAction } from "@/features/appointments/server/actions/appointment-actions";
 import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casablanca-local-datetime";
 import type { NewAppointmentOptions, NewAppointmentClientOption } from "@/features/appointments/new/types";
+import type { PlanningAppointmentItem, PlanningEmployeeItem, PlanningRoomItem } from "@/features/planning/server";
 
-const field = "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100";
+const field = "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400";
 
-type DraftLine = {
-  key: string;
-  serviceId: string;
-  time: string;
-  employeeId: string;
-  roomId: string;
-  price: string;
-};
+type DraftLine={key:string;serviceId:string;time:string;employeeId:string;roomId:string;price:string};
+type Props=NewAppointmentOptions&{dateKey:string;initialTime?:string;initialEmployeeId?:string;cancelHref:string;planningAppointments:PlanningAppointmentItem[];planningEmployees:PlanningEmployeeItem[];planningRooms:PlanningRoomItem[]};
 
-type Props = NewAppointmentOptions & {
-  dateKey: string;
-  initialTime?: string;
-  initialEmployeeId?: string;
-  cancelHref: string;
-};
+function minutes(time:string){const [h,m]=time.split(":").map(Number);return h*60+m}
+function timeFromMinutes(value:number){const safe=Math.max(0,Math.min(value,23*60+59));return `${String(Math.floor(safe/60)).padStart(2,"0")}:${String(safe%60).padStart(2,"0")}`}
+function overlaps(aStart:number,aDuration:number,bStart:number,bDuration:number){return aStart < bStart+bDuration && aStart+aDuration > bStart}
 
-export function PlanningAppointmentBuilder({ services, employees, rooms, dateKey, initialTime = "10:00", initialEmployeeId = "", cancelHref }: Props) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [clientQuery, setClientQuery] = useState("");
-  const [clients, setClients] = useState<NewAppointmentClientOption[]>([]);
-  const [client, setClient] = useState<NewAppointmentClientOption | null>(null);
-  const [newClientName, setNewClientName] = useState("");
-  const [newClientPhone, setNewClientPhone] = useState("");
-  const [clientNote, setClientNote] = useState("");
-  const [note, setNote] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [lines, setLines] = useState<DraftLine[]>([]);
+export function PlanningAppointmentBuilder({services,employees,rooms,dateKey,initialTime="10:00",initialEmployeeId="",cancelHref,planningAppointments,planningEmployees,planningRooms}:Props){
+  const router=useRouter(); const[pending,startTransition]=useTransition();
+  const[clientQuery,setClientQuery]=useState(""); const[clients,setClients]=useState<NewAppointmentClientOption[]>([]); const[client,setClient]=useState<NewAppointmentClientOption|null>(null);
+  const[newClientName,setNewClientName]=useState(""); const[newClientPhone,setNewClientPhone]=useState(""); const[clientNote,setClientNote]=useState(""); const[note,setNote]=useState(""); const[error,setError]=useState<string|null>(null); const[lines,setLines]=useState<DraftLine[]>([]);
+  const serviceMap=useMemo(()=>new Map(services.map(s=>[s.id,s])),[services]);
+  const employeePlanning=useMemo(()=>new Map(planningEmployees.map(e=>[e.id,e])),[planningEmployees]);
+  const roomPlanning=useMemo(()=>new Map(planningRooms.map(r=>[r.id,r])),[planningRooms]);
 
-  const serviceMap = useMemo(() => new Map(services.map((s) => [s.id, s])), [services]);
+  function duration(line:DraftLine){return serviceMap.get(line.serviceId)?.defaultDurationMinutes??0}
+  function nextStart(){const last=lines.at(-1);if(!last)return initialTime;const d=duration(last);return last.time&&d?timeFromMinutes(minutes(last.time)+d):last.time||initialTime}
+  function addLine(){setLines(current=>[...current,{key:crypto.randomUUID(),serviceId:"",time:current.length?nextStart():initialTime,employeeId:current.length===0?initialEmployeeId:"",roomId:"",price:""}])}
+  function patchLine(key:string,patch:Partial<DraftLine>){setLines(current=>current.map(line=>line.key===key?{...line,...patch}:line))}
 
-  function addLine() {
-    setLines((current) => [...current, { key: crypto.randomUUID(), serviceId: "", time: current.at(-1)?.time ?? initialTime, employeeId: current.length === 0 ? initialEmployeeId : "", roomId: "", price: "" }]);
-  }
+  function existingEmployeeConflict(employeeId:string,line:DraftLine){const d=duration(line);if(!line.time||!d)return false;const start=new Date(casablancaLocalDateTimeToIso(dateKey,line.time)).getTime();const end=start+d*60000;const p=employeePlanning.get(employeeId);if(p?.unavailabilities.some(u=>new Date(u.startAt).getTime()<end&&new Date(u.endAt).getTime()>start))return true;return planningAppointments.some(a=>a.services.some(s=>s.assignedEmployee?.id===employeeId&&new Date(s.scheduledStart).getTime()<end&&new Date(s.scheduledEnd).getTime()>start))}
+  function draftEmployeeConflict(employeeId:string,line:DraftLine){const d=duration(line);if(!line.time||!d)return false;return lines.some(other=>other.key!==line.key&&other.employeeId===employeeId&&other.time&&duration(other)>0&&overlaps(minutes(line.time),d,minutes(other.time),duration(other)))}
+  function employeeAvailable(employeeId:string,line:DraftLine){return !existingEmployeeConflict(employeeId,line)&&!draftEmployeeConflict(employeeId,line)}
+  function existingRoomConflict(roomId:string,line:DraftLine){const d=duration(line);if(!line.time||!d)return false;const start=new Date(casablancaLocalDateTimeToIso(dateKey,line.time)).getTime();const end=start+d*60000;const p=roomPlanning.get(roomId);if(p?.unavailabilities.some(u=>new Date(u.startAt).getTime()<end&&new Date(u.endAt).getTime()>start))return true;return planningAppointments.some(a=>a.services.some(s=>s.room?.id===roomId&&new Date(s.scheduledStart).getTime()<end&&new Date(s.scheduledEnd).getTime()>start))}
+  function draftRoomConflict(roomId:string,line:DraftLine){const d=duration(line);if(!line.time||!d)return false;return lines.some(other=>other.key!==line.key&&other.roomId===roomId&&other.time&&duration(other)>0&&overlaps(minutes(line.time),d,minutes(other.time),duration(other)))}
+  function roomAvailable(roomId:string,line:DraftLine){return !existingRoomConflict(roomId,line)&&!draftRoomConflict(roomId,line)}
 
-  function patchLine(key: string, patch: Partial<DraftLine>) {
-    setLines((current) => current.map((line) => line.key === key ? { ...line, ...patch } : line));
-  }
+  useEffect(()=>{const query=clientQuery.trim();if(client||query.length<2){if(query.length<2)setClients([]);return}const timeout=window.setTimeout(()=>{startTransition(async()=>{const result=await searchClientsAction({query});setClients(result.ok?result.data.clients:[])})},250);return()=>window.clearTimeout(timeout)},[clientQuery,client]);
+  function selectClient(item:NewAppointmentClientOption){setClient(item);setClientQuery(`${item.name} · ${item.phone}`);setClientNote(item.internalNote??"");setClients([]);setError(null)}
+  function clearSelectedClient(){setClient(null);setClientQuery("");setClientNote("");setClients([])}
 
-  useEffect(() => {
-    const query = clientQuery.trim();
-    if (client || query.length < 2) {
-      if (query.length < 2) setClients([]);
-      return;
-    }
-    const timeout = window.setTimeout(() => {
-      startTransition(async () => {
-        const result = await searchClientsAction({ query });
-        if (!result.ok) { setClients([]); return; }
-        setClients(result.data.clients);
-      });
-    }, 250);
-    return () => window.clearTimeout(timeout);
-  }, [clientQuery, client]);
+  function submit(){setError(null);if(!client&&(!newClientName.trim()||!newClientPhone.trim())){setError("Renseignez le nom et le téléphone de la nouvelle cliente.");return}if(!lines.length){setError("Ajoutez au moins une prestation.");return}for(const line of lines){const service=serviceMap.get(line.serviceId);if(!service||!line.time||!line.employeeId){setError("Chaque prestation doit avoir une heure et une employée.");return}if(service.requiredRoomType&&!line.roomId){setError(`Affectez une salle à « ${service.name} » avant de confirmer.`);return}if(!employeeAvailable(line.employeeId,line)){setError(`L’employée choisie pour « ${service.name} » n’est plus disponible sur ce créneau.`);return}if(line.roomId&&!roomAvailable(line.roomId,line)){setError(`La salle choisie pour « ${service.name} » n’est plus disponible sur ce créneau.`);return}}
+    startTransition(async()=>{const result=await createPlannedAppointmentAction({client:client?{type:"existing",clientId:client.id,clientNote:clientNote||null}:{type:"new",name:newClientName.trim(),phone:newClientPhone.trim(),clientNote:clientNote||null},internalNote:note||null,services:lines.map(line=>({serviceId:line.serviceId,scheduledStart:new Date(casablancaLocalDateTimeToIso(dateKey,line.time)),employeeId:line.employeeId,roomId:line.roomId||null,...(line.price!==""?{price:Number(line.price)}:{})}))});if(!result.ok){setError(result.message);return}router.push(`/appointments/${result.data.appointmentId}`);router.refresh()})}
 
-  function selectClient(item: NewAppointmentClientOption) {
-    setClient(item);
-    setClientQuery(`${item.name} · ${item.phone}`);
-    setClientNote(item.internalNote ?? "");
-    setClients([]);
-    setError(null);
-  }
+  const total=lines.reduce((sum,line)=>sum+(Number(line.price)||0),0);
+  const complete=lines.filter(line=>line.serviceId&&line.time&&line.employeeId&&(!serviceMap.get(line.serviceId)?.requiredRoomType||line.roomId)).length;
+  return <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="space-y-5">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">1</span><div><h3 className="font-semibold text-slate-950">Cliente</h3><p className="text-sm text-slate-500">Nom ou téléphone, sans étape “nouvelle cliente”.</p></div></div>
+        <div className="relative mt-4"><input className={field} value={clientQuery} onChange={e=>{if(client)clearSelectedClient();const value=e.target.value;setClientQuery(value);if(/^[+\d\s().-]+$/.test(value))setNewClientPhone(value);else setNewClientName(value)}} placeholder="Rechercher par nom ou téléphone" autoComplete="off"/>{clients.length>0?<div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">{clients.map(item=><button key={item.id} type="button" onClick={()=>selectClient(item)} className="block min-h-11 w-full border-b border-slate-100 px-3 py-2 text-left text-sm last:border-0 hover:bg-slate-50"><strong>{item.name}</strong><span className="ml-2 text-slate-500">{item.phone}</span></button>)}</div>:null}</div>
+        {client?<div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm"><div className="flex justify-between gap-3"><div><strong>{client.name}</strong><p className="text-slate-600">{client.phone}</p></div><button type="button" onClick={clearSelectedClient} className="font-semibold">Changer</button></div>{client.internalNote?<div className="mt-3 rounded-xl bg-white/80 p-3"><p className="text-xs font-bold uppercase text-rose-700">♥ Préférences connues</p><p className="mt-1 whitespace-pre-wrap text-sm">{client.internalNote}</p></div>:null}</div>:clientQuery.trim().length>=2&&clients.length===0&&!pending?<div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3"><p className="text-sm font-semibold">Nouvelle cliente</p><p className="mt-1 text-xs text-slate-500">Aucune fiche trouvée. Elle sera créée seulement à la confirmation.</p><div className="mt-3 grid gap-2 sm:grid-cols-2"><input className={field} value={newClientName} onChange={e=>setNewClientName(e.target.value)} placeholder="Nom"/><input className={field} value={newClientPhone} onChange={e=>setNewClientPhone(e.target.value)} placeholder="Téléphone" inputMode="tel"/></div></div>:null}
+        {(client||(newClientName.trim()&&newClientPhone.trim()))?<div className="mt-3"><label className="text-sm font-semibold">Préférences cliente</label><textarea className={`${field} mt-1 min-h-20 py-3`} value={clientNote} onChange={e=>setClientNote(e.target.value)} placeholder="Ex. couleur 6.3, préfère Lina, peau sensible…"/><p className="mt-1 text-xs text-slate-500">Conservées sur la fiche cliente pour les prochains rendez-vous.</p></div>:null}
+      </section>
 
-  function clearSelectedClient() {
-    setClient(null);
-    setClientQuery("");
-    setClientNote("");
-    setClients([]);
-  }
-
-  function submit() {
-    setError(null);
-    const creatingClient = !client;
-    if (creatingClient && (!newClientName.trim() || !newClientPhone.trim())) { setError("Cliente introuvable : renseignez son nom et son téléphone pour la créer avec le rendez-vous."); return; }
-    if (lines.length === 0) { setError("Ajoutez au moins une prestation."); return; }
-
-    const invalid = lines.find((line) => !line.serviceId || !line.time || !line.employeeId);
-    if (invalid) { setError("Chaque prestation doit avoir une heure et une employée."); return; }
-    const missingRoom = lines.find((line) => serviceMap.get(line.serviceId)?.requiredRoomType && !line.roomId);
-    if (missingRoom) { setError("Affectez la salle requise avant de confirmer le rendez-vous."); return; }
-
-    startTransition(async () => {
-      const result = await createPlannedAppointmentAction({
-        client: client
-          ? { type: "existing", clientId: client.id, clientNote: clientNote || null }
-          : { type: "new", name: newClientName.trim(), phone: newClientPhone.trim(), clientNote: clientNote || null },
-        internalNote: note || null,
-        services: lines.map((line) => ({
-          serviceId: line.serviceId,
-          scheduledStart: new Date(casablancaLocalDateTimeToIso(dateKey, line.time)),
-          employeeId: line.employeeId,
-          roomId: line.roomId || null,
-          ...(line.price !== "" ? { price: Number(line.price) } : {}),
-        })),
-      });
-      if (!result.ok) { setError(result.message); return; }
-      router.push(`/appointments/${result.data.appointmentId}`);
-      router.refresh();
-    });
-  }
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-5">
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h3 className="font-semibold text-slate-950">1. Cliente</h3>
-          <p className="mt-1 text-sm text-slate-500">Tapez simplement le nom ou le téléphone. Si la cliente existe, sélectionnez-la. Sinon sa fiche sera créée à la confirmation.</p>
-          <div className="relative mt-3">
-            <input
-              className={field}
-              value={clientQuery}
-              onChange={(e) => {
-                if (client) clearSelectedClient();
-                const value = e.target.value;
-                setClientQuery(value);
-                if (!client) {
-                  if (/^[+\d\s().-]+$/.test(value)) setNewClientPhone(value);
-                  else setNewClientName(value);
-                }
-              }}
-              placeholder="Nom ou numéro de téléphone"
-              autoComplete="off"
-            />
-            {clients.length > 0 ? (
-              <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-                {clients.map((item) => (
-                  <button key={item.id} type="button" onClick={() => selectClient(item)} className="block min-h-11 w-full border-b border-slate-100 px-3 py-2 text-left text-sm last:border-0 hover:bg-slate-50">
-                    <strong>{item.name}</strong><span className="ml-2 text-slate-500">{item.phone}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          {client ? (
-            <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm">
-              <div className="flex items-start justify-between gap-3"><div><strong>{client.name}</strong><p className="text-slate-600">{client.phone}</p></div><button type="button" onClick={clearSelectedClient} className="font-semibold text-slate-700">Changer</button></div>
-              {client.internalNote ? <div className="mt-3 rounded-xl border border-rose-100 bg-white/80 p-3"><p className="text-xs font-bold uppercase tracking-wide text-rose-700">♥ Préférences connues</p><p className="mt-1 whitespace-pre-wrap text-sm leading-5 text-slate-800">{client.internalNote}</p></div> : null}
-            </div>
-          ) : clientQuery.trim().length >= 2 && clients.length === 0 && !pending ? (
-            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-sm font-semibold text-slate-900">Cliente non trouvée ?</p>
-              <p className="mt-1 text-xs text-slate-500">Renseignez les informations manquantes. La fiche sera créée automatiquement uniquement quand vous confirmerez le RDV.</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                <input className={field} value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="Nom de la cliente" />
-                <input className={field} value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="Téléphone" inputMode="tel" />
-              </div>
-            </div>
-          ) : null}
-
-          {(client || (newClientName.trim() && newClientPhone.trim())) ? (
-            <div className="mt-3">
-              <label className="text-sm font-semibold text-slate-800" htmlFor="client-note">Notes / préférences cliente</label>
-              <textarea id="client-note" className={`${field} mt-1 min-h-20 py-3`} value={clientNote} onChange={(e) => setClientNote(e.target.value)} placeholder="Ex. préfère Lina, peau sensible, préfère le matin…" />
-              <p className="mt-1 text-xs text-slate-500">Cette note appartient à la fiche cliente et restera visible pour ses prochains rendez-vous.</p>
-            </div>
-          ) : null}
-        </section>
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-slate-950">2. Prestations et affectations</h3><p className="mt-1 text-sm text-slate-500">Les choix sont préparés au fur et à mesure. Rien n'est confirmé avant le bouton final.</p></div><button type="button" onClick={addLine} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white"><Plus className="h-4 w-4" /> Ajouter</button></div>
-          <div className="mt-4 space-y-3">
-            {lines.length === 0 ? <button type="button" onClick={addLine} className="w-full rounded-2xl border border-dashed border-violet-300 bg-violet-50/40 p-6 text-sm font-semibold text-violet-800">+ Ajouter la première prestation</button> : null}
-            {lines.map((line, index) => {
-              const selected = serviceMap.get(line.serviceId);
-              const capable = employees.filter((employee) => !line.serviceId || employee.serviceIds.includes(line.serviceId));
-              const compatibleRooms = rooms.filter((room) => !selected?.requiredRoomType || room.type === selected.requiredRoomType);
-              return <div key={line.key} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                <div className="mb-2 flex items-center justify-between"><strong className="text-sm">Prestation {index + 1}</strong><button type="button" aria-label="Supprimer la prestation" onClick={() => setLines((x) => x.filter((v) => v.key !== line.key))} className="rounded-lg p-2 text-rose-700"><Trash2 className="h-4 w-4" /></button></div>
-                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
-                  <select className={field} value={line.serviceId} onChange={(e) => { const s = serviceMap.get(e.target.value); patchLine(line.key, { serviceId: e.target.value, employeeId: capable.some((x) => x.id === line.employeeId) ? line.employeeId : "", roomId: "", price: s ? String(s.defaultPrice) : "" }); }}><option value="">Prestation…</option>{services.map((s) => <option key={s.id} value={s.id}>{s.categoryName} · {s.name}</option>)}</select>
-                  <input className={field} type="time" step="900" value={line.time} onChange={(e) => patchLine(line.key, { time: e.target.value })} />
-                  <select className={field} value={line.employeeId} onChange={(e) => patchLine(line.key, { employeeId: e.target.value })}><option value="">Employée…</option>{capable.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
-                  <select className={field} value={line.roomId} onChange={(e) => patchLine(line.key, { roomId: e.target.value })}><option value="">{selected?.requiredRoomType ? "Salle requise…" : "Sans salle / optionnelle"}</option>{compatibleRooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select>
-                  <input className={field} type="number" min="0" step="1" value={line.price} onChange={(e) => patchLine(line.key, { price: e.target.value })} placeholder="Prix DH" />
-                </div>
-                {selected ? <p className="mt-2 text-xs text-slate-500">Durée {selected.defaultDurationMinutes ?? "non configurée"} min · {selected.requiredRoomType ? "salle obligatoire" : "pas de salle obligatoire"}</p> : null}
-              </div>;
-            })}
-          </div>
-        </section>
-      </div>
-
-      <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 lg:sticky lg:top-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-violet-700">RDV en préparation</p>
-        <h3 className="mt-1 text-lg font-semibold">{client?.name ?? (newClientName || "Cliente à sélectionner")}</h3>
-        <div className="mt-4 space-y-3">{lines.map((line) => { const service = serviceMap.get(line.serviceId); const employee = employees.find((e) => e.id === line.employeeId); const room = rooms.find((r) => r.id === line.roomId); return <div key={line.key} className="rounded-xl bg-slate-50 p-3 text-sm"><strong>{service?.name ?? "Prestation à choisir"}</strong><p className="mt-1 text-slate-600">{line.time || "--:--"} · {employee?.name ?? "Employée à affecter"}</p>{room ? <p className="text-slate-500">{room.name}</p> : null}</div>; })}</div>
-        <textarea className={`${field} mt-4 min-h-24 py-3`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note interne du rendez-vous" />
-        {error ? <div role="alert" className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-800">{error}</div> : null}
-        <div className="mt-4 grid gap-2"><button type="button" disabled={pending} onClick={submit} className="min-h-12 rounded-xl bg-violet-600 px-4 font-semibold text-white disabled:opacity-50">{pending ? "Contrôle final…" : "Confirmer le rendez-vous"}</button><button type="button" onClick={() => router.push(cancelHref)} className="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-semibold">Annuler le brouillon</button></div>
-        <p className="mt-3 text-xs leading-5 text-slate-500">À la confirmation, SalonFlow recontrôle en transaction les compétences, chevauchements, employées et salles. Si un conflit apparaît, le RDV n'est pas créé.</p>
-      </aside>
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">2</span><div><h3 className="font-semibold text-slate-950">Construire le rendez-vous</h3><p className="text-sm text-slate-500">Une prestation = son heure, son employée et sa salle éventuelle.</p></div></div><button type="button" onClick={addLine} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white"><Plus className="h-4 w-4"/>Ajouter une prestation</button></div>
+        <div className="mt-4 space-y-3">{lines.length===0?<button type="button" onClick={addLine} className="w-full rounded-2xl border border-dashed border-violet-300 bg-violet-50/40 p-8 text-sm font-semibold text-violet-800">+ Choisir la première prestation</button>:null}{lines.map((line,index)=>{const selected=serviceMap.get(line.serviceId);const capable=employees.filter(e=>!line.serviceId||e.serviceIds.includes(line.serviceId));const compatibleRooms=rooms.filter(r=>!selected?.requiredRoomType||r.type===selected.requiredRoomType);const d=duration(line);const end=line.time&&d?timeFromMinutes(minutes(line.time)+d):null;return <div key={line.key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="mb-3 flex items-center justify-between"><div><strong className="text-sm">{index+1}. {selected?.name??"Prestation"}</strong>{line.time&&end?<p className="mt-0.5 text-xs font-medium text-violet-700">{line.time} → {end}</p>:null}</div><button type="button" aria-label="Supprimer" onClick={()=>setLines(x=>x.filter(v=>v.key!==line.key))} className="rounded-lg p-2 text-rose-700 hover:bg-rose-50"><Trash2 className="h-4 w-4"/></button></div>
+          <div className="grid gap-3 md:grid-cols-2"><label className="text-xs font-semibold text-slate-600">Prestation<select className={`${field} mt-1`} value={line.serviceId} onChange={e=>{const next=serviceMap.get(e.target.value);const stillCapable=employees.find(x=>x.id===line.employeeId)?.serviceIds.includes(e.target.value);patchLine(line.key,{serviceId:e.target.value,employeeId:stillCapable?line.employeeId:"",roomId:"",price:next?String(next.defaultPrice):""})}}><option value="">Choisir…</option>{services.map(s=><option key={s.id} value={s.id}>{s.categoryName} · {s.name}</option>)}</select></label>
+          <label className="text-xs font-semibold text-slate-600">Heure<input className={`${field} mt-1`} type="time" step="900" value={line.time} onChange={e=>patchLine(line.key,{time:e.target.value})}/></label>
+          <label className="text-xs font-semibold text-slate-600"><span className="inline-flex items-center gap-1"><UserRound className="h-3.5 w-3.5"/>Employée</span><select className={`${field} mt-1`} value={line.employeeId} onChange={e=>patchLine(line.key,{employeeId:e.target.value})}><option value="">Choisir une employée disponible…</option>{capable.map(e=>{const available=employeeAvailable(e.id,line);return <option key={e.id} value={e.id} disabled={!available}>{e.name}{available?"":" — occupée"}</option>})}</select></label>
+          <label className="text-xs font-semibold text-slate-600"><span className="inline-flex items-center gap-1"><DoorOpen className="h-3.5 w-3.5"/>Salle</span><select className={`${field} mt-1`} value={line.roomId} onChange={e=>patchLine(line.key,{roomId:e.target.value})}><option value="">{selected?.requiredRoomType?"Choisir une salle disponible…":"Sans salle"}</option>{compatibleRooms.map(r=>{const available=roomAvailable(r.id,line);return <option key={r.id} value={r.id} disabled={!available}>{r.name}{available?"":" — occupée"}</option>})}</select></label>
+          <label className="text-xs font-semibold text-slate-600 md:col-span-2">Prix pour ce RDV<input className={`${field} mt-1 max-w-48`} type="number" min="0" step="1" value={line.price} onChange={e=>patchLine(line.key,{price:e.target.value})}/></label></div>
+          {selected?<div className="mt-3 flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-white px-2.5 py-1 font-medium text-slate-600"><Clock3 className="mr-1 inline h-3.5 w-3.5"/>{selected.defaultDurationMinutes} min</span>{line.employeeId&&employeeAvailable(line.employeeId,line)?<span className="rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-800">Employée disponible</span>:null}{line.roomId&&roomAvailable(line.roomId,line)?<span className="rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-800">Salle disponible</span>:null}</div>:null}
+        </div>})}</div>
+        {lines.length>0?<button type="button" onClick={addLine} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800"><Plus className="h-4 w-4"/>Ajouter la prestation suivante</button>:null}
+      </section>
     </div>
-  );
+
+    <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-4"><p className="text-xs font-bold uppercase tracking-wider text-violet-700">RDV en préparation</p><h3 className="mt-1 text-lg font-semibold">{client?.name??(newClientName||"Cliente à sélectionner")}</h3><p className="mt-1 text-xs text-slate-500">{complete}/{lines.length} prestation{lines.length>1?"s":""} prête{complete>1?"s":""}</p>
+      <div className="mt-4 space-y-2">{lines.map((line,index)=>{const service=serviceMap.get(line.serviceId);const employee=employees.find(e=>e.id===line.employeeId);const room=rooms.find(r=>r.id===line.roomId);const d=duration(line);return <div key={line.key} className="rounded-2xl bg-slate-50 p-3 text-sm"><div className="flex items-start gap-2"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white text-xs font-bold text-violet-700">{index+1}</span><div className="min-w-0"><strong>{service?.name??"Prestation à choisir"}</strong><p className="mt-1 text-slate-600">{line.time||"--:--"}{line.time&&d?` → ${timeFromMinutes(minutes(line.time)+d)}`:""} · {employee?.name??"Employée à choisir"}</p>{room?<p className="text-slate-500">{room.name}</p>:null}</div></div></div>})}</div>
+      {lines.length>0?<div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-sm font-semibold text-slate-600">Total prévu</span><strong className="text-xl text-slate-950">{new Intl.NumberFormat("fr-MA").format(total)} DH</strong></div>:null}
+      <textarea className={`${field} mt-4 min-h-20 py-3`} value={note} onChange={e=>setNote(e.target.value)} placeholder="Note interne du rendez-vous"/>{error?<div role="alert" className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-800">{error}</div>:null}
+      <div className="mt-4 grid gap-2"><button type="button" disabled={pending||!lines.length||complete!==lines.length} onClick={submit} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{pending?"Contrôle final…":<><CheckCircle2 className="h-4 w-4"/>Confirmer le rendez-vous</>}</button><button type="button" onClick={()=>router.push(cancelHref)} className="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-semibold">Annuler le brouillon</button></div><p className="mt-3 text-xs leading-5 text-slate-500">Les disponibilités sont filtrées pendant la saisie. À la confirmation, SalonFlow recontrôle tout en transaction pour empêcher un chevauchement concurrent.</p>
+    </aside>
+  </div>
 }

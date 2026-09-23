@@ -68,8 +68,9 @@ export async function createPlannedAppointment(
       if (Number.isNaN(item.scheduledStart.getTime()) || item.scheduledStart <= new Date()) {
         throw new BusinessRuleError(`Le créneau de « ${service.name} » doit être dans le futur.`);
       }
-      const price = item.price ?? service.defaultPrice.toNumber();
-      return { item, service, durationMinutes, price };
+      const basePrice = service.defaultPrice.toNumber();
+      const price = item.price ?? basePrice;
+      return { item, service, durationMinutes, price, basePrice };
     });
 
     // Les choix déjà faits dans le brouillon comptent comme occupés.
@@ -164,13 +165,13 @@ export async function createPlannedAppointment(
         internalNote: input.internalNote ?? null,
         createdByUserId: user.id,
         services: {
-          create: prepared.map(({ item, service, durationMinutes, price }) => ({
+          create: prepared.map(({ item, service, durationMinutes, price, basePrice }) => ({
             serviceId: service.id,
             serviceNameSnapshot: service.name,
             durationMinutes,
             scheduledStart: item.scheduledStart,
             price,
-            basePriceSnapshot: price,
+            basePriceSnapshot: basePrice,
             requiredRoomTypeSnapshot: service.requiredRoomType,
             assignedEmployeeId: item.employeeId,
             roomId: item.roomId ?? null,

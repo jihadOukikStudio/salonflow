@@ -635,82 +635,49 @@ function ResourceCalendar({
                     })
                   : null}
 
-                {entriesFor(column.id).map((appointment) => {
-                  const relevantServices = appointment.services.filter(
-                    (service) =>
+                {entriesFor(column.id).flatMap((appointment) =>
+                  appointment.services
+                    .filter((service) =>
                       mode === "employees"
                         ? service.assignedEmployee?.id === column.id
                         : service.room?.id === column.id,
-                  );
-                  const relevantStart = relevantServices.reduce(
-                    (value, service) =>
-                      service.scheduledStart < value ? service.scheduledStart : value,
-                    relevantServices[0]?.scheduledStart ?? appointment.scheduledStart,
-                  );
-                  const relevantEnd = relevantServices.reduce(
-                    (value, service) =>
-                      service.scheduledEnd > value ? service.scheduledEnd : value,
-                    relevantServices[0]?.scheduledEnd ?? appointment.scheduledEnd,
-                  );
-                  const top = Math.max(0, topFor(relevantStart));
-                  const height = Math.min(
-                    heightFor(relevantStart, relevantEnd),
-                    CALENDAR_HEIGHT - top,
-                  );
+                    )
+                    .map((service) => {
+                      const top = Math.max(0, topFor(service.scheduledStart));
+                      const height = Math.min(
+                        heightFor(service.scheduledStart, service.scheduledEnd),
+                        CALENDAR_HEIGHT - top,
+                      );
 
-                  return (
-                    <Link
-                      key={appointment.id}
-                      href={`/appointments/${appointment.id}`}
-                      className={`absolute left-2.5 right-2.5 z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(
-                        appointment.status,
-                      )}`}
-                      style={{ top, height }}
-                    >
-                      <div className="h-full overflow-y-auto px-3 py-2.5 pl-4 [scrollbar-width:thin]">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="min-w-0 text-sm font-bold leading-5 text-slate-950">
-                            {appointment.client.name}
-                          </p>
-                          {appointment.organizationIssues > 0 ? (
-                            <CircleAlert
-                              aria-label="À organiser"
-                              className="h-4 w-4 shrink-0 text-amber-700"
-                            />
-                          ) : null}
-                        </div>
-
-                        <p className="mt-0.5 text-[11px] font-semibold text-slate-600">
-                          {formatPlanningTime(relevantStart)} –{" "}
-                          {formatPlanningTime(relevantEnd)}
-                        </p>
-
-                        {height >= 66 ? (
-                          <div className="mt-1.5 space-y-0.5 text-xs leading-4 text-slate-700">
-                            {relevantServices.map((service) => (
-                              <p key={service.id} className="break-words">
-                                • {service.name}
+                      return (
+                        <Link
+                          key={service.id}
+                          href={`/appointments/${appointment.id}`}
+                          className={`absolute left-2.5 right-2.5 z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(appointment.status)}`}
+                          style={{ top, height }}
+                        >
+                          <div className="h-full overflow-hidden px-3 py-2 pl-4">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="min-w-0 truncate text-sm font-bold text-slate-950">
+                                {appointment.client.name}
                               </p>
-                            ))}
+                              <span className="shrink-0 text-[11px] font-semibold text-slate-600">
+                                {formatPlanningTime(service.scheduledStart)}–{formatPlanningTime(service.scheduledEnd)}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 truncate text-xs font-medium text-violet-800">
+                              {service.name}
+                            </p>
+                            {mode === "rooms" && height >= 72 ? (
+                              <p className="mt-1 truncate text-[11px] text-slate-500">
+                                {service.assignedEmployee?.name ?? "Employée à affecter"}
+                              </p>
+                            ) : null}
                           </div>
-                        ) : null}
-
-                        {mode === "rooms" && height >= 92 ? (
-                          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
-                            <UserRound className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">
-                              {uniqueNames(
-                                relevantServices.map(
-                                  (service) => service.assignedEmployee?.name,
-                                ),
-                              ).join(", ") || "À affecter"}
-                            </span>
-                          </div>
-                        ) : null}
-                      </div>
-                    </Link>
-                  );
-                })}
+                        </Link>
+                      );
+                    }),
+                )}
 
                 {showNow ? (
                   <NowLine

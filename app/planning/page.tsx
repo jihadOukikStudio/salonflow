@@ -273,6 +273,9 @@ export default async function PlanningPage({
               initialTime={requestedTime}
               initialEmployeeId={params.employee}
               cancelHref={`/planning?date=${encodeURIComponent(planning.dateKey)}&view=${view}&period=${period}`}
+              planningAppointments={planning.appointments}
+              planningEmployees={planning.employees}
+              planningRooms={planning.rooms}
             />
           </div>
         </div>
