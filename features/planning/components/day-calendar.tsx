@@ -1,6 +1,9 @@
 "use client";
 
-import { getCasablancaDateTimeFields } from "@/features/appointments/lib/casablanca-local-datetime";
+import {
+  casablancaLocalDateTimeToIso,
+  getCasablancaDateTimeFields,
+} from "@/features/appointments/lib/casablanca-local-datetime";
 import Link from "next/link";
 import { CircleAlert, Clock3, DoorOpen, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -47,6 +50,13 @@ const VIEWPORT_HEIGHT = CALENDAR_HEIGHT + BOTTOM_SPACE;
 const CARD_GAP = 6;
 const APPOINTMENT_CARD_WIDTH = "min(82%, 320px)";
 const APPOINTMENT_CARD_STEP_PX = 328;
+
+const employeeUnavailabilityLabels = {
+  ABSENCE: "Absence",
+  BREAK: "Pause",
+  LEAVE: "Congé",
+  UNAVAILABLE: "Indisponible",
+} as const;
 
 function casablancaParts(value: string | Date) {
   const fields = getCasablancaDateTimeFields(
@@ -615,6 +625,37 @@ function ResourceCalendar({
               >
                 <TimeGrid />
 
+                {mode === "employees"
+                  ? employees
+                      .find((employee) => employee.id === column.id)
+                      ?.unavailabilities.map((item) => {
+                        const top = Math.max(0, topFor(item.startAt));
+                        const rawHeight = rawHeightFor(item.startAt, item.endAt);
+                        const height = Math.max(
+                          28,
+                          Math.min(rawHeight, CALENDAR_HEIGHT - top),
+                        );
+                        return (
+                          <div
+                            key={`unavailability-${item.id}`}
+                            className="absolute left-1.5 right-1.5 z-[8] overflow-hidden rounded-xl border border-rose-200 bg-rose-100/90 px-2.5 py-2 text-rose-950 shadow-sm"
+                            style={{ top, height }}
+                            title={`${employeeUnavailabilityLabels[item.type]}${item.note ? ` · ${item.note}` : ""}`}
+                          >
+                            <p className="truncate text-xs font-bold">
+                              {employeeUnavailabilityLabels[item.type]}
+                            </p>
+                            {height >= 48 ? (
+                              <p className="mt-0.5 truncate text-[11px] font-medium text-rose-800">
+                                {formatPlanningTime(item.startAt)}–{formatPlanningTime(item.endAt)}
+                                {item.note ? ` · ${item.note}` : ""}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })
+                  : null}
+
                 {canCreateAppointment && mode === "employees"
                   ? Array.from(
                       { length: (FLEX_END_MINUTE - START_HOUR * 60) / 15 },
@@ -623,13 +664,38 @@ function ResourceCalendar({
                       const hour = Math.floor(minute / 60);
                       const mins = minute % 60;
                       const timeValue = `${String(hour).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-                      return (
+                      const employee = employees.find(
+                        (item) => item.id === column.id,
+                      );
+                      const slotStart = new Date(
+                        casablancaLocalDateTimeToIso(dateKey, timeValue),
+                      );
+                      const slotStartMs = slotStart.getTime();
+                      const slotEndMs = slotStartMs + 15 * 60_000;
+                      const unavailable = employee?.unavailabilities.some(
+                        (item) =>
+                          new Date(item.startAt).getTime() < slotEndMs &&
+                          new Date(item.endAt).getTime() > slotStartMs,
+                      );
+                      const style = {
+                        top:
+                          ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
+                        height: HOUR_HEIGHT / 4,
+                      };
+                      return unavailable ? (
+                        <div
+                          key={`slot-${column.id}-${timeValue}`}
+                          aria-label={`${column.name} indisponible à ${timeValue}`}
+                          className="absolute inset-x-0 z-[9] cursor-not-allowed"
+                          style={style}
+                        />
+                      ) : (
                         <Link
                           key={`slot-${column.id}-${timeValue}`}
                           href={`/planning?date=${encodeURIComponent(dateKey)}&view=employees&period=day&new=1&time=${encodeURIComponent(timeValue)}&employee=${encodeURIComponent(column.id)}`}
                           aria-label={`Préparer un rendez-vous avec ${column.name} à ${timeValue}`}
                           className="absolute inset-x-0 z-[1] hover:bg-violet-50/60 focus-visible:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-300"
-                          style={{ top: ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT, height: HOUR_HEIGHT / 4 }}
+                          style={style}
                         />
                       );
                     })

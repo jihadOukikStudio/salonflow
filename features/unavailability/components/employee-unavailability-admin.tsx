@@ -87,33 +87,39 @@ export function EmployeeUnavailabilityAdmin({
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {canManage ? (
-            <select
-              className={inputClass}
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-            >
+            <label>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-600">Employée</span>
+              <select
+                className={inputClass}
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+              >
               {employees.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.firstName} {e.lastName ?? ""}
                 </option>
               ))}
-            </select>
+              </select>
+            </label>
           ) : (
             <div className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-700">
               Votre propre planning
             </div>
           )}
-          <select
-            className={inputClass}
-            value={type}
-            onChange={(e) => setType(e.target.value as typeof type)}
-          >
-            {Object.entries(labels).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
+          <label>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Motif</span>
+            <select
+              className={inputClass}
+              value={type}
+              onChange={(e) => setType(e.target.value as typeof type)}
+            >
+              {Object.entries(labels).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
           <label>
             <span className="mb-1.5 block text-xs font-semibold text-slate-600">
               Début
@@ -136,12 +142,15 @@ export function EmployeeUnavailabilityAdmin({
               onChange={(e) => setEndAt(e.target.value)}
             />
           </label>
-          <input
-            className={`${inputClass} sm:col-span-2`}
-            placeholder="Note optionnelle"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+          <label className="sm:col-span-2">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Note (optionnelle)</span>
+            <input
+              className={inputClass}
+              placeholder="Ex. congé annuel, rendez-vous personnel…"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </label>
         </div>
         <button
           disabled={pending || !employeeId || !startAt || !endAt}
@@ -164,9 +173,9 @@ export function EmployeeUnavailabilityAdmin({
               "Indisponibilité enregistrée.",
             )
           }
-          className="mt-4 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white"
+          className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
-          Enregistrer
+          Enregistrer l’indisponibilité
         </button>
       </section>
       <section className="space-y-4">

@@ -66,4 +66,46 @@ describe("createPlannedAppointment — planning prestation par prestation",()=>{
     expect(Number(result.services[0]?.basePriceSnapshot)).toBe(150);
   });
 
+  it("refuse une prestation pendant une absence de l’employée",async()=>{
+    const c=await setup();
+    await testPrisma.employeeUnavailability.create({data:{
+      employeeId:c.employee.id,type:"ABSENCE",
+      startAt:new Date("2099-09-10T09:30:00.000Z"),
+      endAt:new Date("2099-09-10T11:30:00.000Z"),
+      createdByUserId:c.user.id,
+    }});
+    await expect(createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T10:00:00.000Z"),employeeId:c.employee.id},
+    ]})).rejects.toBeInstanceOf(BusinessRuleError);
+  });
+
+  it("autorise une prestation qui commence exactement à la fin d’un congé",async()=>{
+    const c=await setup();
+    await testPrisma.employeeUnavailability.create({data:{
+      employeeId:c.employee.id,type:"LEAVE",
+      startAt:new Date("2099-09-10T09:00:00.000Z"),
+      endAt:new Date("2099-09-10T11:00:00.000Z"),
+      createdByUserId:c.user.id,
+    }});
+    const result=await createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T11:00:00.000Z"),employeeId:c.employee.id},
+    ]});
+    expect(result.services).toHaveLength(1);
+  });
+
+  it("refuse seulement la prestation qui chevauche une indisponibilité dans un RDV multi-prestations",async()=>{
+    const c=await setup();
+    const secondEmployee=await testPrisma.employee.create({data:{salonId:c.salon.id,firstName:"Sara"}});
+    await testPrisma.employeeUnavailability.create({data:{
+      employeeId:c.employee.id,type:"BREAK",
+      startAt:new Date("2099-09-10T11:00:00.000Z"),
+      endAt:new Date("2099-09-10T11:30:00.000Z"),
+      createdByUserId:c.user.id,
+    }});
+    await expect(createPlannedAppointment(c.currentUser,{client:{type:"existing",clientId:c.client.id},services:[
+      {serviceId:c.soin.id,scheduledStart:new Date("2099-09-10T10:00:00.000Z"),employeeId:secondEmployee.id,roomId:c.room.id},
+      {serviceId:c.brushing.id,scheduledStart:new Date("2099-09-10T11:00:00.000Z"),employeeId:c.employee.id},
+    ]})).rejects.toBeInstanceOf(BusinessRuleError);
+  });
+
 });

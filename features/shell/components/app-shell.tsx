@@ -146,13 +146,18 @@ export function AppShell({ user, children }: AppShellProps) {
         </aside>
 
         <div className="min-w-0">
-          <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffaf8]/95 px-4 py-3 backdrop-blur lg:hidden">
-            <Link href={homeHref} className="flex items-center gap-2">
+          <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffaf8]/95 px-4 py-2.5 backdrop-blur lg:hidden">
+            <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+            <Link href={homeHref} className="flex min-h-11 items-center gap-2">
               <Sparkles className="h-4 w-4 text-violet-700" strokeWidth={1.8} />
               <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
                 SalonFlow
               </span>
             </Link>
+            <button type="button" aria-label="Ouvrir le menu" onClick={() => setMobileMenuOpen(true)} className="grid h-11 w-11 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm">
+              <Menu className="h-5 w-5" strokeWidth={1.8} />
+            </button>
+            </div>
           </div>
 
           {mobileMenuOpen ? (
@@ -164,7 +169,7 @@ export function AppShell({ user, children }: AppShellProps) {
                 role="dialog"
                 aria-modal="true"
                 aria-label="Menu SalonFlow"
-                className="absolute inset-x-3 bottom-24 rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-slate-200"
+                className="absolute inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[72vh] overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-slate-200"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="mb-3 flex items-center justify-between">

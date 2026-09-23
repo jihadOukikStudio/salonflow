@@ -58,7 +58,12 @@ export function EmployeesAdmin({employees,categories,services,activity}:{employe
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">Équipe</h1>
         <p className="mt-1 text-sm text-slate-500">{employees.filter(e=>e.isActive).length} employées actives</p>
       </div>
-      <button className={primary} onClick={()=>setCreating(true)}><Plus className="h-4 w-4"/>Ajouter</button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Link href="/employees/unavailability" className={secondary}>
+          <CalendarDays className="h-4 w-4"/>Indisponibilités
+        </Link>
+        <button className={primary} onClick={()=>setCreating(true)}><Plus className="h-4 w-4"/>Ajouter</button>
+      </div>
     </header>
 
     {message?<Notice>{message}</Notice>:null}
@@ -120,12 +125,17 @@ function EmployeeSheet({employee,categories,services,activity,pending,run,onBack
     {message?<Notice>{message}</Notice>:null}
 
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex items-center gap-4">
-        <Avatar e={employee} large/>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold text-slate-950">{employee.firstName} {employee.lastName??""}</h1>
-          <p className="mt-1 text-sm text-slate-500">{employee.user?.canManageSalon?"Responsable":"Employée"} · {employee.isActive?"Active":"Désactivée"}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <Avatar e={employee} large/>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-bold text-slate-950">{employee.firstName} {employee.lastName??""}</h1>
+            <p className="mt-1 text-sm text-slate-500">{employee.user?.canManageSalon?"Responsable":"Employée"} · {employee.isActive?"Active":"Désactivée"}</p>
+          </div>
         </div>
+        <Link href="/employees/unavailability" className={secondary}>
+          <CalendarDays className="h-4 w-4"/>Gérer les indisponibilités
+        </Link>
       </div>
 
       <nav className="mt-6 flex overflow-x-auto border-b border-slate-200">

@@ -7,28 +7,26 @@ type PlanningSummaryProps = {
 
 export function PlanningSummary({
   appointmentCount,
-  organizationIssues,
   inProgressCount,
   completedCount,
 }: PlanningSummaryProps) {
   const items = [
     { label: "Rendez-vous", value: appointmentCount },
-    { label: "À organiser", value: organizationIssues },
     { label: "En cours", value: inProgressCount },
     { label: "Terminés", value: completedCount },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div className="grid grid-cols-3 gap-2 sm:max-w-2xl sm:gap-3">
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+          className="min-w-0 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
             {item.label}
           </p>
-          <p className="mt-1 text-2xl font-semibold text-slate-950">
+          <p className="mt-1 text-xl font-semibold text-slate-950 sm:text-2xl">
             {item.value}
           </p>
         </div>

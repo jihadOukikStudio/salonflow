@@ -142,7 +142,7 @@ export default async function PlanningPage({
         };
 
   return (
-    <main className="min-h-screen bg-[#fcf9f6] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
+    <main className="min-h-screen bg-[#fcf9f6] px-3 py-4 sm:px-6 sm:py-7 xl:px-8">
       <div className="mx-auto w-full max-w-[1700px]">
         <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0 flex-1">
@@ -155,15 +155,14 @@ export default async function PlanningPage({
           {canManageSalon ? (
             <Link
               href={`/planning?date=${encodeURIComponent(planning.dateKey)}&view=${view}&period=${period}&new=1`}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
+              className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 sm:w-auto"
             >
               <Plus className="h-4 w-4" strokeWidth={1.9} /> Nouveau rendez-vous
             </Link>
           ) : null}
         </header>
-        <div className="mt-5 text-sm text-slate-600">
-          Une colonne par employée · cliquez sur un créneau libre pour créer un
-          rendez-vous.
+        <div className="mt-4 rounded-2xl bg-white/70 px-3 py-2 text-xs leading-5 text-slate-600 ring-1 ring-slate-200 sm:mt-5 sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm sm:ring-0">
+          Une colonne par employée · touchez un créneau libre pour préparer le rendez-vous.
         </div>
 
         <div className="mt-4">
@@ -234,13 +233,13 @@ export default async function PlanningPage({
         newAppointmentOptions &&
         minimumBooking ? (
         <div
-          className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/45 p-3 backdrop-blur-sm sm:p-6"
+          className="fixed inset-0 z-[100] overflow-y-auto bg-white sm:bg-slate-950/45 sm:p-6 sm:backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="Nouveau rendez-vous"
         >
-          <div className="mx-auto w-full max-w-6xl rounded-3xl bg-slate-50 p-4 shadow-2xl sm:p-6">
-            <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="mx-auto min-h-[100dvh] w-full max-w-6xl bg-slate-50 px-3 pb-8 pt-3 sm:min-h-0 sm:rounded-3xl sm:p-6 sm:shadow-2xl">
+            <div className="sticky top-0 z-40 -mx-3 mb-4 flex items-start justify-between gap-4 border-b border-slate-200 bg-slate-50/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-600">
                   SalonFlow
