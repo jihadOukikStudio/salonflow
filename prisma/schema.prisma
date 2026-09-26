@@ -241,6 +241,9 @@ model AppointmentService {
   actualStartedAt          DateTime?
   actualFinishedAt         DateTime?
   employeeComment          String?                  @db.VarChar(2000)
+  cancelledAt              DateTime?
+  cancelledByUserId        String?                  @db.Uuid
+  cancellationReason       String?                  @db.VarChar(500)
   createdAt                DateTime                 @default(now())
   updatedAt                DateTime                 @updatedAt
 
@@ -259,6 +262,7 @@ model AppointmentService {
   @@index([assignedEmployeeId])
   @@index([performedByEmployeeId])
   @@index([roomId])
+  @@index([cancelledAt])
   @@map("appointment_services")
 }
 

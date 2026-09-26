@@ -106,7 +106,7 @@ async function createContext(params?: {
       salonId: salon.id,
       clientId: client.id,
 
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2027-09-10T10:00:00.000Z"),
 
       estimatedDurationMinutes: 60,
 
@@ -116,6 +116,7 @@ async function createContext(params?: {
 
       services: {
         create: {
+          scheduledStart: new Date("2027-09-10T10:00:00.000Z"),
           serviceId: firstService.id,
           serviceNameSnapshot: firstService.name,
           durationMinutes: 60,
@@ -163,6 +164,7 @@ async function createBlockingAppointment(params: {
       createdByUserId: params.createdByUserId,
       services: {
         create: {
+          scheduledStart: params.start,
           serviceNameSnapshot: `Blocage ${crypto.randomUUID()}`,
           durationMinutes: params.durationMinutes,
           price: 100,
@@ -414,7 +416,7 @@ describe("addAppointmentService", () => {
       salonId: context.salon.id,
       createdByUserId: context.admin.user.id,
       employeeId: context.employee.id,
-      start: new Date("2026-09-10T10:30:00.000Z"),
+      start: new Date("2027-09-10T10:30:00.000Z"),
       durationMinutes: 60,
     });
 
@@ -471,7 +473,7 @@ describe("addAppointmentService", () => {
       salonId: context.salon.id,
       createdByUserId: context.admin.user.id,
       employeeId: context.employee.id,
-      start: new Date("2026-09-10T11:40:00.000Z"),
+      start: new Date("2027-09-10T11:40:00.000Z"),
       durationMinutes: 30,
     });
 
@@ -505,7 +507,7 @@ describe("addAppointmentService", () => {
       salonId: context.salon.id,
       createdByUserId: context.admin.user.id,
       employeeId: context.employee.id,
-      start: new Date("2026-09-10T10:30:00.000Z"),
+      start: new Date("2027-09-10T10:30:00.000Z"),
       durationMinutes: 60,
     });
 

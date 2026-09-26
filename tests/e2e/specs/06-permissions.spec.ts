@@ -53,7 +53,7 @@ test.describe("Phase 12.6 — permissions", () => {
     await page.goto(`/appointments/${s.appointment.id}`);
 
     await expect(
-      page.getByRole("button", { name: /espèces encaissées/i }),
+      page.getByRole("button", { name: /encaisser .* en espèces/i }),
     ).toBeDisabled();
   });
 

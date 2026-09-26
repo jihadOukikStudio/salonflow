@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS "appointment_services_cancelledAt_idx";

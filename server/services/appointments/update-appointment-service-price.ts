@@ -1,7 +1,10 @@
 import type { CurrentUser } from "@/server/permissions";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { prisma } from "@/server/db/prisma";
-import { BusinessRuleError, ResourceNotFoundError } from "@/server/services/errors";
+import {
+  BusinessRuleError,
+  ResourceNotFoundError,
+} from "@/server/services/errors";
 
 type Input = {
   appointmentServiceId: string;
@@ -33,13 +36,20 @@ export async function updateAppointmentServicePrice(
         basePriceSnapshot: true,
         serviceNameSnapshot: true,
         appointmentId: true,
-        appointment: { select: { status: true, payment: { select: { status: true } } } },
+        appointment: {
+          select: { status: true, payment: { select: { status: true } } },
+        },
       },
     });
 
     if (!service) throw new ResourceNotFoundError("Prestation introuvable.");
-    if (service.appointment.status === "CANCELLED" || service.appointment.status === "CLOSED") {
-      throw new BusinessRuleError("Le montant de cette prestation ne peut plus être modifié.");
+    if (
+      service.appointment.status === "CANCELLED" ||
+      service.appointment.status === "CLOSED"
+    ) {
+      throw new BusinessRuleError(
+        "Le montant de cette prestation ne peut plus être modifié.",
+      );
     }
     if (service.appointment.payment?.status === "PAID") {
       throw new BusinessRuleError("Le rendez-vous est déjà encaissé.");

@@ -22,12 +22,21 @@ export default async function DashboardPage() {
           <div>
             <div className="flex items-center gap-2 text-violet-700">
               <LayoutDashboard className="h-4 w-4" strokeWidth={1.8} />
-              <p className="text-sm font-semibold uppercase tracking-[0.16em]">SalonFlow</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em]">
+                SalonFlow
+              </p>
             </div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Bonjour 👋</h1>
-            <p className="mt-1 text-sm leading-6 text-slate-600">Voici l’essentiel du salon aujourd’hui.</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              Bonjour 👋
+            </h1>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Voici l’essentiel du salon aujourd’hui.
+            </p>
           </div>
-          <Link href="/planning" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-violet-300 hover:bg-violet-50">
+          <Link
+            href="/planning"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-violet-300 hover:bg-violet-50"
+          >
             Voir le planning <ArrowRight className="h-4 w-4" />
           </Link>
         </header>

@@ -85,6 +85,7 @@ async function createContext() {
 
       services: {
         create: {
+          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
           serviceNameSnapshot: "Soin visage",
           durationMinutes: 60,
           price: 250,

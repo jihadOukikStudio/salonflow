@@ -172,6 +172,7 @@ export async function createEmployeeUnavailability(
      */
     const candidateAssignments = await tx.appointmentService.findMany({
       where: {
+        cancelledAt: null,
         assignedEmployeeId: lockedEmployee.id,
 
         appointment: {

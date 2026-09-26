@@ -56,7 +56,9 @@ export async function getClients(currentUser: CurrentUser, query?: string) {
               serviceNameSnapshot: true,
               price: true,
               assignedEmployee: { select: { firstName: true, lastName: true } },
-              performedByEmployee: { select: { firstName: true, lastName: true } },
+              performedByEmployee: {
+                select: { firstName: true, lastName: true },
+              },
             },
           },
         },

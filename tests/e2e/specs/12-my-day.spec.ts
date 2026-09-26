@@ -51,8 +51,6 @@ test.describe("Ma journée employée", () => {
     await loginAsEmployee(page);
 
     await expect(page.getByText("Brushing mobile").first()).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /Planning complet/i }),
-    ).toBeVisible();
+    await expect(page).toHaveURL(/\/my-day$/);
   });
 });

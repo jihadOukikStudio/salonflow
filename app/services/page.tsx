@@ -44,7 +44,8 @@ export default async function ServicesPage() {
                 Prestations
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Retrouvez rapidement les prestations du salon, leur durée habituelle et leur prix de base.
+                Retrouvez rapidement les prestations du salon, leur durée
+                habituelle et leur prix de base.
               </p>
             </div>
 

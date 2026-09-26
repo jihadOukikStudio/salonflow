@@ -6,7 +6,9 @@ import { requirePermission } from "@/server/permissions";
 import { getPlanningDay } from "@/features/planning/server/get-planning-day";
 import { parsePlanningDate } from "@/features/planning/server/casablanca-day";
 
-export async function getPlanningDayForBookingAction(input: { dateKey: string }) {
+export async function getPlanningDayForBookingAction(input: {
+  dateKey: string;
+}) {
   return runAuthenticatedAction(async (currentUser) => {
     const user = await getAuthoritativeCurrentUser(currentUser);
     requirePermission(user, "appointments:create");

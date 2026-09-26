@@ -92,7 +92,11 @@ export async function markAppointmentPaid(
     }
 
     const serviceCount = await tx.appointmentService.count({
-      where: { appointmentId: appointment.id, appointment: { salonId } },
+      where: {
+        appointmentId: appointment.id,
+        appointment: { salonId },
+        cancelledAt: null,
+      },
     });
     if (serviceCount === 0) {
       throw new BusinessRuleError(

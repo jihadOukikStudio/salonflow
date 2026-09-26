@@ -84,6 +84,8 @@ export async function checkAddServiceFeasibility(
             id: true,
             serviceId: true,
             durationMinutes: true,
+            scheduledStart: true,
+            cancelledAt: true,
             assignedEmployeeId: true,
             roomId: true,
             parallelGroupLinks: {
@@ -136,7 +138,8 @@ export async function checkAddServiceFeasibility(
 
   if (
     appointment.services.some(
-      (service) => service.serviceId === catalogService.id,
+      (service) =>
+        service.cancelledAt === null && service.serviceId === catalogService.id,
     )
   ) {
     throw new BusinessRuleError(
@@ -170,11 +173,13 @@ export async function checkAddServiceFeasibility(
   );
 
   const newDurationMinutes = calculateAppointmentDuration([
-    ...appointment.services.map((service) => ({
-      id: service.id,
-      durationMinutes: service.durationMinutes,
-      parallelGroupLinks: service.parallelGroupLinks,
-    })),
+    ...appointment.services
+      .filter((service) => service.cancelledAt === null)
+      .map((service) => ({
+        id: service.id,
+        durationMinutes: service.durationMinutes,
+        parallelGroupLinks: service.parallelGroupLinks,
+      })),
     {
       id: `preview:${catalogService.id}`,
       durationMinutes,
@@ -185,10 +190,6 @@ export async function checkAddServiceFeasibility(
   const currentEnd = getAppointmentEnd(
     appointment.scheduledStart,
     appointment.estimatedDurationMinutes,
-  );
-  const newEnd = getAppointmentEnd(
-    appointment.scheduledStart,
-    newDurationMinutes,
   );
 
   const interval = {
@@ -257,6 +258,7 @@ export async function checkAddServiceFeasibility(
             scheduledStart: { lt: proposedEnd },
             services: {
               some: {
+                cancelledAt: null,
                 assignedEmployeeId: { in: employeeIds },
               },
             },
@@ -266,10 +268,13 @@ export async function checkAddServiceFeasibility(
             estimatedDurationMinutes: true,
             services: {
               where: {
+                cancelledAt: null,
                 assignedEmployeeId: { in: employeeIds },
               },
               select: {
                 assignedEmployeeId: true,
+                scheduledStart: true,
+                durationMinutes: true,
               },
             },
           },
@@ -296,6 +301,7 @@ export async function checkAddServiceFeasibility(
             scheduledStart: { lt: proposedEnd },
             services: {
               some: {
+                cancelledAt: null,
                 roomId: { in: roomIds },
               },
             },
@@ -305,10 +311,13 @@ export async function checkAddServiceFeasibility(
             estimatedDurationMinutes: true,
             services: {
               where: {
+                cancelledAt: null,
                 roomId: { in: roomIds },
               },
               select: {
                 roomId: true,
+                scheduledStart: true,
+                durationMinutes: true,
               },
             },
           },
@@ -321,20 +330,17 @@ export async function checkAddServiceFeasibility(
   );
 
   for (const candidate of employeeAppointmentCandidates) {
-    if (
-      !intervalsOverlap(interval, {
-        startAt: candidate.scheduledStart,
-        endAt: getAppointmentEnd(
-          candidate.scheduledStart,
-          candidate.estimatedDurationMinutes,
-        ),
-      })
-    ) {
-      continue;
-    }
-
     for (const service of candidate.services) {
-      if (service.assignedEmployeeId) {
+      if (
+        service.assignedEmployeeId &&
+        intervalsOverlap(interval, {
+          startAt: service.scheduledStart,
+          endAt: getAppointmentEnd(
+            service.scheduledStart,
+            service.durationMinutes,
+          ),
+        })
+      ) {
         unavailableEmployeeIds.add(service.assignedEmployeeId);
       }
     }
@@ -345,20 +351,17 @@ export async function checkAddServiceFeasibility(
   );
 
   for (const candidate of roomAppointmentCandidates) {
-    if (
-      !intervalsOverlap(interval, {
-        startAt: candidate.scheduledStart,
-        endAt: getAppointmentEnd(
-          candidate.scheduledStart,
-          candidate.estimatedDurationMinutes,
-        ),
-      })
-    ) {
-      continue;
-    }
-
     for (const service of candidate.services) {
-      if (service.roomId) {
+      if (
+        service.roomId &&
+        intervalsOverlap(interval, {
+          startAt: service.scheduledStart,
+          endAt: getAppointmentEnd(
+            service.scheduledStart,
+            service.durationMinutes,
+          ),
+        })
+      ) {
         unavailableRoomIds.add(service.roomId);
       }
     }

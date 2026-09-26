@@ -4,6 +4,7 @@ import {
   casablancaLocalDateTimeToIso,
   getCasablancaDateTimeFields,
   getMinimumBookableCasablancaDateTime,
+  getSuggestedNextServiceDateTime,
   isFutureCasablancaLocalDateTime,
 } from "@/features/appointments/lib/casablanca-local-datetime";
 
@@ -101,5 +102,45 @@ describe("booking date guards", () => {
         new Date("2026-09-21T09:50:00.000Z"),
       ),
     ).toBe(true);
+  });
+});
+
+describe("suggested add-service slot", () => {
+  it("propose la fin de la dernière prestation active, arrondie au quart d'heure", () => {
+    const slot = getSuggestedNextServiceDateTime(
+      [
+        {
+          scheduledStart: "2026-09-23T15:00:00.000Z",
+          durationMinutes: 60,
+          cancelledAt: null,
+        },
+        {
+          scheduledStart: "2026-09-23T16:00:00.000Z",
+          durationMinutes: 35,
+          cancelledAt: null,
+        },
+      ],
+      new Date("2026-09-23T12:00:00.000Z"),
+    );
+    expect(slot).toEqual({ dateKey: "2026-09-23", timeValue: "16:45" });
+  });
+
+  it("ignore une prestation annulée pour calculer le prochain créneau", () => {
+    const slot = getSuggestedNextServiceDateTime(
+      [
+        {
+          scheduledStart: "2026-09-23T15:00:00.000Z",
+          durationMinutes: 60,
+          cancelledAt: null,
+        },
+        {
+          scheduledStart: "2026-09-23T18:00:00.000Z",
+          durationMinutes: 60,
+          cancelledAt: "2026-09-23T12:00:00.000Z",
+        },
+      ],
+      new Date("2026-09-23T12:00:00.000Z"),
+    );
+    expect(slot).toEqual({ dateKey: "2026-09-23", timeValue: "16:00" });
   });
 });

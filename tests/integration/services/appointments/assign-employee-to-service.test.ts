@@ -57,6 +57,7 @@ async function createContext(params?: {
 
       services: {
         create: {
+          scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
           serviceNameSnapshot: "Brushing",
           durationMinutes: 60,
           price: 100,
@@ -267,6 +268,7 @@ describe("assignEmployeeToService", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2026-09-10T10:30:00.000Z"),
             serviceNameSnapshot: "Coupe",
             durationMinutes: 60,
             price: 200,
@@ -313,6 +315,7 @@ describe("assignEmployeeToService", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2026-09-10T09:00:00.000Z"),
             serviceNameSnapshot: "Coupe",
             durationMinutes: 60,
             price: 200,

@@ -111,6 +111,7 @@ async function createContext(params?: {
 
       services: {
         create: {
+          scheduledStart: new Date("2099-09-10T10:00:00.000Z"),
           serviceNameSnapshot: "Soin visage",
 
           durationMinutes: 60,
@@ -333,6 +334,7 @@ describe("updateAppointmentSchedule", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
             serviceNameSnapshot: "Brushing",
 
             durationMinutes: 60,
@@ -377,6 +379,7 @@ describe("updateAppointmentSchedule", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
             serviceNameSnapshot: "Massage",
 
             durationMinutes: 60,
@@ -426,6 +429,7 @@ describe("updateAppointmentSchedule", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2099-09-10T14:00:00.000Z"),
             serviceNameSnapshot: "Autre soin",
 
             durationMinutes: 60,

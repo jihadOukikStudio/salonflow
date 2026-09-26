@@ -3,8 +3,81 @@ import Link from "next/link";
 import { ArrowRight, UserRound } from "lucide-react";
 import { useState } from "react";
 
-type Item={employeeId:string;name:string;completedServices:number;appointmentCount?:number};
-type Props={activity:{today:Item[];week:Item[];month:Item[]}};
-type Period=keyof Props["activity"];
-const periods:Array<{key:Period;label:string}>=[{key:"today",label:"Aujourd’hui"},{key:"week",label:"Semaine"},{key:"month",label:"Mois"}];
-export function TeamActivity({activity}:Props){const[period,setPeriod]=useState<Period>("today");const items=activity[period];return <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><UserRound className="h-5 w-5 text-violet-700"/><div><h2 className="text-xl font-semibold text-slate-950">Activité équipe</h2><p className="mt-1 text-sm text-slate-500">Prestations réellement terminées.</p></div></div><div className="flex rounded-xl bg-slate-100 p-1">{periods.map(p=><button key={p.key} onClick={()=>setPeriod(p.key)} className={`min-h-9 flex-1 rounded-lg px-3 text-xs font-semibold transition ${period===p.key?"bg-white text-violet-800 shadow-sm":"text-slate-500"}`}>{p.label}</button>)}</div></div>{items.length===0?<p className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">Aucune prestation terminée sur cette période.</p>:<div className="mt-5 divide-y divide-slate-100">{items.slice(0,6).map(item=><div key={item.employeeId} className="flex items-center justify-between gap-4 py-3"><p className="min-w-0 truncate font-semibold text-slate-900">{item.name}</p><p className="shrink-0 text-sm text-slate-600"><strong className="text-slate-950">{item.completedServices}</strong> prestation{item.completedServices>1?"s":""}{item.appointmentCount!==undefined?` · ${item.appointmentCount} RDV`:""}</p></div>)}</div>}<Link href="/employees" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-violet-700">Voir l’équipe <ArrowRight className="h-4 w-4"/></Link></section>}
+type Item = {
+  employeeId: string;
+  name: string;
+  completedServices: number;
+  appointmentCount?: number;
+};
+type Props = { activity: { today: Item[]; week: Item[]; month: Item[] } };
+type Period = keyof Props["activity"];
+const periods: Array<{ key: Period; label: string }> = [
+  { key: "today", label: "Aujourd’hui" },
+  { key: "week", label: "Semaine" },
+  { key: "month", label: "Mois" },
+];
+export function TeamActivity({ activity }: Props) {
+  const [period, setPeriod] = useState<Period>("today");
+  const items = activity[period];
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <UserRound className="h-5 w-5 text-violet-700" />
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              Activité équipe
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Prestations réellement terminées.
+            </p>
+          </div>
+        </div>
+        <div className="flex rounded-xl bg-slate-100 p-1">
+          {periods.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`min-h-9 flex-1 rounded-lg px-3 text-xs font-semibold transition ${period === p.key ? "bg-white text-violet-800 shadow-sm" : "text-slate-500"}`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {items.length === 0 ? (
+        <p className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+          Aucune prestation terminée sur cette période.
+        </p>
+      ) : (
+        <div className="mt-5 divide-y divide-slate-100">
+          {items.slice(0, 6).map((item) => (
+            <div
+              key={item.employeeId}
+              className="flex items-center justify-between gap-4 py-3"
+            >
+              <p className="min-w-0 truncate font-semibold text-slate-900">
+                {item.name}
+              </p>
+              <p className="shrink-0 text-sm text-slate-600">
+                <strong className="text-slate-950">
+                  {item.completedServices}
+                </strong>{" "}
+                prestation{item.completedServices > 1 ? "s" : ""}
+                {item.appointmentCount !== undefined
+                  ? ` · ${item.appointmentCount} RDV`
+                  : ""}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      <Link
+        href="/employees"
+        className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-violet-700"
+      >
+        Voir l’équipe <ArrowRight className="h-4 w-4" />
+      </Link>
+    </section>
+  );
+}

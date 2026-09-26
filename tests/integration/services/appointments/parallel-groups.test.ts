@@ -492,6 +492,7 @@ describe("parallel groups", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2026-09-10T12:00:00.000Z"),
             serviceNameSnapshot: "Autre prestation",
 
             durationMinutes: 60,

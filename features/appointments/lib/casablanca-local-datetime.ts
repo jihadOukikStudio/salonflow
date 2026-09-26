@@ -124,6 +124,46 @@ export function getMinimumBookableCasablancaDateTime(
   };
 }
 
+export function getSuggestedNextServiceDateTime(
+  services: Array<{
+    scheduledStart: string;
+    durationMinutes: number;
+    cancelledAt?: string | null;
+  }>,
+  now: Date = new Date(),
+): CasablancaDateTimeFields {
+  const minimum = getMinimumBookableCasablancaDateTime(now);
+  const minimumInstant = new Date(
+    casablancaLocalDateTimeToIso(minimum.dateKey, minimum.timeValue),
+  );
+
+  const latestActiveEnd = services
+    .filter((service) => !service.cancelledAt)
+    .reduce<Date | null>((latest, service) => {
+      const start = new Date(service.scheduledStart);
+      const end = new Date(start.getTime() + service.durationMinutes * 60_000);
+      return latest === null || end > latest ? end : latest;
+    }, null);
+
+  const candidate =
+    latestActiveEnd && latestActiveEnd > minimumInstant
+      ? latestActiveEnd
+      : minimumInstant;
+
+  const fields = getCasablancaDateTimeFields(candidate);
+  const [hours, minutes] = fields.timeValue.split(":").map(Number);
+  const rounded = Math.ceil((hours * 60 + minutes) / 15) * 15;
+  const dayOffset = Math.floor(rounded / (24 * 60));
+  const minuteOfDay = rounded % (24 * 60);
+  const timeValue = `${pad(Math.floor(minuteOfDay / 60))}:${pad(minuteOfDay % 60)}`;
+
+  if (dayOffset === 0) return { dateKey: fields.dateKey, timeValue };
+
+  const date = new Date(`${fields.dateKey}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + dayOffset);
+  return { dateKey: date.toISOString().slice(0, 10), timeValue };
+}
+
 export function casablancaLocalDateTimeToIso(
   dateKey: string,
   timeValue: string,

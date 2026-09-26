@@ -29,6 +29,7 @@ type Props = {
   employees: PlanningEmployeeItem[];
   rooms: PlanningRoomItem[];
   canCreateAppointment?: boolean;
+  minimumBooking?: { dateKey: string; timeValue: string };
 };
 
 type PositionedAppointment = {
@@ -631,7 +632,10 @@ function ResourceCalendar({
                       .find((employee) => employee.id === column.id)
                       ?.unavailabilities.map((item) => {
                         const top = Math.max(0, topFor(item.startAt));
-                        const rawHeight = rawHeightFor(item.startAt, item.endAt);
+                        const rawHeight = rawHeightFor(
+                          item.startAt,
+                          item.endAt,
+                        );
                         const height = Math.max(
                           28,
                           Math.min(rawHeight, CALENDAR_HEIGHT - top),
@@ -648,7 +652,8 @@ function ResourceCalendar({
                             </p>
                             {height >= 48 ? (
                               <p className="mt-0.5 truncate text-[11px] font-medium text-rose-800">
-                                {formatPlanningTime(item.startAt)}–{formatPlanningTime(item.endAt)}
+                                {formatPlanningTime(item.startAt)}–
+                                {formatPlanningTime(item.endAt)}
                                 {item.note ? ` · ${item.note}` : ""}
                               </p>
                             ) : null}
@@ -684,8 +689,7 @@ function ResourceCalendar({
                           (dateKey === minimumBooking.dateKey &&
                             timeValue < minimumBooking.timeValue));
                       const style = {
-                        top:
-                          ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
+                        top: ((minute - START_HOUR * 60) / 60) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT / 4,
                       };
                       return unavailable || beforeNow ? (
@@ -738,7 +742,8 @@ function ResourceCalendar({
                                 {appointment.client.name}
                               </p>
                               <span className="shrink-0 text-[11px] font-semibold text-slate-600">
-                                {formatPlanningTime(service.scheduledStart)}–{formatPlanningTime(service.scheduledEnd)}
+                                {formatPlanningTime(service.scheduledStart)}–
+                                {formatPlanningTime(service.scheduledEnd)}
                               </span>
                             </div>
                             <p className="mt-0.5 truncate text-xs font-medium text-violet-800">
@@ -746,7 +751,8 @@ function ResourceCalendar({
                             </p>
                             {mode === "rooms" && height >= 72 ? (
                               <p className="mt-1 truncate text-[11px] text-slate-500">
-                                {service.assignedEmployee?.name ?? "Employée à affecter"}
+                                {service.assignedEmployee?.name ??
+                                  "Employée à affecter"}
                               </p>
                             ) : null}
                           </div>
@@ -820,7 +826,6 @@ export function DayCalendar({
           nowDateKey={nowParts.dateKey}
           nowMinute={nowParts.minutes}
           canCreateAppointment={canCreateAppointment}
-          minimumBooking={minimumBooking}
         />
       ) : (
         <ResourceCalendar

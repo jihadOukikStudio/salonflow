@@ -1,17 +1,10 @@
 export type AppointmentUiStatus =
-  | "PLANNED"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CLOSED"
-  | "CANCELLED";
+  "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CLOSED" | "CANCELLED";
 
 export type ServiceUiStatus = "TODO" | "IN_PROGRESS" | "DONE";
 
 export type EmployeeUnavailabilityUiType =
-  | "ABSENCE"
-  | "BREAK"
-  | "LEAVE"
-  | "UNAVAILABLE";
+  "ABSENCE" | "BREAK" | "LEAVE" | "UNAVAILABLE";
 
 export const appointmentStatusUi: Record<
   AppointmentUiStatus,
@@ -125,7 +118,10 @@ export const employeeUnavailabilityUi: Record<
 };
 
 export function appointmentUi(status: string) {
-  return appointmentStatusUi[status as AppointmentUiStatus] ?? appointmentStatusUi.PLANNED;
+  return (
+    appointmentStatusUi[status as AppointmentUiStatus] ??
+    appointmentStatusUi.PLANNED
+  );
 }
 
 export function serviceUi(status: string) {

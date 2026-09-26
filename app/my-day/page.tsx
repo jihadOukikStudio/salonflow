@@ -5,7 +5,11 @@ import { getMyDay } from "@/features/my-day/server";
 import { getAuthoritativeCurrentUser } from "@/server/auth/get-authoritative-current-user";
 import { getCurrentUser } from "@/server/auth/get-current-user";
 
-export default async function MyDayPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+export default async function MyDayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
   const currentUser = await getCurrentUser();
   const user = await getAuthoritativeCurrentUser(currentUser);
 

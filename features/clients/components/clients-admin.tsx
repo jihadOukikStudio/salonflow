@@ -126,7 +126,9 @@ export function ClientsAdmin({
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Clientes actives
           </p>
-          <p className="mt-1 text-2xl font-bold text-slate-950">{activeCount}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-950">
+            {activeCount}
+          </p>
         </div>
         <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-rose-700">
@@ -219,7 +221,9 @@ export function ClientsAdmin({
                     {client._count.appointments} RDV
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    {last ? `Dernière visite · ${date(last.scheduledStart)}` : "Aucune visite"}
+                    {last
+                      ? `Dernière visite · ${date(last.scheduledStart)}`
+                      : "Aucune visite"}
                   </p>
                 </div>
                 <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-rose-600" />
@@ -265,8 +269,7 @@ function ClientSheet({
 
   const run = (
     action: () => Promise<
-      | { ok: true; data: unknown }
-      | { ok: false; message: string; code: string }
+      { ok: true; data: unknown } | { ok: false; message: string; code: string }
     >,
     success: string,
   ) => {
@@ -371,8 +374,9 @@ function ClientSheet({
                     placeholder="Ex. Coloration habituelle 6.3, préfère Lina, cuir chevelu sensible…"
                   />
                   <span className="mt-1.5 block text-xs font-normal leading-5 text-slate-500">
-                    À réserver aux informations utiles pour les prochains rendez-vous.
-                    Les remarques propres à une prestation restent sur le rendez-vous.
+                    À réserver aux informations utiles pour les prochains
+                    rendez-vous. Les remarques propres à une prestation restent
+                    sur le rendez-vous.
                   </span>
                 </label>
                 <div className="sm:col-span-2">
@@ -401,7 +405,9 @@ function ClientSheet({
                 <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 sm:p-5">
                   <div className="flex items-center gap-2 text-rose-800">
                     <Heart className="h-4 w-4" />
-                    <h3 className="text-sm font-bold">Préférences & habitudes</h3>
+                    <h3 className="text-sm font-bold">
+                      Préférences & habitudes
+                    </h3>
                   </div>
                   {client.internalNote ? (
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-800">
@@ -530,7 +536,14 @@ function AppointmentCard({ appointment }: { appointment: AppointmentRow }) {
             {date(appointment.scheduledStart)}
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-bold ${appointmentUi(appointment.status).badge}`}><span className={`h-1.5 w-1.5 rounded-full ${appointmentUi(appointment.status).dot}`}/>{statusLabels[appointment.status] ?? appointment.status}</span>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-bold ${appointmentUi(appointment.status).badge}`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${appointmentUi(appointment.status).dot}`}
+              />
+              {statusLabels[appointment.status] ?? appointment.status}
+            </span>
           </p>
         </div>
         {appointment.payment?.status === "PAID" ? (

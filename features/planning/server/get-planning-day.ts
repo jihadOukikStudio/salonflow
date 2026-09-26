@@ -123,6 +123,7 @@ export async function getPlanningDay(
           },
         },
         services: {
+          where: { cancelledAt: null },
           orderBy: {
             createdAt: "asc",
           },
@@ -216,7 +217,6 @@ export async function getPlanningDay(
           "Un rendez-vous annulé ne doit pas apparaître dans le planning.",
         );
       }
-
 
       const services = appointment.services.map(
         (service): PlanningServiceItem => {

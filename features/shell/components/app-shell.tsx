@@ -148,15 +148,26 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="min-w-0">
           <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffaf8]/95 px-4 py-2.5 backdrop-blur lg:hidden">
             <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
-            <Link href={homeHref} className="flex min-h-11 items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-700" strokeWidth={1.8} />
-              <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
-                SalonFlow
-              </span>
-            </Link>
-            <button type="button" aria-label="Ouvrir le menu" onClick={() => setMobileMenuOpen(true)} className="grid h-11 w-11 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm">
-              <Menu className="h-5 w-5" strokeWidth={1.8} />
-            </button>
+              <Link
+                href={homeHref}
+                className="flex min-h-11 items-center gap-2"
+              >
+                <Sparkles
+                  className="h-4 w-4 text-violet-700"
+                  strokeWidth={1.8}
+                />
+                <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
+                  SalonFlow
+                </span>
+              </Link>
+              <button
+                type="button"
+                aria-label="Ouvrir le menu"
+                onClick={() => setMobileMenuOpen(true)}
+                className="grid h-11 w-11 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm"
+              >
+                <Menu className="h-5 w-5" strokeWidth={1.8} />
+              </button>
             </div>
           </div>
 

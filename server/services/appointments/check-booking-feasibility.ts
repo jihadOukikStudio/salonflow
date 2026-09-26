@@ -185,6 +185,7 @@ export async function checkBookingFeasibilityInDb(
         scheduledStart: true,
         estimatedDurationMinutes: true,
         services: {
+          where: { cancelledAt: null },
           select: { requiredRoomTypeSnapshot: true },
         },
       },

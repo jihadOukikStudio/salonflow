@@ -90,17 +90,19 @@ export function EmployeeUnavailabilityAdmin({
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {canManage ? (
             <label>
-              <span className="mb-1.5 block text-xs font-semibold text-slate-600">Employée</span>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+                Employée
+              </span>
               <select
                 className={inputClass}
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
               >
-              {employees.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.firstName} {e.lastName ?? ""}
-                </option>
-              ))}
+                {employees.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.firstName} {e.lastName ?? ""}
+                  </option>
+                ))}
               </select>
             </label>
           ) : (
@@ -109,7 +111,9 @@ export function EmployeeUnavailabilityAdmin({
             </div>
           )}
           <label>
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Motif</span>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Motif
+            </span>
             <select
               className={inputClass}
               value={type}
@@ -145,7 +149,9 @@ export function EmployeeUnavailabilityAdmin({
             />
           </label>
           <label className="sm:col-span-2">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Note (optionnelle)</span>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Note (optionnelle)
+            </span>
             <input
               className={inputClass}
               placeholder="Ex. congé annuel, rendez-vous personnel…"
@@ -215,7 +221,9 @@ export function EmployeeUnavailabilityAdmin({
                     >
                       <div>
                         <p className="flex items-center gap-2 text-sm font-semibold">
-                          <span className={`h-2.5 w-2.5 rounded-full ${employeeUnavailabilityVisual(u.type).dot}`} />
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${employeeUnavailabilityVisual(u.type).dot}`}
+                          />
                           {employeeUnavailabilityVisual(u.type).label}
                         </p>
                         <p className="text-xs text-slate-600">

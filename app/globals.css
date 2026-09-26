@@ -412,17 +412,38 @@ h3 {
   }
 }
 
-
 /* SalonFlow responsive UX foundations */
-html { scroll-behavior: smooth; }
-body { overflow-x: hidden; }
-:where(button, a, input, select, textarea) { touch-action: manipulation; }
-:where(input, select, textarea) { font-size: 16px; }
-@media (min-width: 640px) { :where(input, select, textarea) { font-size: inherit; } }
+html {
+  scroll-behavior: smooth;
+}
+body {
+  overflow-x: hidden;
+}
+:where(button, a, input, select, textarea) {
+  touch-action: manipulation;
+}
+:where(input, select, textarea) {
+  font-size: 16px;
+}
+@media (min-width: 640px) {
+  :where(input, select, textarea) {
+    font-size: inherit;
+  }
+}
 @media (max-width: 639px) {
-  h1 { line-height: 1.08; }
-  h2 { line-height: 1.15; }
-  :where(button, [role="button"], a) { min-height: 44px; }
-  :where(input, select) { min-height: 46px; }
-  textarea { min-height: 88px; }
+  h1 {
+    line-height: 1.08;
+  }
+  h2 {
+    line-height: 1.15;
+  }
+  :where(button, [role="button"], a) {
+    min-height: 44px;
+  }
+  :where(input, select) {
+    min-height: 46px;
+  }
+  textarea {
+    min-height: 88px;
+  }
 }

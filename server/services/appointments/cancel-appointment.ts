@@ -108,6 +108,19 @@ export async function cancelAppointment(
 
     const cancelledAt = new Date();
 
+    await tx.appointmentService.updateMany({
+      where: {
+        appointmentId: appointment.id,
+        cancelledAt: null,
+        status: "TODO",
+      },
+      data: {
+        cancelledAt,
+        cancelledByUserId: authoritativeUser.id,
+        cancellationReason: "Rendez-vous annulé",
+      },
+    });
+
     const updateResult = await tx.appointment.updateMany({
       where: {
         id: appointment.id,

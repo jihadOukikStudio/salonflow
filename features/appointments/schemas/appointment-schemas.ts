@@ -178,10 +178,26 @@ export const appointmentServiceIdActionSchema = z
   })
   .strict();
 
+export const cancelAppointmentServiceActionSchema = z
+  .object({
+    appointmentServiceId: uuidSchema,
+    reason: z
+      .string()
+      .trim()
+      .max(500, "Le motif est trop long.")
+      .nullable()
+      .optional(),
+  })
+  .strict();
+
 export const updateAppointmentServiceCommentActionSchema = z
   .object({
     appointmentServiceId: uuidSchema,
-    comment: z.string().trim().max(2000, "Le commentaire est trop long.").nullable(),
+    comment: z
+      .string()
+      .trim()
+      .max(2000, "Le commentaire est trop long.")
+      .nullable(),
   })
   .strict();
 
@@ -270,25 +286,44 @@ export type CheckBookingFeasibilityActionInput = z.input<
 export const createPlannedAppointmentActionSchema = z
   .object({
     client: z.discriminatedUnion("type", [
-      z.object({ type: z.literal("existing"), clientId: uuidSchema, clientNote: internalNoteSchema.optional() }).strict(),
-      z.object({ type: z.literal("new"), name: clientNameSchema, phone: clientPhoneSchema, clientNote: internalNoteSchema.optional() }).strict(),
+      z
+        .object({
+          type: z.literal("existing"),
+          clientId: uuidSchema,
+          clientNote: internalNoteSchema.optional(),
+        })
+        .strict(),
+      z
+        .object({
+          type: z.literal("new"),
+          name: clientNameSchema,
+          phone: clientPhoneSchema,
+          clientNote: internalNoteSchema.optional(),
+        })
+        .strict(),
     ]),
     internalNote: internalNoteSchema.optional(),
-    services: z.array(z.object({
-      serviceId: uuidSchema,
-      scheduledStart: dateTimeSchema,
-      employeeId: uuidSchema,
-      roomId: uuidSchema.nullable().optional(),
-      durationMinutes: positiveDurationSchema.optional(),
-      price: moneySchema.optional(),
-    }).strict()).min(1).max(50),
+    services: z
+      .array(
+        z
+          .object({
+            serviceId: uuidSchema,
+            scheduledStart: dateTimeSchema,
+            employeeId: uuidSchema,
+            roomId: uuidSchema.nullable().optional(),
+            durationMinutes: positiveDurationSchema.optional(),
+            price: moneySchema.optional(),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(50),
   })
   .strict();
 
 export type CreatePlannedAppointmentActionInput = z.input<
   typeof createPlannedAppointmentActionSchema
 >;
-
 
 export const updateAppointmentServicePriceActionSchema = z
   .object({
@@ -300,4 +335,8 @@ export const updateAppointmentServicePriceActionSchema = z
 
 export type UpdateAppointmentServicePriceActionInput = z.input<
   typeof updateAppointmentServicePriceActionSchema
+>;
+
+export type CancelAppointmentServiceActionInput = z.input<
+  typeof cancelAppointmentServiceActionSchema
 >;

@@ -37,6 +37,8 @@ export type AppointmentDetail = {
     actualStartedAt: string | null;
     actualFinishedAt: string | null;
     employeeComment: string | null;
+    cancelledAt: string | null;
+    cancellationReason: string | null;
     parallelGroupId: string | null;
   }>;
   parallelGroups: Array<{
@@ -99,7 +101,9 @@ export async function getAppointmentDetail(
           estimatedDurationMinutes: true,
           status: true,
           internalNote: true,
-          client: { select: { id: true, name: true, phone: true, internalNote: true } },
+          client: {
+            select: { id: true, name: true, phone: true, internalNote: true },
+          },
           payment: {
             select: { status: true, amount: true, paidAt: true },
           },
@@ -120,6 +124,8 @@ export async function getAppointmentDetail(
               actualStartedAt: true,
               actualFinishedAt: true,
               employeeComment: true,
+              cancelledAt: true,
+              cancellationReason: true,
               assignedEmployee: {
                 select: { id: true, firstName: true, lastName: true },
               },
@@ -395,6 +401,8 @@ export async function getAppointmentDetail(
     actualStartedAt: service.actualStartedAt?.toISOString() ?? null,
     actualFinishedAt: service.actualFinishedAt?.toISOString() ?? null,
     employeeComment: service.employeeComment,
+    cancelledAt: service.cancelledAt?.toISOString() ?? null,
+    cancellationReason: service.cancellationReason,
     parallelGroupId: service.parallelGroupLinks[0]?.parallelGroupId ?? null,
   }));
 
@@ -411,6 +419,7 @@ export async function getAppointmentDetail(
       id: appointment.client.id,
       name: appointment.client.name?.trim() || "Cliente sans nom",
       phone: appointment.client.phone,
+      internalNote: appointment.client.internalNote,
     },
     services,
     parallelGroups: appointment.parallelGroups.map((group) => ({
@@ -452,7 +461,10 @@ export async function getAppointmentDetail(
           paidAt: appointment.payment.paidAt?.toISOString() ?? null,
         }
       : null,
-    catalogTotal: services.reduce((total, service) => total + service.price, 0),
+    catalogTotal: services.reduce(
+      (total, service) => total + (service.cancelledAt ? 0 : service.price),
+      0,
+    ),
     currentEmployeeId: currentEmployee?.id ?? null,
     canManageAppointment,
     canRecordPayment: canManageAppointment,

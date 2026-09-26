@@ -79,8 +79,7 @@ export default async function PlanningPage({
     : null;
   const minimumBooking = getMinimumBookableCasablancaDateTime();
   const isPastCreationDate = Boolean(
-    shouldOpenNewAppointment &&
-    planning.dateKey < minimumBooking.dateKey,
+    shouldOpenNewAppointment && planning.dateKey < minimumBooking.dateKey,
   );
 
   let periodDays: PlanningPeriodDay[] = [];
@@ -159,7 +158,8 @@ export default async function PlanningPage({
           ) : null}
         </header>
         <div className="mt-4 rounded-2xl bg-white/70 px-3 py-2 text-xs leading-5 text-slate-600 ring-1 ring-slate-200 sm:mt-5 sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm sm:ring-0">
-          Une colonne par employée · touchez un créneau libre pour préparer le rendez-vous.
+          Une colonne par employée · touchez un créneau libre pour préparer le
+          rendez-vous.
         </div>
 
         <div className="mt-4">
@@ -248,7 +248,8 @@ export default async function PlanningPage({
                   Nouveau rendez-vous
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Construisez le rendez-vous au fur et à mesure de l’appel, puis confirmez toutes les affectations en une seule fois.
+                  Construisez le rendez-vous au fur et à mesure de l’appel, puis
+                  confirmez toutes les affectations en une seule fois.
                 </p>
               </div>
               <Link

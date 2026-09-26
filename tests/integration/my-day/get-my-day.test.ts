@@ -79,6 +79,7 @@ describe("getMyDay", () => {
               serviceId: context.service.id,
               serviceNameSnapshot: "Manucure Amina",
               durationMinutes: 30,
+              scheduledStart: new Date("2026-09-09T11:00:00.000Z"),
               price: 150,
               assignedEmployeeId: context.employee.id,
             },
@@ -86,6 +87,7 @@ describe("getMyDay", () => {
               serviceId: context.service.id,
               serviceNameSnapshot: "Manucure Sara",
               durationMinutes: 30,
+              scheduledStart: new Date("2026-09-09T11:00:00.000Z"),
               price: 150,
               assignedEmployeeId: context.other.id,
             },
@@ -100,7 +102,7 @@ describe("getMyDay", () => {
     expect(data?.services[0]?.serviceName).toBe("Manucure Amina");
   });
 
-  it("lists compatible unassigned services as takeable candidates", async () => {
+  it("does not list unassigned services in an employee day", async () => {
     const context = await createContext();
 
     await testPrisma.appointment.create({
@@ -112,6 +114,7 @@ describe("getMyDay", () => {
         createdByUserId: context.user.id,
         services: {
           create: {
+            scheduledStart: new Date("2026-09-09T12:00:00.000Z"),
             serviceId: context.service.id,
             serviceNameSnapshot: "Manucure libre",
             durationMinutes: 30,
@@ -123,7 +126,6 @@ describe("getMyDay", () => {
 
     const data = await getMyDay(context.currentUser, "2026-09-09");
 
-    expect(data?.takeableServices).toHaveLength(1);
-    expect(data?.takeableServices[0]?.serviceName).toBe("Manucure libre");
+    expect(data?.services).toHaveLength(0);
   });
 });

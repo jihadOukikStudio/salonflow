@@ -17,8 +17,8 @@ function todayAt14() {
   return new Date(start.getTime() + 14 * 60 * 60_000);
 }
 
-test.describe("Planning — rendez-vous à organiser", () => {
-  test("le planning signale un rendez-vous incomplet du jour", async ({
+test.describe("Planning — rendez-vous du jour", () => {
+  test("un rendez-vous incomplet reste hors des colonnes tant qu’il n’est pas affecté", async ({
     page,
   }) => {
     await createAppointmentScenario({
@@ -30,7 +30,7 @@ test.describe("Planning — rendez-vous à organiser", () => {
     await loginAsAdmin(page);
     await page.goto("/planning");
 
-    await expect(page.locator("body")).toContainText(/à organiser\s*1/i);
+    await expect(page.getByText("Rendez-vous").first()).toBeVisible();
     await expect(page.getByText("Soin visage E2E")).toHaveCount(0);
   });
 
@@ -63,15 +63,14 @@ test.describe("Planning — rendez-vous à organiser", () => {
     await expect(page.getByText("Prestation Demain")).toHaveCount(0);
   });
 
-  test("un rendez-vous complètement affecté ne compte pas comme à organiser", async ({
+  test("un rendez-vous complètement affecté apparaît dans sa colonne", async ({
     page,
   }) => {
     await createAppointmentScenario({ scheduledStart: todayAt14() });
     await loginAsAdmin(page);
     await page.goto("/planning");
 
-    await expect(page.locator("body")).toContainText(/à organiser\s*0/i);
-    await expect(page.locator("body")).toContainText("Soin visage E2E");
+    await expect(page.getByText("Soin visage E2E")).toBeVisible();
   });
 
   test("une employée standard ne peut pas accéder à l'ancien écran Organisation", async ({

@@ -11,12 +11,17 @@ export type SearchClientsInput = {
 
 function phoneSearchVariants(phoneDigits: string): string[] {
   const variants = new Set<string>([phoneDigits]);
-  if (phoneDigits.startsWith("0") && phoneDigits.length > 1) variants.add(phoneDigits.slice(1));
-  if (phoneDigits.startsWith("212") && phoneDigits.length > 3) variants.add(phoneDigits.slice(3));
+  if (phoneDigits.startsWith("0") && phoneDigits.length > 1)
+    variants.add(phoneDigits.slice(1));
+  if (phoneDigits.startsWith("212") && phoneDigits.length > 3)
+    variants.add(phoneDigits.slice(3));
   return [...variants].filter((value) => value.length >= 3);
 }
 
-export async function searchClients(currentUser: CurrentUser, input: SearchClientsInput) {
+export async function searchClients(
+  currentUser: CurrentUser,
+  input: SearchClientsInput,
+) {
   const authoritativeUser = await getAuthoritativeCurrentUser(currentUser);
   requirePermission(authoritativeUser, "appointments:create");
 
@@ -26,7 +31,8 @@ export async function searchClients(currentUser: CurrentUser, input: SearchClien
   // Nouveau parcours : un seul champ cherche par nom OU téléphone.
   if (query) {
     if (query.length < 2) return [];
-    const variants = queryDigits.length >= 3 ? phoneSearchVariants(queryDigits) : [];
+    const variants =
+      queryDigits.length >= 3 ? phoneSearchVariants(queryDigits) : [];
     return prisma.client.findMany({
       where: {
         salonId: authoritativeUser.salonId,
@@ -51,7 +57,16 @@ export async function searchClients(currentUser: CurrentUser, input: SearchClien
       isActive: true,
       AND: [
         { OR: variants.map((value) => ({ phone: { contains: value } })) },
-        ...(input.name?.trim() ? [{ name: { contains: input.name.trim(), mode: "insensitive" as const } }] : []),
+        ...(input.name?.trim()
+          ? [
+              {
+                name: {
+                  contains: input.name.trim(),
+                  mode: "insensitive" as const,
+                },
+              },
+            ]
+          : []),
       ],
     },
     orderBy: [{ name: "asc" }, { phone: "asc" }],

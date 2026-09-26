@@ -55,17 +55,19 @@ export async function getNewAppointmentOptions(
       .map((service) => ({
         id: service.id,
         categoryId: service.categoryId,
-        categoryName: categoryNames.get(service.categoryId) ?? "Autres prestations",
+        categoryName:
+          categoryNames.get(service.categoryId) ?? "Autres prestations",
         name: service.name,
         defaultDurationMinutes: service.defaultDurationMinutes,
         defaultPrice: Number(service.defaultPrice),
         isStartingPrice: service.isStartingPrice,
         requiredRoomType: service.requiredRoomType,
       }))
-      .sort((a, b) =>
-        (categoryOrder.get(a.categoryId) ?? 9999) -
-          (categoryOrder.get(b.categoryId) ?? 9999) ||
-        a.name.localeCompare(b.name, "fr"),
+      .sort(
+        (a, b) =>
+          (categoryOrder.get(a.categoryId) ?? 9999) -
+            (categoryOrder.get(b.categoryId) ?? 9999) ||
+          a.name.localeCompare(b.name, "fr"),
       ),
     employees: employees.map((employee) => ({
       id: employee.id,

@@ -4,28 +4,36 @@ import {
   casablancaLocalDateTimeToIso,
   formatSalonDateTime,
   getMinimumBookableCasablancaDateTime,
+  getSuggestedNextServiceDateTime,
 } from "@/features/appointments/lib/casablanca-local-datetime";
+
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+
 import { useRouter } from "next/navigation";
 
+import Link from "next/link";
+
 import type { AppointmentDetail } from "@/features/appointments/detail/server";
+
 import {
   cancelAppointmentAction,
   closeAppointmentAction,
   markAppointmentPaidAction,
   updateAppointmentDetailsAction,
 } from "@/features/appointments/server/actions/appointment-actions";
+
 import {
   addAppointmentServiceAction,
   checkAddAppointmentServiceFeasibilityAction,
   assignEmployeeToServiceAction,
   assignRoomToServiceAction,
   completeAppointmentServiceAction,
-  removeAppointmentServiceAction,
+  cancelAppointmentServiceAction,
   startAppointmentServiceAction,
   takeUnassignedServiceAction,
   updateAppointmentServicePriceAction,
 } from "@/features/appointments/server/actions/service-actions";
+
 import {
   createParallelGroupAction,
   removeParallelGroupAction,
@@ -33,6 +41,7 @@ import {
 
 const inputClass =
   "min-h-11 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm text-slate-950 outline-none placeholder:text-slate-500 focus:border-violet-600 focus:ring-2 focus:ring-violet-200 disabled:bg-slate-100 disabled:text-slate-500";
+
 const buttonClass =
   "inline-flex min-h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -40,23 +49,36 @@ type Props = { detail: AppointmentDetail };
 
 type Feasibility = {
   canAdd: boolean;
+
   level: "POSSIBLE" | "WARNING" | "BLOCKED";
+
   currentDurationMinutes: number;
+
   newDurationMinutes: number;
+
   currentEnd: string;
+
   newEnd: string;
+
   extraMinutes: number;
+
   availableEmployees: Array<{ id: string; name: string }>;
+
   availableRooms: Array<{ id: string; name: string }>;
+
   requiredRoomType: "HAMAM" | "TREATMENT_ROOM" | null;
+
   blockers: string[];
+
   warnings: string[];
 };
 
 function money(value: number) {
   return new Intl.NumberFormat("fr-MA", {
     style: "currency",
+
     currency: "MAD",
+
     maximumFractionDigits: 2,
   }).format(value);
 }
@@ -64,6 +86,7 @@ function money(value: number) {
 function dateTime(value: string) {
   return formatSalonDateTime(value, "fr-MA", {
     dateStyle: "full",
+
     timeStyle: "short",
   });
 }
@@ -71,6 +94,7 @@ function dateTime(value: string) {
 function timeOnly(value: string) {
   return formatSalonDateTime(value, "fr-MA", {
     hour: "2-digit",
+
     minute: "2-digit",
   });
 }
@@ -78,9 +102,13 @@ function timeOnly(value: string) {
 function statusLabel(status: AppointmentDetail["status"]) {
   return {
     PLANNED: "Prévu",
+
     IN_PROGRESS: "En cours",
+
     COMPLETED: "Terminé",
+
     CLOSED: "Clôturé",
+
     CANCELLED: "Annulé",
   }[status];
 }
@@ -88,9 +116,13 @@ function statusLabel(status: AppointmentDetail["status"]) {
 function statusTextClass(status: AppointmentDetail["status"]) {
   return {
     PLANNED: "text-violet-700",
+
     IN_PROGRESS: "text-amber-700",
+
     COMPLETED: "text-emerald-700",
+
     CLOSED: "text-slate-600",
+
     CANCELLED: "text-slate-500",
   }[status];
 }
@@ -101,24 +133,35 @@ function serviceStatusLabel(
   return { TODO: "À faire", IN_PROGRESS: "En cours", DONE: "Terminée" }[status];
 }
 
-
 function PriceReview({
   service,
+
   pending,
+
   run,
+
   compact = false,
 }: {
   service: AppointmentDetail["services"][number];
+
   pending: boolean;
+
   compact?: boolean;
+
   run: (
-    action: () => Promise<{ ok: true; data: unknown } | { ok: false; message: string; code: string }>,
+    action: () => Promise<
+      { ok: true; data: unknown } | { ok: false; message: string; code: string }
+    >,
+
     successMessage: string,
+
     onSuccess?: () => void,
   ) => void;
 }) {
   const [editing, setEditing] = useState(false);
+
   const [price, setPrice] = useState(String(service.price));
+
   const [reason, setReason] = useState(service.priceAdjustmentReason ?? "");
 
   if (!editing) {
@@ -127,16 +170,22 @@ function PriceReview({
         {service.employeeComment && !service.priceReviewedAt ? (
           <button
             type="button"
+
             disabled={pending}
+
             className={`${buttonClass} border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50`}
+
             onClick={() =>
               run(
                 () =>
                   updateAppointmentServicePriceAction({
                     appointmentServiceId: service.id,
+
                     price: service.price,
+
                     reason: service.priceAdjustmentReason,
                   }),
+
                 "Montant vérifié.",
               )
             }
@@ -144,10 +193,14 @@ function PriceReview({
             Garder {money(service.price)}
           </button>
         ) : null}
+
         <button
           type="button"
+
           disabled={pending}
+
           className={`${buttonClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+
           onClick={() => setEditing(true)}
         >
           Ajuster le montant
@@ -161,37 +214,78 @@ function PriceReview({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Ajustement pour ce rendez-vous uniquement
       </p>
+
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="text-xs font-semibold text-slate-700">
           Nouveau montant (DH)
-          <input className={`${inputClass} mt-1`} type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input
+            className={`${inputClass} mt-1`}
+
+            type="number"
+
+            min="0"
+
+            step="0.01"
+
+            value={price}
+
+            onChange={(e) => setPrice(e.target.value)}
+          />
         </label>
+
         <label className="text-xs font-semibold text-slate-700">
           Motif
-          <input className={`${inputClass} mt-1`} value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Ex. produit supplémentaire" />
+          <input
+            className={`${inputClass} mt-1`}
+
+            value={reason}
+
+            maxLength={500}
+
+            onChange={(e) => setReason(e.target.value)}
+
+            placeholder="Ex. produit supplémentaire"
+          />
         </label>
       </div>
+
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
-          disabled={pending || !Number.isFinite(Number(price)) || Number(price) < 0}
+
+          disabled={
+            pending || !Number.isFinite(Number(price)) || Number(price) < 0
+          }
+
           className={`${buttonClass} bg-violet-700 text-white hover:bg-violet-800`}
+
           onClick={() =>
             run(
               () =>
                 updateAppointmentServicePriceAction({
                   appointmentServiceId: service.id,
+
                   price: Number(price),
+
                   reason: reason.trim() || null,
                 }),
+
               "Montant de la prestation mis à jour.",
+
               () => setEditing(false),
             )
           }
         >
           Appliquer {Number.isFinite(Number(price)) ? money(Number(price)) : ""}
         </button>
-        <button type="button" className={`${buttonClass} text-slate-600 hover:bg-slate-100`} onClick={() => setEditing(false)}>
+
+        <button
+          type="button"
+
+          className={`${buttonClass} text-slate-600 hover:bg-slate-100`}
+
+          onClick={() => setEditing(false)}
+        >
           Annuler
         </button>
       </div>
@@ -201,47 +295,73 @@ function PriceReview({
 
 export function AppointmentDetailClient({ detail }: Props) {
   const router = useRouter();
+
   const [pending, startTransition] = useTransition();
+
   const [message, setMessage] = useState<string | null>(null);
+
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const [paymentAmountOverride, setPaymentAmountOverride] = useState<
-    string | null
+
+  const [serviceCancelTarget, setServiceCancelTarget] = useState<
+    AppointmentDetail["services"][number] | null
   >(null);
+
+  const [serviceCancelReason, setServiceCancelReason] = useState("");
+
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [, setPaymentAmountOverride] = useState<string | null>(null);
+
   const [note, setNote] = useState(detail.internalNote ?? "");
+
   const [serviceToAdd, setServiceToAdd] = useState("");
+
   const minimumAddSlot = getMinimumBookableCasablancaDateTime();
-  const [serviceAddDate, setServiceAddDate] = useState(minimumAddSlot.dateKey);
-  const [serviceAddTime, setServiceAddTime] = useState(minimumAddSlot.timeValue);
+
+  const suggestedAddSlot = getSuggestedNextServiceDateTime(detail.services);
+
+  const [serviceAddDate, setServiceAddDate] = useState(
+    suggestedAddSlot.dateKey,
+  );
+
+  const [serviceAddTime, setServiceAddTime] = useState(
+    suggestedAddSlot.timeValue,
+  );
+
   const [feasibility, setFeasibility] = useState<Feasibility | null>(null);
+
   const [feasibilityMessage, setFeasibilityMessage] = useState<string | null>(
     null,
   );
+
   const [checkingFeasibility, setCheckingFeasibility] = useState(false);
+
   const [parallelSelection, setParallelSelection] = useState<string[]>([]);
+
   const feasibilityRequestId = useRef(0);
 
   const catalogTotal = useMemo(
     () => detail.services.reduce((total, service) => total + service.price, 0),
+
     [detail.services],
   );
 
-  const paymentAmount =
-    detail.payment?.status === "PAID"
-      ? String(detail.payment.amount)
-      : (paymentAmountOverride ?? String(catalogTotal));
-
   const isFinal = detail.status === "CLOSED" || detail.status === "CANCELLED";
+
   const isPaid = detail.payment?.status === "PAID";
+
   const canChangeStructure =
     detail.status === "PLANNED" ||
     detail.status === "IN_PROGRESS" ||
     (detail.status === "COMPLETED" && !isPaid);
+
   const allDone = detail.services.every((service) => service.status === "DONE");
+
   const selectedCatalogService = useMemo(
     () =>
       detail.catalogServices.find((service) => service.id === serviceToAdd) ??
       null,
+
     [detail.catalogServices, serviceToAdd],
   );
 
@@ -258,7 +378,9 @@ export function AppointmentDetailClient({ detail }: Props) {
 
     void checkAddAppointmentServiceFeasibilityAction({
       appointmentId: detail.id,
+
       serviceId: selectedCatalogService.id,
+
       scheduledStart: new Date(
         casablancaLocalDateTimeToIso(serviceAddDate, serviceAddTime),
       ),
@@ -268,19 +390,23 @@ export function AppointmentDetailClient({ detail }: Props) {
 
         if (!result.ok) {
           setFeasibilityMessage(result.message);
+
           return;
         }
 
         setFeasibility(result.data);
       })
+
       .catch((error) => {
         if (requestId !== feasibilityRequestId.current) return;
 
         console.error("Feasibility check failed", error);
+
         setFeasibilityMessage(
           "Impossible de vérifier la faisabilité pour le moment.",
         );
       })
+
       .finally(() => {
         if (requestId === feasibilityRequestId.current) {
           setCheckingFeasibility(false);
@@ -288,9 +414,13 @@ export function AppointmentDetailClient({ detail }: Props) {
       });
   }, [
     canChangeStructure,
+
     detail.id,
+
     selectedCatalogService,
+
     serviceAddDate,
+
     serviceAddTime,
   ]);
 
@@ -298,6 +428,7 @@ export function AppointmentDetailClient({ detail }: Props) {
     if (!cancelDialogOpen) return;
 
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
 
     const focusTimer = window.setTimeout(() => {
@@ -314,7 +445,9 @@ export function AppointmentDetailClient({ detail }: Props) {
 
     return () => {
       window.clearTimeout(focusTimer);
+
       document.removeEventListener("keydown", onKeyDown);
+
       document.body.style.overflow = previousOverflow;
     };
   }, [cancelDialogOpen, pending]);
@@ -330,16 +463,20 @@ export function AppointmentDetailClient({ detail }: Props) {
 
         if (!result.ok) {
           setMessage(result.message);
+
           return;
         }
 
         setCancelDialogOpen(false);
+
         setMessage(
           "Rendez-vous annulé. Les ressources sont de nouveau disponibles.",
         );
+
         router.refresh();
       } catch (error) {
         console.error("Appointment cancellation failed", error);
+
         setMessage(
           "Impossible d’annuler le rendez-vous pour le moment. Veuillez réessayer.",
         );
@@ -351,7 +488,9 @@ export function AppointmentDetailClient({ detail }: Props) {
     action: () => Promise<
       { ok: true; data: unknown } | { ok: false; message: string; code: string }
     >,
+
     successMessage: string,
+
     onSuccess?: () => void,
   ) {
     setMessage(null);
@@ -362,14 +501,18 @@ export function AppointmentDetailClient({ detail }: Props) {
 
         if (!result.ok) {
           setMessage(result.message);
+
           return;
         }
 
         onSuccess?.();
+
         setMessage(successMessage);
+
         router.refresh();
       } catch (error) {
         console.error("Appointment action failed", error);
+
         setMessage("Une erreur inattendue est survenue. Veuillez réessayer.");
       }
     });
@@ -392,9 +535,11 @@ export function AppointmentDetailClient({ detail }: Props) {
               >
                 {statusLabel(detail.status)}
               </p>
+
               <h2 className="mt-1 text-2xl font-semibold text-slate-950">
                 {detail.client.name}
               </h2>
+
               {detail.status === "CANCELLED" ? (
                 <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600 ring-1 ring-slate-200">
                   Rendez-vous annulé : le créneau, les employées et les salles
@@ -402,21 +547,37 @@ export function AppointmentDetailClient({ detail }: Props) {
                   visibles uniquement pour l’historique.
                 </p>
               ) : null}
+
               <p className="mt-1 text-sm font-medium text-slate-700">
                 {detail.client.phone}
               </p>
+
               {detail.client.internalNote ? (
                 <div className="mt-3 max-w-2xl rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-wide text-rose-700">♥ Préférences cliente</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-800">{detail.client.internalNote}</p>
-                  <Link href="/clients" className="mt-2 inline-block text-xs font-semibold text-rose-700 hover:underline">Voir la fiche cliente</Link>
+                  <p className="text-xs font-bold uppercase tracking-wide text-rose-700">
+                    ♥ Préférences cliente
+                  </p>
+
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-800">
+                    {detail.client.internalNote}
+                  </p>
+
+                  <Link
+                    href="/clients"
+
+                    className="mt-2 inline-block text-xs font-semibold text-rose-700 hover:underline"
+                  >
+                    Voir la fiche cliente
+                  </Link>
                 </div>
               ) : null}
             </div>
+
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-950">
                 {dateTime(detail.scheduledStart)}
               </p>
+
               <p className="mt-1 text-sm text-slate-600">
                 Durée estimée : {detail.estimatedDurationMinutes} min
               </p>
@@ -428,26 +589,37 @@ export function AppointmentDetailClient({ detail }: Props) {
               <span className="mb-2 block text-sm font-semibold text-slate-800">
                 Note interne
               </span>
+
               <textarea
                 className={`${inputClass} min-h-24 py-3`}
+
                 value={note}
+
                 disabled={!detail.canManageAppointment || isFinal || pending}
+
                 onChange={(event) => setNote(event.target.value)}
+
                 maxLength={2000}
               />
             </label>
+
             {detail.canManageAppointment && !isFinal ? (
               <button
                 type="button"
+
                 disabled={pending}
+
                 className={`${buttonClass} bg-slate-900 text-white hover:bg-slate-800`}
+
                 onClick={() =>
                   run(
                     () =>
                       updateAppointmentDetailsAction({
                         appointmentId: detail.id,
+
                         internalNote: note.trim() || null,
                       }),
+
                     "Note enregistrée.",
                   )
                 }
@@ -459,14 +631,15 @@ export function AppointmentDetailClient({ detail }: Props) {
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-slate-600">
-            Total actuel
-          </p>
+          <p className="text-sm font-semibold text-slate-600">Total actuel</p>
+
           <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
             {money(catalogTotal)}
           </p>
+
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Le total reprend les montants appliqués à chaque prestation de ce rendez-vous.
+            Le total reprend les montants appliqués à chaque prestation de ce
+            rendez-vous.
           </p>
         </aside>
       </section>
@@ -477,6 +650,7 @@ export function AppointmentDetailClient({ detail }: Props) {
             <h2 className="text-xl font-semibold text-slate-950">
               Prestations
             </h2>
+
             <p className="mt-1 text-sm text-slate-600">
               Affectation, salle et exécution réelle.
             </p>
@@ -490,16 +664,25 @@ export function AppointmentDetailClient({ detail }: Props) {
                 !service.requiredRoomType ||
                 room.type === service.requiredRoomType,
             );
+
+            const isServiceCancelled = service.cancelledAt !== null;
+
             const canStart =
+              !isServiceCancelled &&
               service.status === "TODO" &&
               service.assignedEmployee !== null &&
               !isFinal;
-            const canComplete = service.status === "IN_PROGRESS" && !isFinal;
+
+            const canComplete =
+              !isServiceCancelled &&
+              service.status === "IN_PROGRESS" &&
+              !isFinal;
 
             return (
               <article
                 key={service.id}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+
+                className={`rounded-2xl border p-4 ${isServiceCancelled ? "border-slate-200 bg-slate-100/70 opacity-80" : "border-slate-200 bg-slate-50"}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -507,53 +690,106 @@ export function AppointmentDetailClient({ detail }: Props) {
                       <h3 className="font-semibold text-slate-950">
                         {service.name}
                       </h3>
-                      <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                        {serviceStatusLabel(service.status)}
-                      </span>
+
+                      {isServiceCancelled ? (
+                        <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-300">
+                          Annulée
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                          {serviceStatusLabel(service.status)}
+                        </span>
+                      )}
+
                       {service.parallelGroupId ? (
                         <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-800 ring-1 ring-violet-200">
                           En parallèle
                         </span>
                       ) : null}
                     </div>
+
                     <p className="mt-1 text-sm text-slate-600">
-                      {timeOnly(service.scheduledStart)} · {service.durationMinutes} min
+                      {timeOnly(service.scheduledStart)} ·{" "}
+                      {service.durationMinutes} min
                     </p>
+
+                    {isServiceCancelled ? (
+                      <div className="mt-3 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-600">
+                        Annulée
+                        {service.cancellationReason
+                          ? ` · ${service.cancellationReason}`
+                          : ""}
+                      </div>
+                    ) : null}
+
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
                       <span className="text-slate-600">
-                        Prix de base : <strong className="text-slate-900">{money(service.basePrice)}</strong>
+                        Prix de base :{" "}
+                        <strong className="text-slate-900">
+                          {money(service.basePrice)}
+                        </strong>
                       </span>
+
                       <span className="text-slate-600">
-                        Montant appliqué : <strong className="text-slate-950">{money(service.price)}</strong>
+                        Montant appliqué :{" "}
+                        <strong className="text-slate-950">
+                          {money(service.price)}
+                        </strong>
                       </span>
+
                       {service.price !== service.basePrice ? (
                         <span className="font-semibold text-violet-700">
-                          {service.price > service.basePrice ? "+" : ""}{money(service.price - service.basePrice)}
+                          {service.price > service.basePrice ? "+" : ""}
+
+                          {money(service.price - service.basePrice)}
                         </span>
                       ) : null}
                     </div>
+
                     {service.performedByEmployee ? (
                       <p className="mt-1 text-xs font-medium text-emerald-700">
                         Réalisée par : {service.performedByEmployee.name}
                       </p>
                     ) : null}
+
                     {service.employeeComment ? (
                       <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950">
                         <p className="font-semibold">Remarque employée</p>
+
                         <p className="mt-1">{service.employeeComment}</p>
-                        {detail.canManageAppointment && !isPaid && !isFinal ? (
+
+                        {detail.canManageAppointment &&
+                        !isPaid &&
+                        !isFinal &&
+                        !isServiceCancelled ? (
                           <PriceReview
                             service={service}
+
                             pending={pending}
+
                             run={run}
                           />
                         ) : service.priceReviewedAt ? (
-                          <p className="mt-2 text-xs font-semibold text-emerald-700">✓ Montant vérifié</p>
+                          <p className="mt-2 text-xs font-semibold text-emerald-700">
+                            ✓ Montant vérifié
+                          </p>
                         ) : null}
                       </div>
-                    ) : detail.canManageAppointment && !isPaid && !isFinal ? (
-                      <PriceReview service={service} pending={pending} run={run} compact />
+                    ) : detail.canManageAppointment &&
+                      !isPaid &&
+                      !isFinal &&
+                      !isServiceCancelled ? (
+                      <PriceReview
+                        service={service}
+
+                        pending={pending}
+
+                        run={run}
+
+                        compact
+                      />
                     ) : null}
+
                     {service.priceAdjustmentReason ? (
                       <p className="mt-2 text-xs text-slate-600">
                         Motif de l’ajustement : {service.priceAdjustmentReason}
@@ -563,24 +799,22 @@ export function AppointmentDetailClient({ detail }: Props) {
 
                   {detail.canManageAppointment &&
                   service.status === "TODO" &&
-                  detail.services.length > 1 &&
+                  !isServiceCancelled &&
                   !isFinal ? (
                     <button
                       type="button"
+
                       disabled={pending}
-                      className={`${buttonClass} border border-red-300 bg-white text-red-700 hover:bg-red-50`}
-                      onClick={() =>
-                        run(
-                          () =>
-                            removeAppointmentServiceAction({
-                              appointmentServiceId: service.id,
-                            }),
-                          "Prestation retirée.",
-                          () => setPaymentAmountOverride(null),
-                        )
-                      }
+
+                      className={`${buttonClass} border border-rose-200 bg-white text-rose-700 hover:bg-rose-50`}
+
+                      onClick={() => {
+                        setServiceCancelTarget(service);
+
+                        setServiceCancelReason("");
+                      }}
                     >
-                      Retirer
+                      Annuler la prestation
                     </button>
                   ) : null}
                 </div>
@@ -590,27 +824,39 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-600">
                       Employée
                     </span>
+
                     <select
                       className={inputClass}
+
                       value={service.assignedEmployee?.id ?? ""}
-                      disabled={pending || isFinal || !detail.canManageAppointment}
+
+                      disabled={
+                        pending || isFinal || !detail.canManageAppointment
+                      }
+
                       onChange={(event) => {
                         if (!event.target.value) return;
+
                         run(
                           () =>
                             assignEmployeeToServiceAction({
                               appointmentServiceId: service.id,
+
                               employeeId: event.target.value,
                             }),
+
                           "Employée affectée.",
                         );
                       }}
                     >
                       <option value="">À affecter</option>
+
                       {detail.employees.map((employee) => (
                         <option
                           key={employee.id}
+
                           value={employee.id}
+
                           disabled={
                             (!employee.isAvailable ||
                               (detail.skillsModeEnabled &&
@@ -622,6 +868,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                           }
                         >
                           {employee.name}
+
                           {detail.skillsModeEnabled &&
                           service.serviceId !== null &&
                           !employee.skillServiceIds.includes(service.serviceId)
@@ -641,23 +888,33 @@ export function AppointmentDetailClient({ detail }: Props) {
                       <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-600">
                         Salle
                       </span>
+
                       <select
                         className={inputClass}
+
                         value={service.room?.id ?? ""}
-                        disabled={pending || isFinal || !detail.canManageAppointment}
+
+                        disabled={
+                          pending || isFinal || !detail.canManageAppointment
+                        }
+
                         onChange={(event) => {
                           if (!event.target.value) return;
+
                           run(
                             () =>
                               assignRoomToServiceAction({
                                 appointmentServiceId: service.id,
+
                                 roomId: event.target.value,
                               }),
+
                             "Salle affectée.",
                           );
                         }}
                       >
                         <option value="">À affecter</option>
+
                         {roomOptions.map((room) => (
                           <option key={room.id} value={room.id}>
                             {room.name}
@@ -679,14 +936,18 @@ export function AppointmentDetailClient({ detail }: Props) {
                   !isFinal ? (
                     <button
                       type="button"
+
                       disabled={pending}
+
                       className={`${buttonClass} border border-violet-300 bg-violet-50 text-violet-800 hover:bg-violet-100`}
+
                       onClick={() =>
                         run(
                           () =>
                             takeUnassignedServiceAction({
                               appointmentServiceId: service.id,
                             }),
+
                           "La prestation vous est affectée.",
                         )
                       }
@@ -698,14 +959,18 @@ export function AppointmentDetailClient({ detail }: Props) {
                   {canStart ? (
                     <button
                       type="button"
+
                       disabled={pending}
+
                       className={`${buttonClass} bg-violet-700 text-white hover:bg-violet-800`}
+
                       onClick={() =>
                         run(
                           () =>
                             startAppointmentServiceAction({
                               appointmentServiceId: service.id,
                             }),
+
                           "Prestation démarrée.",
                         )
                       }
@@ -717,14 +982,18 @@ export function AppointmentDetailClient({ detail }: Props) {
                   {canComplete ? (
                     <button
                       type="button"
+
                       disabled={pending}
+
                       className={`${buttonClass} bg-emerald-700 text-white hover:bg-emerald-800`}
+
                       onClick={() =>
                         run(
                           () =>
                             completeAppointmentServiceAction({
                               appointmentServiceId: service.id,
                             }),
+
                           "Prestation terminée.",
                         )
                       }
@@ -741,6 +1010,7 @@ export function AppointmentDetailClient({ detail }: Props) {
         {detail.canManageAppointment && detail.status === "PLANNED" ? (
           <div className="mt-6 border-t border-slate-200 pt-5">
             <h3 className="font-semibold text-slate-950">Parallélisme</h3>
+
             <p className="mt-1 text-sm text-slate-600">
               À utiliser uniquement lorsque plusieurs prestations sont
               réellement réalisées en même temps. La durée du groupe correspond
@@ -751,37 +1021,46 @@ export function AppointmentDetailClient({ detail }: Props) {
               <div className="mt-4 space-y-2">
                 {detail.parallelGroups.map((group, index) => {
                   const groupServices = group.appointmentServiceIds
+
                     .map(
                       (serviceId) =>
                         detail.services.find(
                           (service) => service.id === serviceId,
                         )?.name,
                     )
+
                     .filter((value): value is string => Boolean(value));
 
                   return (
                     <div
                       key={group.id}
+
                       className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3"
                     >
                       <div>
                         <p className="text-sm font-semibold text-violet-950">
                           Groupe parallèle {index + 1}
                         </p>
+
                         <p className="mt-1 text-sm text-violet-800">
                           {groupServices.join(" + ")}
                         </p>
                       </div>
+
                       <button
                         type="button"
+
                         disabled={pending}
+
                         className={`${buttonClass} border border-violet-300 bg-white text-violet-800 hover:bg-violet-100`}
+
                         onClick={() =>
                           run(
                             () =>
                               removeParallelGroupAction({
                                 parallelGroupId: group.id,
                               }),
+
                             "Parallélisme supprimé.",
                           )
                         }
@@ -796,19 +1075,25 @@ export function AppointmentDetailClient({ detail }: Props) {
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {detail.services
+
                 .filter(
                   (service) =>
                     service.status === "TODO" && !service.parallelGroupId,
                 )
+
                 .map((service) => (
                   <label
                     key={service.id}
+
                     className="flex min-h-11 items-center gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800"
                   >
                     <input
                       type="checkbox"
+
                       checked={parallelSelection.includes(service.id)}
+
                       disabled={pending}
+
                       onChange={(event) =>
                         setParallelSelection((current) =>
                           event.target.checked
@@ -817,6 +1102,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                         )
                       }
                     />
+
                     <span>
                       {service.name} · {service.durationMinutes} min
                     </span>
@@ -826,16 +1112,22 @@ export function AppointmentDetailClient({ detail }: Props) {
 
             <button
               type="button"
+
               disabled={pending || parallelSelection.length < 2}
+
               className={`${buttonClass} mt-3 bg-violet-700 text-white hover:bg-violet-800`}
+
               onClick={() =>
                 run(
                   () =>
                     createParallelGroupAction({
                       appointmentId: detail.id,
+
                       appointmentServiceIds: parallelSelection,
                     }),
+
                   "Prestations configurées en parallèle.",
+
                   () => setParallelSelection([]),
                 )
               }
@@ -850,10 +1142,12 @@ export function AppointmentDetailClient({ detail }: Props) {
             <h3 className="font-semibold text-slate-950">
               Ajouter une prestation
             </h3>
+
             <p className="mt-1 text-sm text-slate-600">
               SalonFlow vérifie d’abord l’impact sur la durée, les employées,
               les salles et les rendez-vous déjà prévus.
             </p>
+
             {detail.status === "COMPLETED" && !isPaid ? (
               <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
                 Le rendez-vous est terminé mais pas encore encaissé. Une
@@ -863,45 +1157,83 @@ export function AppointmentDetailClient({ detail }: Props) {
             ) : null}
 
             <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50/50 p-4">
-              <p className="text-sm font-semibold text-slate-950">Quand réaliser cette prestation ?</p>
-              <p className="mt-1 text-xs text-slate-600">
-                Les créneaux sont proposés par pas de 15 minutes. Les horaires passés ne sont jamais réservables.
+              <p className="text-sm font-semibold text-slate-950">
+                Quand réaliser cette prestation ?
               </p>
+
+              <p className="mt-1 text-xs text-slate-600">
+                Les créneaux sont proposés par pas de 15 minutes. Les horaires
+                passés ne sont jamais réservables.
+              </p>
+
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-semibold text-slate-600">
                   Date
                   <input
                     type="date"
+
                     min={minimumAddSlot.dateKey}
+
                     className={`${inputClass} mt-1`}
+
                     value={serviceAddDate}
+
                     onChange={(event) => {
                       const date = event.target.value;
+
                       setServiceAddDate(date);
-                      if (date === minimumAddSlot.dateKey && serviceAddTime < minimumAddSlot.timeValue) {
+
+                      if (
+                        date === minimumAddSlot.dateKey &&
+                        serviceAddTime < minimumAddSlot.timeValue
+                      ) {
                         setServiceAddTime(minimumAddSlot.timeValue);
                       }
+
                       setFeasibility(null);
                     }}
                   />
                 </label>
+
                 <label className="text-xs font-semibold text-slate-600">
                   Heure
                   <select
                     className={`${inputClass} mt-1`}
+
                     value={serviceAddTime}
+
                     onChange={(event) => {
                       setServiceAddTime(event.target.value);
+
                       setFeasibility(null);
                     }}
                   >
                     {Array.from({ length: 45 }, (_, index) => {
                       const total = 10 * 60 + index * 15;
+
                       const value = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
-                      const duration = selectedCatalogService?.defaultDurationMinutes ?? 0;
-                      const beforeNow = serviceAddDate === minimumAddSlot.dateKey && value < minimumAddSlot.timeValue;
-                      const endsAfterClosing = duration > 0 && total + duration > 21 * 60 + 30;
-                      return <option key={value} value={value} disabled={beforeNow || endsAfterClosing}>{value}</option>;
+
+                      const duration =
+                        selectedCatalogService?.defaultDurationMinutes ?? 0;
+
+                      const beforeNow =
+                        serviceAddDate === minimumAddSlot.dateKey &&
+                        value < minimumAddSlot.timeValue;
+
+                      const endsAfterClosing =
+                        duration > 0 && total + duration > 21 * 60 + 30;
+
+                      return (
+                        <option
+                          key={value}
+
+                          value={value}
+
+                          disabled={beforeNow || endsAfterClosing}
+                        >
+                          {value}
+                        </option>
+                      );
                     })}
                   </select>
                 </label>
@@ -911,19 +1243,27 @@ export function AppointmentDetailClient({ detail }: Props) {
             <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
               <select
                 className={inputClass}
+
                 value={serviceToAdd}
+
                 disabled={pending}
+
                 onChange={(event) => {
                   const nextServiceId = event.target.value;
+
                   const nextService =
                     detail.catalogServices.find(
                       (service) => service.id === nextServiceId,
                     ) ?? null;
 
                   feasibilityRequestId.current += 1;
+
                   setServiceToAdd(nextServiceId);
+
                   setFeasibility(null);
+
                   setFeasibilityMessage(null);
+
                   setCheckingFeasibility(
                     Boolean(
                       canChangeStructure &&
@@ -934,10 +1274,13 @@ export function AppointmentDetailClient({ detail }: Props) {
                 }}
               >
                 <option value="">Choisir une prestation…</option>
+
                 {detail.catalogServices.map((service) => (
                   <option
                     key={service.id}
+
                     value={service.id}
+
                     disabled={service.defaultDurationMinutes === null}
                   >
                     {service.categoryName} — {service.name}
@@ -950,6 +1293,7 @@ export function AppointmentDetailClient({ detail }: Props) {
 
               <button
                 type="button"
+
                 disabled={
                   pending ||
                   checkingFeasibility ||
@@ -958,7 +1302,9 @@ export function AppointmentDetailClient({ detail }: Props) {
                   !feasibility ||
                   !feasibility.canAdd
                 }
+
                 className={`${buttonClass} bg-slate-900 text-white hover:bg-slate-800`}
+
                 onClick={() => {
                   if (!selectedCatalogService || !feasibility?.canAdd) {
                     return;
@@ -968,19 +1314,35 @@ export function AppointmentDetailClient({ detail }: Props) {
                     () =>
                       addAppointmentServiceAction({
                         appointmentId: detail.id,
+
                         serviceId: selectedCatalogService.id,
+
                         scheduledStart: new Date(
-                          casablancaLocalDateTimeToIso(serviceAddDate, serviceAddTime),
+                          casablancaLocalDateTimeToIso(
+                            serviceAddDate,
+
+                            serviceAddTime,
+                          ),
                         ),
                       }),
+
                     "Prestation ajoutée. Affectez maintenant les ressources nécessaires.",
+
                     () => {
                       setServiceToAdd("");
-                      const nextMinimum = getMinimumBookableCasablancaDateTime();
-                      setServiceAddDate(nextMinimum.dateKey);
-                      setServiceAddTime(nextMinimum.timeValue);
+
+                      const nextSuggested = getSuggestedNextServiceDateTime(
+                        detail.services,
+                      );
+
+                      setServiceAddDate(nextSuggested.dateKey);
+
+                      setServiceAddTime(nextSuggested.timeValue);
+
                       setPaymentAmountOverride(null);
+
                       setFeasibility(null);
+
                       setFeasibilityMessage(null);
                     },
                   );
@@ -1029,6 +1391,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                           ? "Ajout possible, mais à organiser"
                           : "Ajout possible"}
                     </p>
+
                     <p className="mt-1 text-sm text-slate-700">
                       Fin actuelle :{" "}
                       <strong>{timeOnly(feasibility.currentEnd)}</strong>
@@ -1051,6 +1414,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-red-800">
                       Conflits
                     </p>
+
                     <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-red-900">
                       {feasibility.blockers.map((blocker) => (
                         <li key={blocker}>{blocker}</li>
@@ -1064,6 +1428,7 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
                       À vérifier
                     </p>
+
                     <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-amber-950">
                       {feasibility.warnings.map((warning) => (
                         <li key={warning}>{warning}</li>
@@ -1077,10 +1442,13 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                       Employées disponibles
                     </p>
+
                     <p className="mt-1 text-sm font-semibold text-slate-950">
                       {feasibility.availableEmployees.length > 0
                         ? feasibility.availableEmployees
+
                             .map((employee) => employee.name)
+
                             .join(", ")
                         : "Aucune sur toute la nouvelle plage"}
                     </p>
@@ -1090,12 +1458,15 @@ export function AppointmentDetailClient({ detail }: Props) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                       Salle
                     </p>
+
                     <p className="mt-1 text-sm font-semibold text-slate-950">
                       {!feasibility.requiredRoomType
                         ? "Aucune salle requise"
                         : feasibility.availableRooms.length > 0
                           ? feasibility.availableRooms
+
                               .map((room) => room.name)
+
                               .join(", ")
                           : "Aucune salle compatible disponible"}
                     </p>
@@ -1115,6 +1486,7 @@ export function AppointmentDetailClient({ detail }: Props) {
 
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold text-slate-950">Historique</h2>
+
         <p className="mt-1 text-sm text-slate-600">
           Qui a fait quoi sur ce rendez-vous.
         </p>
@@ -1128,13 +1500,16 @@ export function AppointmentDetailClient({ detail }: Props) {
             {detail.history.map((item) => (
               <li
                 key={item.id}
+
                 className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3"
               >
                 <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-600" />
+
                 <div>
                   <p className="text-sm font-medium text-slate-900">
                     {item.description}
                   </p>
+
                   <p className="mt-1 text-xs text-slate-500">
                     {dateTime(item.createdAt)}
                   </p>
@@ -1148,53 +1523,98 @@ export function AppointmentDetailClient({ detail }: Props) {
       <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-semibold text-slate-950">Paiement</h2>
+
           <p className="mt-1 text-sm text-slate-600">
-            Vérifiez les montants prestation par prestation avant l’encaissement.
+            Vérifiez les montants prestation par prestation avant
+            l’encaissement.
           </p>
 
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
             {detail.services.map((service, index) => (
-              <div key={service.id} className={`flex items-center justify-between gap-4 px-4 py-3 ${index ? "border-t border-slate-100" : ""}`}>
+              <div
+                key={service.id}
+
+                className={`flex items-center justify-between gap-4 px-4 py-3 ${index ? "border-t border-slate-100" : ""}`}
+              >
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{service.name}</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {service.name}
+                  </p>
+
                   {service.price !== service.basePrice ? (
-                    <p className="text-xs text-slate-500">Base {money(service.basePrice)} · montant ajusté</p>
+                    <p className="text-xs text-slate-500">
+                      Base {money(service.basePrice)} · montant ajusté
+                    </p>
                   ) : null}
                 </div>
-                <p className="font-bold text-slate-950">{money(service.price)}</p>
+
+                <p className="font-bold text-slate-950">
+                  {money(service.price)}
+                </p>
               </div>
             ))}
+
             <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-4">
               <p className="font-bold text-slate-950">Total à payer</p>
-              <p className="text-xl font-bold text-slate-950">{money(catalogTotal)}</p>
+
+              <p className="text-xl font-bold text-slate-950">
+                {money(catalogTotal)}
+              </p>
             </div>
           </div>
 
-          {detail.services.some((service) => service.employeeComment && !service.priceReviewedAt) && detail.payment?.status !== "PAID" ? (
+          {detail.services.some(
+            (service) => service.employeeComment && !service.priceReviewedAt,
+          ) && detail.payment?.status !== "PAID" ? (
             <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-              <p className="font-semibold">Remarque à vérifier avant l’encaissement</p>
-              <p className="mt-1">Vous pouvez garder le prix de base ou ajuster la prestation depuis l’onglet Prestations ci-dessus.</p>
+              <p className="font-semibold">
+                Remarque à vérifier avant l’encaissement
+              </p>
+
+              <p className="mt-1">
+                Vous pouvez garder le prix de base ou ajuster la prestation
+                depuis l’onglet Prestations ci-dessus.
+              </p>
             </div>
           ) : null}
 
           {detail.payment?.status === "PAID" ? (
             <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="font-semibold text-emerald-900">Espèces encaissées : {money(detail.payment.amount)}</p>
-              {detail.payment.paidAt ? <p className="mt-1 text-sm text-emerald-800">{dateTime(detail.payment.paidAt)}</p> : null}
+              <p className="font-semibold text-emerald-900">
+                Espèces encaissées : {money(detail.payment.amount)}
+              </p>
+
+              {detail.payment.paidAt ? (
+                <p className="mt-1 text-sm text-emerald-800">
+                  {dateTime(detail.payment.paidAt)}
+                </p>
+              ) : null}
             </div>
           ) : (
             <button
               type="button"
+
               disabled={
                 pending ||
                 !detail.canRecordPayment ||
                 detail.status !== "COMPLETED" ||
-                detail.services.some((service) => service.employeeComment && !service.priceReviewedAt)
+                detail.services.some(
+                  (service) =>
+                    service.employeeComment && !service.priceReviewedAt,
+                )
               }
+
               className={`${buttonClass} mt-4 bg-emerald-700 text-white hover:bg-emerald-800`}
+
               onClick={() =>
                 run(
-                  () => markAppointmentPaidAction({ appointmentId: detail.id, amount: catalogTotal }),
+                  () =>
+                    markAppointmentPaidAction({
+                      appointmentId: detail.id,
+
+                      amount: catalogTotal,
+                    }),
+
                   "Paiement enregistré.",
                 )
               }
@@ -1203,28 +1623,171 @@ export function AppointmentDetailClient({ detail }: Props) {
             </button>
           )}
 
-          {detail.status !== "COMPLETED" && detail.payment?.status !== "PAID" ? (
-            <p className="mt-3 text-sm text-slate-600">Le paiement devient disponible lorsque toutes les prestations sont terminées.</p>
+          {detail.status !== "COMPLETED" &&
+          detail.payment?.status !== "PAID" ? (
+            <p className="mt-3 text-sm text-slate-600">
+              Le paiement devient disponible lorsque toutes les prestations sont
+              terminées.
+            </p>
           ) : null}
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-950">Finalisation</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">Toutes les prestations doivent être terminées et le paiement encaissé avant la clôture.</p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Toutes les prestations doivent être terminées et le paiement
+            encaissé avant la clôture.
+          </p>
+
+          {detail.canManageAppointment &&
+          detail.status !== "CLOSED" &&
+          detail.status !== "CANCELLED" ? (
+            <button
+              type="button"
+              disabled={pending}
+              className={`${buttonClass} mt-4 w-full border border-red-200 bg-white text-red-700 hover:bg-red-50`}
+              onClick={() => setCancelDialogOpen(true)}
+            >
+              Annuler le rendez-vous
+            </button>
+          ) : null}
+
           <button
             type="button"
-            disabled={pending || !detail.canManageAppointment || detail.status !== "COMPLETED" || detail.payment?.status !== "PAID" || !allDone}
+
+            disabled={
+              pending ||
+              !detail.canManageAppointment ||
+              detail.status !== "COMPLETED" ||
+              detail.payment?.status !== "PAID" ||
+              !allDone
+            }
+
             className={`${buttonClass} mt-4 w-full bg-slate-950 text-white hover:bg-slate-800`}
-            onClick={() => run(() => closeAppointmentAction({ appointmentId: detail.id }), "Rendez-vous clôturé.")}
+
+            onClick={() =>
+              run(
+                () => closeAppointmentAction({ appointmentId: detail.id }),
+
+                "Rendez-vous clôturé.",
+              )
+            }
           >
             Clôturer le rendez-vous
           </button>
         </aside>
       </section>
 
+      {serviceCancelTarget ? (
+        <div
+          className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-950/45 p-0 sm:items-center sm:p-4"
+
+          role="presentation"
+
+          onMouseDown={() => !pending && setServiceCancelTarget(null)}
+        >
+          <div
+            role="dialog"
+
+            aria-modal="true"
+
+            aria-labelledby="cancel-service-title"
+
+            className="w-full rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6"
+
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
+
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-rose-600">
+              Annulation
+            </p>
+
+            <h2
+              id="cancel-service-title"
+
+              className="mt-1 text-xl font-semibold text-slate-950"
+            >
+              Annuler « {serviceCancelTarget.name} » ?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              La prestation restera visible dans l’historique, mais elle ne
+              comptera plus dans l’encaissement. Son employée et sa salle seront
+              libérées pour ce créneau.
+            </p>
+
+            <label className="mt-4 block">
+              <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                Motif (optionnel)
+              </span>
+
+              <textarea
+                className={`${inputClass} min-h-20 py-3`}
+
+                value={serviceCancelReason}
+
+                maxLength={500}
+
+                placeholder="Ex. la cliente ne souhaite plus le brushing"
+
+                onChange={(event) => setServiceCancelReason(event.target.value)}
+              />
+            </label>
+
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+
+                disabled={pending}
+
+                className={`${buttonClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+
+                onClick={() => setServiceCancelTarget(null)}
+              >
+                Retour
+              </button>
+
+              <button
+                type="button"
+
+                disabled={pending}
+
+                className={`${buttonClass} bg-rose-600 text-white hover:bg-rose-700`}
+
+                onClick={() =>
+                  run(
+                    () =>
+                      cancelAppointmentServiceAction({
+                        appointmentServiceId: serviceCancelTarget.id,
+
+                        reason: serviceCancelReason.trim() || null,
+                      }),
+
+                    "Prestation annulée. Le créneau est de nouveau disponible.",
+
+                    () => {
+                      setServiceCancelTarget(null);
+
+                      setServiceCancelReason("");
+
+                      setPaymentAmountOverride(null);
+                    },
+                  )
+                }
+              >
+                {pending ? "Annulation…" : "Annuler la prestation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {cancelDialogOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+
           onMouseDown={(event) => {
             if (event.target === event.currentTarget && !pending) {
               setCancelDialogOpen(false);
@@ -1233,9 +1796,13 @@ export function AppointmentDetailClient({ detail }: Props) {
         >
           <div
             role="alertdialog"
+
             aria-modal="true"
+
             aria-labelledby="cancel-appointment-title"
+
             aria-describedby="cancel-appointment-description"
+
             className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-xl text-red-700">
@@ -1244,6 +1811,7 @@ export function AppointmentDetailClient({ detail }: Props) {
 
             <h2
               id="cancel-appointment-title"
+
               className="mt-4 text-xl font-semibold text-slate-950"
             >
               Annuler le rendez-vous ?
@@ -1251,6 +1819,7 @@ export function AppointmentDetailClient({ detail }: Props) {
 
             <p
               id="cancel-appointment-description"
+
               className="mt-2 text-sm leading-6 text-slate-600"
             >
               Le rendez-vous restera dans l’historique. Son créneau, les
@@ -1261,6 +1830,7 @@ export function AppointmentDetailClient({ detail }: Props) {
               <p className="text-sm font-semibold text-slate-950">
                 {detail.client.name}
               </p>
+
               <p className="mt-1 text-sm text-slate-600">
                 {dateTime(detail.scheduledStart)} ·{" "}
                 {detail.estimatedDurationMinutes} min
@@ -1275,8 +1845,11 @@ export function AppointmentDetailClient({ detail }: Props) {
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
+
                 disabled={pending}
+
                 className={`${buttonClass} border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 sm:min-w-28`}
+
                 onClick={() => setCancelDialogOpen(false)}
               >
                 Retour
@@ -1284,9 +1857,13 @@ export function AppointmentDetailClient({ detail }: Props) {
 
               <button
                 ref={cancelButtonRef}
+
                 type="button"
+
                 disabled={pending}
+
                 className={`${buttonClass} bg-red-700 text-white hover:bg-red-800 sm:min-w-48`}
+
                 onClick={confirmCancellation}
               >
                 {pending ? "Annulation…" : "Annuler le rendez-vous"}

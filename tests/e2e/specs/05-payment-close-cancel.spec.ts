@@ -13,16 +13,14 @@ test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
     await page.goto(`/appointments/${s.appointment.id}`);
 
     await expect(
-      page.getByRole("button", { name: /espèces encaissées/i }),
+      page.getByRole("button", { name: /encaisser .* en espèces/i }),
     ).toBeDisabled();
     await expect(page.locator("body")).toContainText(
       /paiement devient disponible/i,
     );
   });
 
-  test("un RDV terminé accepte un montant réellement encaissé différent", async ({
-    page,
-  }) => {
+  test("un RDV terminé peut être encaissé en espèces", async ({ page }) => {
     const s = await createAppointmentScenario({
       scheduledStart: pastDate(90),
       status: "COMPLETED",
@@ -32,9 +30,9 @@ test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
     await loginAsAdmin(page);
     await page.goto(`/appointments/${s.appointment.id}`);
 
-    const amount = page.getByLabel(/montant réellement encaissé/i);
-    await amount.fill("275.50");
-    await page.getByRole("button", { name: /espèces encaissées/i }).click();
+    await page
+      .getByRole("button", { name: /encaisser .* en espèces/i })
+      .click();
 
     await expect
       .poll(
@@ -49,7 +47,7 @@ test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
         },
         { timeout: 15_000 },
       )
-      .toEqual({ status: "PAID", amount: 275.5 });
+      .toEqual({ status: "PAID", amount: 300 });
   });
 
   test("un RDV terminé non payé ne peut pas être clôturé", async ({ page }) => {

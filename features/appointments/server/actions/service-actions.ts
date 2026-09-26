@@ -7,6 +7,7 @@ import { runAuthenticatedAction } from "@/server/actions/run-authenticated-actio
 import {
   addAppointmentServiceActionSchema,
   appointmentServiceIdActionSchema,
+  cancelAppointmentServiceActionSchema,
   updateAppointmentServiceCommentActionSchema,
   updateAppointmentServicePriceActionSchema,
   assignEmployeeActionSchema,
@@ -19,6 +20,7 @@ import {
 
 import { addAppointmentService } from "@/server/services/appointments/add-appointment-service";
 import { removeAppointmentService } from "@/server/services/appointments/remove-appointment-service";
+import { cancelAppointmentService } from "@/server/services/appointments/cancel-appointment-service";
 import { assignEmployeeToService } from "@/server/services/appointments/assign-employee-to-service";
 import { assignRoomToService } from "@/server/services/appointments/assign-room-to-service";
 import { takeUnassignedService } from "@/server/services/appointments/take-unassigned-service";
@@ -80,6 +82,18 @@ export async function addAppointmentServiceAction(
       appointmentId: appointment.id,
       appointmentServiceId: appointmentService.id,
     };
+  });
+}
+
+export async function cancelAppointmentServiceAction(input: {
+  appointmentServiceId: string;
+  reason?: string | null;
+}) {
+  return runAuthenticatedAction(async (currentUser) => {
+    const data = cancelAppointmentServiceActionSchema.parse(input);
+    const appointment = await cancelAppointmentService(currentUser, data);
+    await revalidateAppointmentViews(currentUser.salonId, appointment.id);
+    return { appointmentId: appointment.id };
   });
 }
 
@@ -177,7 +191,10 @@ export async function completeAppointmentServiceAction(
   });
 }
 
-export async function updateAppointmentServiceCommentAction(input: { appointmentServiceId: string; comment: string | null }) {
+export async function updateAppointmentServiceCommentAction(input: {
+  appointmentServiceId: string;
+  comment: string | null;
+}) {
   return runAuthenticatedAction(async (currentUser) => {
     const data = updateAppointmentServiceCommentActionSchema.parse(input);
     const service = await updateAppointmentServiceComment(currentUser, data);
@@ -185,7 +202,6 @@ export async function updateAppointmentServiceCommentAction(input: { appointment
     return { appointmentServiceId: service.id };
   });
 }
-
 
 export async function updateAppointmentServicePriceAction(input: {
   appointmentServiceId: string;

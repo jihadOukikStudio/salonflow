@@ -199,6 +199,7 @@ async function createStoredAppointment(params: {
       createdByUserId: params.userId,
       services: {
         create: {
+          scheduledStart: new Date(params.start),
           serviceNameSnapshot: params.serviceName ?? "Prestation existante",
           durationMinutes: params.serviceDuration ?? params.duration,
           price: 100,

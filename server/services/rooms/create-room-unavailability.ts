@@ -117,6 +117,7 @@ export async function createRoomUnavailability(
 
     const candidateAssignments = await tx.appointmentService.findMany({
       where: {
+        cancelledAt: null,
         roomId: lockedRoom.id,
         scheduledStart: { lt: input.endAt },
         appointment: {

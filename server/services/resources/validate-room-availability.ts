@@ -72,11 +72,14 @@ export async function validateRoomAvailability(
 
   const candidates = await tx.appointmentService.findMany({
     where: {
+      cancelledAt: null,
       roomId: input.roomId,
       scheduledStart: { lt: interval.endAt },
       appointment: {
         salonId: input.salonId,
-        ...(input.excludeAppointmentId ? { id: { not: input.excludeAppointmentId } } : {}),
+        ...(input.excludeAppointmentId
+          ? { id: { not: input.excludeAppointmentId } }
+          : {}),
         status: { notIn: ["CANCELLED", "CLOSED"] },
       },
     },
@@ -86,7 +89,10 @@ export async function validateRoomAvailability(
   const conflict = candidates.some((candidate) =>
     intervalsOverlap(interval, {
       startAt: candidate.scheduledStart,
-      endAt: getAppointmentEnd(candidate.scheduledStart, candidate.durationMinutes),
+      endAt: getAppointmentEnd(
+        candidate.scheduledStart,
+        candidate.durationMinutes,
+      ),
     }),
   );
 

@@ -237,6 +237,7 @@ describe("createRoomUnavailability", () => {
 
         services: {
           create: {
+            scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
             serviceNameSnapshot: "Soin visage",
             durationMinutes: 60,
             price: 250,
@@ -300,15 +301,17 @@ describe("createRoomUnavailability", () => {
       data: {
         salonId: salon.id,
         clientId: client.id,
+        createdByUserId: admin.currentUser.id,
         scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
         estimatedDurationMinutes: 180,
-        status: "CONFIRMED",
+        status: "PLANNED",
       },
     });
     await testPrisma.appointmentService.create({
       data: {
         appointmentId: appointment.id,
         serviceId: service.id,
+        serviceNameSnapshot: service.name,
         roomId: room.id,
         scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
         durationMinutes: 30,
@@ -317,7 +320,7 @@ describe("createRoomUnavailability", () => {
     });
 
     await expect(
-      createRoomUnavailability(admin, {
+      createRoomUnavailability(admin.currentUser, {
         roomId: room.id,
         startAt: new Date("2099-09-23T10:00:00.000Z"),
         endAt: new Date("2099-09-23T11:00:00.000Z"),
@@ -349,15 +352,17 @@ describe("createRoomUnavailability", () => {
       data: {
         salonId: salon.id,
         clientId: client.id,
+        createdByUserId: admin.currentUser.id,
         scheduledStart: new Date("2099-09-23T09:00:00.000Z"),
         estimatedDurationMinutes: 120,
-        status: "CONFIRMED",
+        status: "PLANNED",
       },
     });
     await testPrisma.appointmentService.create({
       data: {
         appointmentId: appointment.id,
         serviceId: service.id,
+        serviceNameSnapshot: service.name,
         roomId: room.id,
         scheduledStart: new Date("2099-09-23T10:00:00.000Z"),
         durationMinutes: 60,
@@ -366,12 +371,11 @@ describe("createRoomUnavailability", () => {
     });
 
     await expect(
-      createRoomUnavailability(admin, {
+      createRoomUnavailability(admin.currentUser, {
         roomId: room.id,
         startAt: new Date("2099-09-23T10:30:00.000Z"),
         endAt: new Date("2099-09-23T11:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(BusinessRuleError);
   });
-
 });

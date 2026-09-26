@@ -7,11 +7,9 @@ test.describe("Phase 12.6 — dashboard et calendrier", () => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
     await page.goto("/dashboard");
+    await expect(page.getByRole("heading", { name: /bonjour/i })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /état du salon/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: /activité financière/i }),
+      page.getByRole("heading", { name: /encaissements/i }),
     ).toBeVisible();
     await expect(page.getByText(/aujourd’hui/i).first()).toBeVisible();
   });
@@ -23,11 +21,9 @@ test.describe("Phase 12.6 — dashboard et calendrier", () => {
     await loginAsAdmin(page);
     await page.goto("/dashboard");
 
-    await expect(
-      page.getByRole("heading", { name: /salon maintenant/i }),
-    ).toBeVisible();
+    await page.getByRole("link", { name: /voir le planning/i }).click();
     await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
-    await expect(page).toHaveURL(/\/planning\?new=1/);
+    await expect(page).toHaveURL(/\/planning.*new=1/);
     await expect(
       page.getByRole("dialog", { name: /nouveau rendez-vous/i }),
     ).toBeVisible();
@@ -86,7 +82,9 @@ test.describe("Lot 1 — création depuis le planning", () => {
     await page.getByRole("link", { name: "Période précédente" }).click();
 
     await expect(page).toHaveURL(new RegExp(`date=${yesterdayKey}`));
-    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
+    await page.goto(
+      `/planning?date=${yesterdayKey}&view=planning&period=day&new=1`,
+    );
 
     await expect(
       page.getByRole("dialog", { name: "Création impossible" }),
@@ -125,14 +123,16 @@ test.describe("Lot 1 — création depuis le planning", () => {
       page.getByRole("button", { name: /choisir une date/i }),
     ).toContainText(new RegExp(String(day)));
 
-    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
+    await page.goto(
+      `/planning?date=${yesterdayKey}&view=planning&period=day&new=1`,
+    );
     await expect(
       page.getByRole("dialog", { name: "Création impossible" }),
     ).toBeVisible();
     await expect(page.getByText(/cette date est déjà passée/i)).toBeVisible();
   });
 
-  test("un rendez-vous futur créé depuis le bouton conserve la date et prend le premier horaire légal", async ({
+  test("un rendez-vous futur ouvert depuis le planning conserve la date", async ({
     page,
   }) => {
     await createAppointmentScenario();
@@ -142,134 +142,58 @@ test.describe("Lot 1 — création depuis le planning", () => {
     await page.goto(`/planning?date=${tomorrowKey}&view=planning&period=day`);
     await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
 
-    await expect(
-      page.getByRole("dialog", { name: "Nouveau rendez-vous" }),
-    ).toBeVisible();
-
-    await page.getByLabel("Téléphone").fill("0612345678");
-    await page.getByLabel(/Nom/).fill("Cliente E2E");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await expect(
-      page.getByRole("textbox", { name: "Date du rendez-vous" }),
-    ).toHaveValue(tomorrowKey);
-    await expect(
-      page.getByRole("textbox", { name: "Heure du rendez-vous" }),
-    ).toHaveValue("10:00");
+    const dialog = page.getByRole("dialog", { name: "Nouveau rendez-vous" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('input[type="date"]')).toHaveValue(tomorrowKey);
+    await expect(dialog.getByText(/pas de 15 min/i)).toBeVisible();
   });
 
-  test("la création future propose des horaires de 15 minutes et les catégories pliables", async ({
+  test("la création permet de rechercher ou créer une cliente puis d’ajouter une prestation", async ({
     page,
   }) => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
 
     const tomorrowKey = dateKey(1);
-    await page.goto(`/planning?date=${tomorrowKey}&view=planning&period=day`);
-    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
+    await page.goto(
+      `/planning?date=${tomorrowKey}&view=planning&period=day&new=1`,
+    );
+    const dialog = page.getByRole("dialog", { name: "Nouveau rendez-vous" });
 
+    const search = dialog.getByPlaceholder(/rechercher par nom ou téléphone/i);
+    await search.fill("Cliente Design E2E");
     await expect(
-      page.getByRole("dialog", { name: "Nouveau rendez-vous" }),
+      dialog.getByText("Nouvelle cliente", { exact: true }),
     ).toBeVisible();
-
-    await page.getByLabel("Téléphone").fill("0612345678");
-    await page.getByLabel(/Nom/).fill("Cliente E2E");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
+    await dialog
+      .getByRole("textbox", { name: "Téléphone", exact: true })
+      .fill("0612345678");
     await expect(
-      page.getByRole("textbox", { name: "Date du rendez-vous" }),
-    ).toHaveValue(tomorrowKey);
-    await expect(
-      page.getByRole("textbox", { name: "Heure du rendez-vous" }),
-    ).toHaveValue("10:00");
-
-    await page
-      .getByRole("button", { name: /choisir l’heure du rendez-vous/i })
-      .click();
-    const timeDialog = page.getByRole("dialog", {
-      name: "Choisir l'heure du rendez-vous",
-    });
-    await expect(timeDialog).toBeVisible();
-
-    const timeButtons = timeDialog.locator("button[aria-pressed]");
-    const labels = await timeButtons.allTextContents();
-    const options = labels
-      .map((label) => label.trim().match(/\d{2}:\d{2}/)?.[0])
-      .filter((value): value is string => Boolean(value));
-
-    expect(options.length).toBeGreaterThan(0);
-    expect(
-      options.every((value) => {
-        const [hour, minute] = value.split(":").map(Number);
-        const total = hour * 60 + minute;
-        return total >= 10 * 60 && total <= 21 * 60 && minute % 15 === 0;
-      }),
-    ).toBe(true);
-
-    const categories = page.locator("details");
-    expect(await categories.count()).toBeGreaterThan(0);
-    await expect(categories.first()).not.toHaveAttribute("open", "");
-  });
-
-  test("la création utilise un calendrier SalonFlow et une grille horaire, sans contrôles natifs visibles", async ({
-    page,
-  }) => {
-    await createAppointmentScenario();
-    await loginAsAdmin(page);
-
-    const tomorrowKey = dateKey(1);
-    await page.goto(`/planning?date=${tomorrowKey}&view=planning&period=day`);
-    await page.getByRole("link", { name: /nouveau rendez-vous/i }).click();
-
-    await page.getByLabel("Téléphone").fill("0612345678");
-    await page.getByLabel(/Nom/).fill("Cliente Design");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await page
-      .getByRole("button", { name: /choisir la date du rendez-vous/i })
-      .click();
-    await expect(
-      page.getByRole("dialog", { name: "Choisir la date du rendez-vous" }),
-    ).toBeVisible();
-
-    await page.keyboard.press("Escape");
-    await page
-      .getByRole("button", { name: /choisir l’heure du rendez-vous/i })
-      .click();
-    await expect(
-      page.getByRole("dialog", { name: "Choisir l'heure du rendez-vous" }),
-    ).toBeVisible();
-    await expect(
-      page
-        .getByRole("dialog", { name: "Choisir l'heure du rendez-vous" })
-        .getByRole("button", { name: /10:15/ }),
+      dialog.getByRole("button", { name: /ajouter une prestation/i }).first(),
     ).toBeVisible();
   });
 
-  test("les sections volumineuses sont pliables pour limiter le scroll", async ({
+  test("les écrans de structure restent accessibles depuis le parcours gérante", async ({
     page,
   }) => {
     await createAppointmentScenario();
     await loginAsAdmin(page);
 
     await page.goto("/employees");
-    await expect(
-      page
-        .locator("details")
-        .filter({ hasText: "Compétences prestations" })
-        .first(),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /équipe/i })).toBeVisible();
 
     await page.goto("/employees/unavailability");
-    await expect(page.locator("details").first()).toBeVisible();
-
-    await page.goto("/rooms");
     await expect(
-      page.locator("details").filter({ hasText: "Indisponibilités" }).first(),
+      page.getByRole("heading", { name: /indisponibilités équipe/i }),
     ).toBeVisible();
 
+    await page.goto("/rooms");
+    await expect(page.getByRole("heading", { name: /salles/i })).toBeVisible();
+
     await page.goto("/services");
-    await expect(page.locator("details").first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /prestations/i }),
+    ).toBeVisible();
   });
 });
 

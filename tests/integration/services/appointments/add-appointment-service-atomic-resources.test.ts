@@ -102,12 +102,13 @@ async function createContext(params?: {
     data: {
       salonId: salon.id,
       clientId: client.id,
-      scheduledStart: new Date("2026-09-10T10:00:00.000Z"),
+      scheduledStart: new Date("2027-09-10T10:00:00.000Z"),
       estimatedDurationMinutes: 60,
       status: "IN_PROGRESS",
       createdByUserId: user.id,
       services: {
         create: {
+          scheduledStart: new Date("2027-09-10T10:00:00.000Z"),
           serviceId: firstService.id,
           serviceNameSnapshot: firstService.name,
           durationMinutes: 60,
@@ -211,8 +212,8 @@ describe("addAppointmentService — atomic resources", () => {
       data: {
         employeeId: context.employeeB.id,
         type: "ABSENCE",
-        startAt: new Date("2026-09-10T10:15:00.000Z"),
-        endAt: new Date("2026-09-10T12:00:00.000Z"),
+        startAt: new Date("2027-09-10T10:15:00.000Z"),
+        endAt: new Date("2027-09-10T12:00:00.000Z"),
         createdByUserId: context.user.id,
       },
     });
@@ -254,8 +255,8 @@ describe("addAppointmentService — atomic resources", () => {
     await testPrisma.roomUnavailability.create({
       data: {
         roomId: context.roomB.id,
-        startAt: new Date("2026-09-10T10:15:00.000Z"),
-        endAt: new Date("2026-09-10T12:00:00.000Z"),
+        startAt: new Date("2027-09-10T10:15:00.000Z"),
+        endAt: new Date("2027-09-10T12:00:00.000Z"),
         reason: "Maintenance",
         createdByUserId: context.user.id,
       },

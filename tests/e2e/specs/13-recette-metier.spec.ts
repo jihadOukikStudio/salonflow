@@ -60,9 +60,9 @@ test.describe("Recette métier — parcours critique", () => {
       })
       .toBe("COMPLETED");
 
-    const amount = page.getByLabel(/montant réellement encaissé/i);
-    await amount.fill("300");
-    await page.getByRole("button", { name: /espèces encaissées/i }).click();
+    await page
+      .getByRole("button", { name: /encaisser .* en espèces/i })
+      .click();
 
     await expect
       .poll(async () => {
@@ -101,7 +101,7 @@ test.describe("Recette métier — parcours critique", () => {
     expect(actions.length).toBeGreaterThan(0);
   });
 
-  test("un rendez-vous incomplet est signalé dans le planning", async ({
+  test("un rendez-vous incomplet reste hors des colonnes du planning", async ({
     page,
   }) => {
     await createAppointmentScenario({
@@ -111,7 +111,6 @@ test.describe("Recette métier — parcours critique", () => {
     });
     await loginAsAdmin(page);
     await page.goto("/planning");
-    await expect(page.locator("body")).toContainText(/à organiser\s*1/i);
     await expect(page.getByText("Soin visage E2E")).toHaveCount(0);
   });
 
@@ -123,8 +122,7 @@ test.describe("Recette métier — parcours critique", () => {
     });
     await loginAsAdmin(page);
     await page.goto("/planning");
-    await expect(page.locator("body")).toContainText(/à organiser\s*0/i);
-    await expect(page.locator("body")).toContainText("Soin visage E2E");
+    await expect(page.getByText("Soin visage E2E")).toBeVisible();
   });
 
   test("l'employée peut exécuter uniquement sa prestation affectée", async ({

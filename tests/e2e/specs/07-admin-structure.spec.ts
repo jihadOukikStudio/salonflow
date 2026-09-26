@@ -10,13 +10,19 @@ test.describe("Phase 12.7 — administration structurelle", () => {
     await loginAsAdmin(page);
     await page.goto("/employees");
 
-    await page.getByPlaceholder("Prénom *", { exact: true }).fill("Nora");
+    await page
+      .getByRole("button", { name: /^Ajouter$/i })
+      .first()
+      .click();
 
     const addEmployeeSection = page
       .locator("section")
       .filter({ hasText: "Ajouter une employée" })
       .first();
 
+    await addEmployeeSection
+      .getByPlaceholder("Prénom *", { exact: true })
+      .fill("Nora");
     await addEmployeeSection
       .getByPlaceholder("Nom", { exact: true })
       .fill("E2E");
@@ -30,7 +36,7 @@ test.describe("Phase 12.7 — administration structurelle", () => {
      * Ce regexp accepte à la fois ’ et ' pour éviter un test fragile.
      */
     const addButton = addEmployeeSection.getByRole("button", {
-      name: /ajouter l[’']employée/i,
+      name: /^Ajouter$/i,
     });
 
     await expect(addButton).toBeVisible();
@@ -60,12 +66,16 @@ test.describe("Phase 12.7 — administration structurelle", () => {
     await loginAsAdmin(page);
     await page.goto("/rooms");
 
+    await page.getByRole("button", { name: /ajouter une salle/i }).click();
+
     const addSection = page
-      .locator("section")
+      .locator("aside")
       .filter({ hasText: "Ajouter une salle" })
       .first();
 
-    await addSection.getByPlaceholder("Nom").fill("Salle E2E 3");
+    await addSection
+      .getByPlaceholder("Ex. Salle soin 1", { exact: true })
+      .fill("Salle E2E 3");
     await addSection.locator("select").selectOption("TREATMENT_ROOM");
     await addSection.locator('input[type="number"]').fill("1");
     await addSection.getByRole("button", { name: /^Ajouter$/i }).click();
@@ -91,12 +101,16 @@ test.describe("Phase 12.7 — administration structurelle", () => {
     await loginAsAdmin(page);
     await page.goto("/rooms");
 
+    await page.getByRole("button", { name: /ajouter une salle/i }).click();
+
     const addSection = page
-      .locator("section")
+      .locator("aside")
       .filter({ hasText: "Ajouter une salle" })
       .first();
 
-    await addSection.getByPlaceholder("Nom").fill("Hamam E2E 3");
+    await addSection
+      .getByPlaceholder("Ex. Salle soin 1", { exact: true })
+      .fill("Hamam E2E 3");
     await addSection.locator("select").selectOption("HAMAM");
     await addSection.locator('input[type="number"]').fill("1");
     await addSection.getByRole("button", { name: /^Ajouter$/i }).click();

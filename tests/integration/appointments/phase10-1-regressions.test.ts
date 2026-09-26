@@ -120,6 +120,7 @@ describe("Phase 10.1 regressions", () => {
         serviceId: service.id,
         serviceNameSnapshot: service.name,
         durationMinutes: 60,
+        scheduledStart: appointment.scheduledStart,
         price: 100,
         assignedEmployeeId: c.employee.id,
       },

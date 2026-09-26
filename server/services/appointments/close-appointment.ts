@@ -117,6 +117,7 @@ export async function closeAppointment(
           salonId,
         },
 
+        cancelledAt: null,
         status: {
           not: "DONE",
         },

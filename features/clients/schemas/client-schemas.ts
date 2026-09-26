@@ -50,12 +50,20 @@ export const searchClientsActionSchema = z
   .superRefine((value, context) => {
     if (value.query) {
       if (value.query.length < 2) {
-        context.addIssue({ code: "custom", path: ["query"], message: "Saisissez au moins 2 caractères." });
+        context.addIssue({
+          code: "custom",
+          path: ["query"],
+          message: "Saisissez au moins 2 caractères.",
+        });
       }
       return;
     }
     if (value.phoneDigits.length < 4) {
-      context.addIssue({ code: "custom", path: ["phone"], message: "Saisissez au moins 4 chiffres du téléphone." });
+      context.addIssue({
+        code: "custom",
+        path: ["phone"],
+        message: "Saisissez au moins 4 chiffres du téléphone.",
+      });
     }
   });
 
