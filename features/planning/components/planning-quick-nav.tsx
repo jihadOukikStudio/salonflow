@@ -58,7 +58,7 @@ export function PlanningQuickNav({
     {
       href: "/employees",
       label: "Équipe",
-      visible: isAdmin,
+      visible: canManage,
       icon: UserRound,
       key: "employees",
     },
