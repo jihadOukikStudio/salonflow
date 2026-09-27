@@ -28,6 +28,9 @@ type PlanningPageProps = {
     new?: string;
     time?: string;
     employee?: string;
+    focus?: string;
+    appointment?: string;
+    created?: string;
   }>;
 };
 
@@ -162,6 +165,13 @@ export default async function PlanningPage({
           rendez-vous.
         </div>
 
+        {params.created === "1" && params.appointment ? (
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-semibold">✓ Rendez-vous créé et placé dans le planning.</span>
+            <Link href={`/appointments/${params.appointment}`} className="font-bold text-emerald-800 underline underline-offset-4">Voir le détail</Link>
+          </div>
+        ) : null}
+
         <div className="mt-4">
           <PlanningSummary {...summary} />
         </div>
@@ -184,6 +194,8 @@ export default async function PlanningPage({
                 canManageSalon && planning.dateKey >= minimumBooking.dateKey
               }
               minimumBooking={minimumBooking}
+              focusTime={params.focus}
+              focusAppointmentId={params.appointment}
             />
           ) : (
             <PlanningPeriodView period={period} days={periodDays} />

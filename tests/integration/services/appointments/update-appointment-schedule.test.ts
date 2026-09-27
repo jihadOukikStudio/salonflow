@@ -166,6 +166,9 @@ describe("updateAppointmentSchedule", () => {
     expect(result.scheduledStart).toEqual(newStart);
 
     expect(result.status).toBe("PLANNED");
+    const shiftedServices = await testPrisma.appointmentService.findMany({ where: { appointmentId: context.appointment.id } });
+    expect(shiftedServices).not.toHaveLength(0);
+    expect(shiftedServices.every((service) => service.scheduledStart.getTime() >= newStart.getTime())).toBe(true);
   });
 
   it("allows a responsible employee to move a planned appointment", async () => {

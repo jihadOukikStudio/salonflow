@@ -58,6 +58,9 @@ export async function updateAppointmentSchedule(
             id: true,
             assignedEmployeeId: true,
             roomId: true,
+            scheduledStart: true,
+            durationMinutes: true,
+            cancelledAt: true,
           },
         },
       },
@@ -98,6 +101,9 @@ export async function updateAppointmentSchedule(
             id: true,
             assignedEmployeeId: true,
             roomId: true,
+            scheduledStart: true,
+            durationMinutes: true,
+            cancelledAt: true,
           },
         },
       },
@@ -188,27 +194,26 @@ export async function updateAppointmentSchedule(
       await lockResources(tx, additionalLocks);
     }
 
-    for (const employeeId of employeeIds) {
-      await validateEmployeeAvailability(tx, {
-        salonId,
-        employeeId,
-        scheduledStart: input.scheduledStart,
-        estimatedDurationMinutes: appointment.estimatedDurationMinutes,
-        excludeAppointmentId: appointment.id,
-      });
-    }
-
-    for (const roomId of roomIds) {
-      await validateRoomAvailability(tx, {
-        salonId,
-        roomId,
-        scheduledStart: input.scheduledStart,
-        estimatedDurationMinutes: appointment.estimatedDurationMinutes,
-        excludeAppointmentId: appointment.id,
-      });
-    }
-
     const oldScheduledStart = appointment.scheduledStart;
+    const deltaMs = input.scheduledStart.getTime() - oldScheduledStart.getTime();
+    const activeServices = appointment.services.filter((service) => service.cancelledAt === null);
+
+    for (const service of activeServices) {
+      const shiftedStart = new Date(service.scheduledStart.getTime() + deltaMs);
+      validateBookingWindow(shiftedStart, service.durationMinutes);
+      if (service.assignedEmployeeId) {
+        await validateEmployeeAvailability(tx, {
+          salonId, employeeId: service.assignedEmployeeId, scheduledStart: shiftedStart,
+          estimatedDurationMinutes: service.durationMinutes, excludeAppointmentId: appointment.id,
+        });
+      }
+      if (service.roomId) {
+        await validateRoomAvailability(tx, {
+          salonId, roomId: service.roomId, scheduledStart: shiftedStart,
+          estimatedDurationMinutes: service.durationMinutes, excludeAppointmentId: appointment.id,
+        });
+      }
+    }
 
     const updateResult = await tx.appointment.updateMany({
       where: {
@@ -223,6 +228,13 @@ export async function updateAppointmentSchedule(
 
     if (updateResult.count !== 1) {
       throw new BusinessRuleError("Le rendez-vous ne peut plus être déplacé.");
+    }
+
+    for (const service of appointment.services) {
+      await tx.appointmentService.update({
+        where: { id: service.id },
+        data: { scheduledStart: new Date(service.scheduledStart.getTime() + deltaMs) },
+      });
     }
 
     await tx.activityLog.create({

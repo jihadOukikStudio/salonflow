@@ -1764,6 +1764,8 @@ export const AppointmentScalarFieldEnum = {
   createdByUserId: 'createdByUserId',
   cancelledByUserId: 'cancelledByUserId',
   cancelledAt: 'cancelledAt',
+  cancellationReason: 'cancellationReason',
+  cancellationNote: 'cancellationNote',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

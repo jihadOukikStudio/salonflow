@@ -203,6 +203,8 @@ model Appointment {
   createdByUserId          String            @db.Uuid
   cancelledByUserId        String?           @db.Uuid
   cancelledAt              DateTime?
+  cancellationReason       String?           @db.VarChar(50)
+  cancellationNote         String?           @db.VarChar(500)
   createdAt                DateTime          @default(now())
   updatedAt                DateTime          @updatedAt
 

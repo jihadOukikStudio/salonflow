@@ -5,6 +5,7 @@ import { casablancaLocalDateTimeToIso } from "@/features/appointments/lib/casabl
 
 import {
   appointmentIdActionSchema,
+  cancelAppointmentActionSchema,
   checkBookingFeasibilityActionSchema,
   markAppointmentPaidActionSchema,
   createAppointmentActionSchema,
@@ -164,9 +165,9 @@ export async function updateAppointmentDetailsAction(
   });
 }
 
-export async function cancelAppointmentAction(input: AppointmentIdActionInput) {
+export async function cancelAppointmentAction(input: { appointmentId: string; reason: "CLIENT_CANCELLED" | "SALON_CANCELLED" | "NO_SHOW" | "BOOKING_ERROR" | "OTHER"; note?: string | null }) {
   return runAuthenticatedAction(async (currentUser) => {
-    const data = appointmentIdActionSchema.parse(input);
+    const data = cancelAppointmentActionSchema.parse(input);
 
     const appointment = await cancelAppointment(currentUser, data);
 

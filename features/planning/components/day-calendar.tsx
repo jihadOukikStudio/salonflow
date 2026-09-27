@@ -30,6 +30,8 @@ type Props = {
   rooms: PlanningRoomItem[];
   canCreateAppointment?: boolean;
   minimumBooking?: { dateKey: string; timeValue: string };
+  focusTime?: string;
+  focusAppointmentId?: string;
 };
 
 type PositionedAppointment = {
@@ -297,7 +299,7 @@ function NowLine({ top, anchorId }: { top: number; anchorId?: string }) {
   );
 }
 
-function AppointmentCard({ item }: { item: PositionedAppointment }) {
+function AppointmentCard({ item, focused = false }: { item: PositionedAppointment; focused?: boolean }) {
   const { appointment, lane } = item;
   const top = Math.max(0, topFor(appointment.scheduledStart));
   const height = Math.min(
@@ -321,10 +323,11 @@ function AppointmentCard({ item }: { item: PositionedAppointment }) {
 
   return (
     <Link
+      id={`appointment-${appointment.id}`}
       href={`/appointments/${appointment.id}`}
-      className={`absolute z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(
+      className={`absolute scroll-mt-32 z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(
         appointment.status,
-      )}`}
+      )} ${focused ? "ring-4 ring-violet-400 ring-offset-2 animate-pulse" : ""}`}
       style={{
         top,
         height,
@@ -390,6 +393,7 @@ function AppointmentsCalendar({
   nowDateKey,
   nowMinute,
   canCreateAppointment,
+  focusAppointmentId,
 }: {
   dateKey: string;
   appointments: PlanningAppointmentItem[];
@@ -398,6 +402,7 @@ function AppointmentsCalendar({
   nowDateKey: string;
   nowMinute: number;
   canCreateAppointment: boolean;
+  focusAppointmentId?: string;
 }) {
   const positioned = useMemo(
     () => layoutAppointments(appointments),
@@ -466,7 +471,7 @@ function AppointmentsCalendar({
                 })
               : null}
             {positioned.map((item) => (
-              <AppointmentCard key={item.appointment.id} item={item} />
+              <AppointmentCard key={item.appointment.id} item={item} focused={item.appointment.id === focusAppointmentId} />
             ))}
             {showNow ? <NowLine top={nowTop} anchorId="planning-now" /> : null}
             <div
@@ -494,6 +499,7 @@ function ResourceCalendar({
   nowTop,
   canCreateAppointment = false,
   minimumBooking,
+  focusAppointmentId,
 }: Props & {
   showNow: boolean;
   nowTop: number;
@@ -732,8 +738,9 @@ function ResourceCalendar({
                       return (
                         <Link
                           key={service.id}
+                          data-focus-appointment={appointment.id}
                           href={`/appointments/${appointment.id}`}
-                          className={`absolute left-2.5 right-2.5 z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(appointment.status)}`}
+                          className={`absolute left-2.5 right-2.5 z-10 overflow-hidden rounded-2xl border shadow-sm transition before:absolute before:inset-y-0 before:left-0 before:w-1 hover:z-30 hover:-translate-y-px hover:shadow-md ${statusClass(appointment.status)} ${appointment.id === focusAppointmentId ? "ring-4 ring-violet-400 ring-offset-2" : ""}`}
                           style={{ top, height }}
                         >
                           <div className="h-full overflow-hidden px-3 py-2 pl-4">
@@ -794,6 +801,8 @@ export function DayCalendar({
   rooms,
   canCreateAppointment = false,
   minimumBooking,
+  focusTime,
+  focusAppointmentId,
 }: Props) {
   const [now, setNow] = useState(() => new Date());
 
@@ -806,6 +815,26 @@ export function DayCalendar({
   const showNow =
     nowParts.dateKey === dateKey && isInsidePlanningWindow(nowParts.minutes);
   const nowTop = planningNowTop(nowParts.minutes);
+
+  useEffect(() => {
+    if (!focusTime && !focusAppointmentId) return;
+    const timer = window.setTimeout(() => {
+      const appointment = focusAppointmentId
+        ? document.getElementById(`appointment-${focusAppointmentId}`) ?? document.querySelector<HTMLElement>(`[data-focus-appointment="${focusAppointmentId}"]`)
+        : null;
+      if (appointment) {
+        appointment.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        return;
+      }
+      if (focusTime) {
+        const [hour, minute] = focusTime.split(":").map(Number);
+        const top = ((hour * 60 + minute - PLANNING_START_MINUTE) / 60) * HOUR_HEIGHT;
+        const scroller = document.querySelector<HTMLElement>("[data-planning-scroll]");
+        scroller?.scrollTo({ top: Math.max(0, top - 160), behavior: "smooth" });
+      }
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [focusTime, focusAppointmentId]);
 
   return (
     <div className="space-y-3">
@@ -826,6 +855,7 @@ export function DayCalendar({
           nowDateKey={nowParts.dateKey}
           nowMinute={nowParts.minutes}
           canCreateAppointment={canCreateAppointment}
+          focusAppointmentId={focusAppointmentId}
         />
       ) : (
         <ResourceCalendar
@@ -838,6 +868,7 @@ export function DayCalendar({
           nowTop={nowTop}
           canCreateAppointment={canCreateAppointment}
           minimumBooking={minimumBooking}
+          focusAppointmentId={focusAppointmentId}
         />
       )}
     </div>

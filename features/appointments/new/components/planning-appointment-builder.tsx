@@ -544,7 +544,12 @@ export function PlanningAppointmentBuilder({
         return;
       }
 
-      router.push(`/appointments/${result.data.appointmentId}`);
+      const firstStart = lines
+        .map((line) => line.time)
+        .sort()[0] ?? initialTime ?? "10:00";
+      router.push(
+        `/planning?date=${encodeURIComponent(selectedDateKey)}&view=employees&period=day&focus=${encodeURIComponent(firstStart)}&appointment=${encodeURIComponent(result.data.appointmentId)}&created=1`,
+      );
 
       router.refresh();
     });

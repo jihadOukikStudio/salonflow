@@ -802,7 +802,9 @@ export function NewAppointmentForm({
         return;
       }
 
-      router.push(`/planning?date=${encodeURIComponent(dateKey)}`);
+      router.push(
+        `/planning?date=${encodeURIComponent(dateKey)}&view=employees&period=day&focus=${encodeURIComponent(timeValue)}&appointment=${encodeURIComponent(result.data.appointmentId)}&created=1`,
+      );
       router.refresh();
     });
   }

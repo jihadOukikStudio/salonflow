@@ -112,6 +112,8 @@ test.describe("Phase 12.5 — paiement, clôture et annulation", () => {
     await expect(cancelDialog).toContainText(
       /créneau, les employées et les salles réservées seront immédiatement libérés/i,
     );
+    await cancelDialog.getByRole("combobox", { name: "Motif" }).selectOption("NO_SHOW");
+    await cancelDialog.getByRole("textbox", { name: /commentaire/i }).fill("Absence cliente E2E");
 
     await cancelDialog
       .getByRole("button", { name: /^annuler le rendez-vous$/i })

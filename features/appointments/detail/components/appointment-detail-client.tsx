@@ -4,6 +4,7 @@ import {
   casablancaLocalDateTimeToIso,
   formatSalonDateTime,
   getMinimumBookableCasablancaDateTime,
+  getCasablancaDateTimeFields,
   getSuggestedNextServiceDateTime,
 } from "@/features/appointments/lib/casablanca-local-datetime";
 
@@ -20,6 +21,7 @@ import {
   closeAppointmentAction,
   markAppointmentPaidAction,
   updateAppointmentDetailsAction,
+  updateAppointmentScheduleAction,
 } from "@/features/appointments/server/actions/appointment-actions";
 
 import {
@@ -301,6 +303,11 @@ export function AppointmentDetailClient({ detail }: Props) {
   const [message, setMessage] = useState<string | null>(null);
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState<"CLIENT_CANCELLED" | "SALON_CANCELLED" | "NO_SHOW" | "BOOKING_ERROR" | "OTHER">("CLIENT_CANCELLED");
+  const [cancelNote, setCancelNote] = useState("");
+  const initialSchedule = getCasablancaDateTimeFields(new Date(detail.scheduledStart));
+  const [scheduleDate, setScheduleDate] = useState(initialSchedule.dateKey);
+  const [scheduleTime, setScheduleTime] = useState(initialSchedule.timeValue);
 
   const [serviceCancelTarget, setServiceCancelTarget] = useState<
     AppointmentDetail["services"][number] | null
@@ -459,6 +466,8 @@ export function AppointmentDetailClient({ detail }: Props) {
       try {
         const result = await cancelAppointmentAction({
           appointmentId: detail.id,
+          reason: cancelReason,
+          note: cancelNote.trim() || null,
         });
 
         if (!result.ok) {
@@ -583,6 +592,27 @@ export function AppointmentDetailClient({ detail }: Props) {
               </p>
             </div>
           </div>
+
+          {detail.canManageAppointment && detail.status === "PLANNED" ? (
+            <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <label className="flex-1 text-sm font-semibold text-slate-800">Date
+                  <input type="date" className={`${inputClass} mt-1.5`} min={getMinimumBookableCasablancaDateTime().dateKey} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+                </label>
+                <label className="flex-1 text-sm font-semibold text-slate-800">Heure
+                  <select className={`${inputClass} mt-1.5`} value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}>
+                    {Array.from({ length: 45 }, (_, i) => { const minutes = 10 * 60 + i * 15; const h = Math.floor(minutes / 60); const m = minutes % 60; const value = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; return <option key={value} value={value}>{value}</option>; })}
+                  </select>
+                </label>
+                <button type="button" disabled={pending} className={`${buttonClass} bg-violet-700 text-white hover:bg-violet-800`} onClick={() => run(
+                  () => updateAppointmentScheduleAction({ appointmentId: detail.id, scheduledStart: new Date(casablancaLocalDateTimeToIso(scheduleDate, scheduleTime)) }),
+                  "Rendez-vous déplacé. Toutes les disponibilités ont été revérifiées.",
+                  () => router.push(`/planning?date=${encodeURIComponent(scheduleDate)}&view=employees&period=day&focus=${encodeURIComponent(scheduleTime)}&appointment=${encodeURIComponent(detail.id)}`),
+                )}>Déplacer le rendez-vous</button>
+              </div>
+              <p className="mt-2 text-xs text-slate-600">Les prestations sont décalées ensemble. Employées, indisponibilités, salles, chevauchements et horaires sont revérifiés côté serveur.</p>
+            </div>
+          ) : null}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <label className="block">
@@ -1841,6 +1871,19 @@ export function AppointmentDetailClient({ detail }: Props) {
               Cette action n’efface pas le rendez-vous : elle conserve sa trace
               et ses affectations dans l’historique.
             </p>
+
+            <label className="mt-4 block text-sm font-semibold text-slate-800">Motif
+              <select className={`${inputClass} mt-1.5`} value={cancelReason} onChange={(e) => setCancelReason(e.target.value as typeof cancelReason)}>
+                <option value="CLIENT_CANCELLED">Cliente a annulé</option>
+                <option value="SALON_CANCELLED">Salon a annulé</option>
+                <option value="NO_SHOW">Cliente absente / No-show</option>
+                <option value="BOOKING_ERROR">Erreur de réservation</option>
+                <option value="OTHER">Autre</option>
+              </select>
+            </label>
+            <label className="mt-3 block text-sm font-semibold text-slate-800">Commentaire <span className="font-normal text-slate-500">(facultatif)</span>
+              <textarea className={`${inputClass} mt-1.5 min-h-20 py-3`} maxLength={500} value={cancelNote} onChange={(e) => setCancelNote(e.target.value)} placeholder="Précision utile pour l’historique" />
+            </label>
 
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button

@@ -155,6 +155,20 @@ export const appointmentIdActionSchema = z
   })
   .strict();
 
+export const cancelAppointmentActionSchema = z
+  .object({
+    appointmentId: uuidSchema,
+    reason: z.enum([
+      "CLIENT_CANCELLED",
+      "SALON_CANCELLED",
+      "NO_SHOW",
+      "BOOKING_ERROR",
+      "OTHER",
+    ]),
+    note: z.string().trim().max(500, "Le commentaire est trop long.").nullable().optional(),
+  })
+  .strict();
+
 export const markAppointmentPaidActionSchema = z
   .object({
     appointmentId: uuidSchema,
