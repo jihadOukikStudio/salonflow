@@ -280,16 +280,32 @@ export async function getAppointmentDetail(
       case "PARALLEL_GROUP_REMOVED":
         return `${actor} a supprimé un parallélisme.`;
       case "APPOINTMENT_SERVICE_CANCELLED": {
-        const metadata = log.metadata && typeof log.metadata === "object" ? (log.metadata as Record<string, unknown>) : null;
-        const reason = typeof metadata?.reason === "string" ? metadata.reason : null;
+        const metadata =
+          log.metadata && typeof log.metadata === "object"
+            ? (log.metadata as Record<string, unknown>)
+            : null;
+        const reason =
+          typeof metadata?.reason === "string" ? metadata.reason : null;
         return `${actor} a annulé${target}${reason ? ` · ${reason}` : ""}.`;
       }
       case "APPOINTMENT_CLOSED":
         return `${actor} a clôturé le rendez-vous.`;
       case "APPOINTMENT_CANCELLED": {
-        const metadata = log.metadata && typeof log.metadata === "object" ? (log.metadata as Record<string, unknown>) : null;
-        const labels: Record<string, string> = { CLIENT_CANCELLED: "Cliente a annulé", SALON_CANCELLED: "Salon a annulé", NO_SHOW: "Cliente absente / No-show", BOOKING_ERROR: "Erreur de réservation", OTHER: "Autre" };
-        const reason = typeof metadata?.cancellationReason === "string" ? labels[metadata.cancellationReason] : null;
+        const metadata =
+          log.metadata && typeof log.metadata === "object"
+            ? (log.metadata as Record<string, unknown>)
+            : null;
+        const labels: Record<string, string> = {
+          CLIENT_CANCELLED: "Cliente a annulé",
+          SALON_CANCELLED: "Salon a annulé",
+          NO_SHOW: "Cliente absente / No-show",
+          BOOKING_ERROR: "Erreur de réservation",
+          OTHER: "Autre",
+        };
+        const reason =
+          typeof metadata?.cancellationReason === "string"
+            ? labels[metadata.cancellationReason]
+            : null;
         return `${actor} a annulé le rendez-vous${reason ? ` · ${reason}` : ""}.`;
       }
       default:

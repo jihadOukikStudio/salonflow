@@ -299,7 +299,13 @@ function NowLine({ top, anchorId }: { top: number; anchorId?: string }) {
   );
 }
 
-function AppointmentCard({ item, focused = false }: { item: PositionedAppointment; focused?: boolean }) {
+function AppointmentCard({
+  item,
+  focused = false,
+}: {
+  item: PositionedAppointment;
+  focused?: boolean;
+}) {
   const { appointment, lane } = item;
   const top = Math.max(0, topFor(appointment.scheduledStart));
   const height = Math.min(
@@ -471,7 +477,11 @@ function AppointmentsCalendar({
                 })
               : null}
             {positioned.map((item) => (
-              <AppointmentCard key={item.appointment.id} item={item} focused={item.appointment.id === focusAppointmentId} />
+              <AppointmentCard
+                key={item.appointment.id}
+                item={item}
+                focused={item.appointment.id === focusAppointmentId}
+              />
             ))}
             {showNow ? <NowLine top={nowTop} anchorId="planning-now" /> : null}
             <div
@@ -820,16 +830,26 @@ export function DayCalendar({
     if (!focusTime && !focusAppointmentId) return;
     const timer = window.setTimeout(() => {
       const appointment = focusAppointmentId
-        ? document.getElementById(`appointment-${focusAppointmentId}`) ?? document.querySelector<HTMLElement>(`[data-focus-appointment="${focusAppointmentId}"]`)
+        ? (document.getElementById(`appointment-${focusAppointmentId}`) ??
+          document.querySelector<HTMLElement>(
+            `[data-focus-appointment="${focusAppointmentId}"]`,
+          ))
         : null;
       if (appointment) {
-        appointment.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        appointment.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "center",
+        });
         return;
       }
       if (focusTime) {
         const [hour, minute] = focusTime.split(":").map(Number);
-        const top = ((hour * 60 + minute - PLANNING_START_MINUTE) / 60) * HOUR_HEIGHT;
-        const scroller = document.querySelector<HTMLElement>("[data-planning-scroll]");
+        const top =
+          ((hour * 60 + minute - PLANNING_START_MINUTE) / 60) * HOUR_HEIGHT;
+        const scroller = document.querySelector<HTMLElement>(
+          "[data-planning-scroll]",
+        );
         scroller?.scrollTo({ top: Math.max(0, top - 160), behavior: "smooth" });
       }
     }, 120);

@@ -30,7 +30,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:prod:bootstrap": "tsx prisma/seed.ts",
     "db:prod:bootstrap:verify": "tsx scripts/verify-production-bootstrap.ts",
-    "test:recette": "npm run db:test:migrate && npm run typecheck && npm run lint && npm run test:unit && npm run test:integration && npm run test:e2e && npm run build"
+    "test:recette": "npm run db:test:migrate && npm run typecheck && npm run lint && npm run test:unit && npm run test:integration && npm run test:e2e && npm run build",
+    "user:create-manager": "node --import tsx scripts/create-manager.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

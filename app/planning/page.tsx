@@ -167,8 +167,15 @@ export default async function PlanningPage({
 
         {params.created === "1" && params.appointment ? (
           <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <span className="font-semibold">✓ Rendez-vous créé et placé dans le planning.</span>
-            <Link href={`/appointments/${params.appointment}`} className="font-bold text-emerald-800 underline underline-offset-4">Voir le détail</Link>
+            <span className="font-semibold">
+              ✓ Rendez-vous créé et placé dans le planning.
+            </span>
+            <Link
+              href={`/appointments/${params.appointment}`}
+              className="font-bold text-emerald-800 underline underline-offset-4"
+            >
+              Voir le détail
+            </Link>
           </div>
         ) : null}
 

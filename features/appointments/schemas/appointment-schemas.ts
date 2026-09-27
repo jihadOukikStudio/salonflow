@@ -165,7 +165,12 @@ export const cancelAppointmentActionSchema = z
       "BOOKING_ERROR",
       "OTHER",
     ]),
-    note: z.string().trim().max(500, "Le commentaire est trop long.").nullable().optional(),
+    note: z
+      .string()
+      .trim()
+      .max(500, "Le commentaire est trop long.")
+      .nullable()
+      .optional(),
   })
   .strict();
 

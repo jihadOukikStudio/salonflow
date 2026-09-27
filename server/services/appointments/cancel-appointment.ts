@@ -13,7 +13,12 @@ import {
 
 type CancelAppointmentInput = {
   appointmentId: string;
-  reason?: "CLIENT_CANCELLED" | "SALON_CANCELLED" | "NO_SHOW" | "BOOKING_ERROR" | "OTHER";
+  reason?:
+    | "CLIENT_CANCELLED"
+    | "SALON_CANCELLED"
+    | "NO_SHOW"
+    | "BOOKING_ERROR"
+    | "OTHER";
   note?: string | null;
 };
 
@@ -120,7 +125,10 @@ export async function cancelAppointment(
       data: {
         cancelledAt,
         cancelledByUserId: authoritativeUser.id,
-        cancellationReason: cancellationReason === "NO_SHOW" ? "Cliente absente / No-show" : "Rendez-vous annulé",
+        cancellationReason:
+          cancellationReason === "NO_SHOW"
+            ? "Cliente absente / No-show"
+            : "Rendez-vous annulé",
       },
     });
 

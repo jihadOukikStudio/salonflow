@@ -165,7 +165,16 @@ export async function updateAppointmentDetailsAction(
   });
 }
 
-export async function cancelAppointmentAction(input: { appointmentId: string; reason: "CLIENT_CANCELLED" | "SALON_CANCELLED" | "NO_SHOW" | "BOOKING_ERROR" | "OTHER"; note?: string | null }) {
+export async function cancelAppointmentAction(input: {
+  appointmentId: string;
+  reason:
+    | "CLIENT_CANCELLED"
+    | "SALON_CANCELLED"
+    | "NO_SHOW"
+    | "BOOKING_ERROR"
+    | "OTHER";
+  note?: string | null;
+}) {
   return runAuthenticatedAction(async (currentUser) => {
     const data = cancelAppointmentActionSchema.parse(input);
 
