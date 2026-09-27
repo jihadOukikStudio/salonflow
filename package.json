@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "postinstall": "prisma skills sync || exit 0",
+    "postinstall": "prisma generate --config prisma7.config.ts",
     "contract:emit": "prisma contract emit",
     "test": "vitest run",
     "test:unit": "vitest run",
