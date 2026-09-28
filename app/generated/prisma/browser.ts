@@ -96,3 +96,38 @@ export type Payment = Prisma.PaymentModel;
  *
  */
 export type ActivityLog = Prisma.ActivityLogModel;
+/**
+ * Model SalonSubscription
+ *
+ */
+export type SalonSubscription = Prisma.SalonSubscriptionModel;
+/**
+ * Model PlatformIncident
+ *
+ */
+export type PlatformIncident = Prisma.PlatformIncidentModel;
+/**
+ * Model PlatformAuditLog
+ *
+ */
+export type PlatformAuditLog = Prisma.PlatformAuditLogModel;
+/**
+ * Model SubscriptionPayment
+ *
+ */
+export type SubscriptionPayment = Prisma.SubscriptionPaymentModel;
+/**
+ * Model PlatformIncidentMessage
+ *
+ */
+export type PlatformIncidentMessage = Prisma.PlatformIncidentMessageModel;
+/**
+ * Model LoginThrottle
+ *
+ */
+export type LoginThrottle = Prisma.LoginThrottleModel;
+/**
+ * Model SubscriptionDue
+ *
+ */
+export type SubscriptionDue = Prisma.SubscriptionDueModel;

@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 
 import { authConfig } from "@/auth.config";
+import { allowLoginAttempt } from "@/server/auth/login-throttle";
+
 import { verifyCredentials } from "@/server/auth/verify-credentials";
 
 const credentialsSchema = z.object({
@@ -35,6 +37,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) {
           return null;
         }
+
+        if (!(await allowLoginAttempt(parsed.data.email))) return null;
 
         return verifyCredentials(parsed.data.email, parsed.data.password);
       },

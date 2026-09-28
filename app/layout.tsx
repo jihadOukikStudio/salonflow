@@ -2,6 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { getPlatformAccount } from "@/server/platform/auth";
+import { PlatformShell } from "@/features/platform/platform-shell";
+
+import { prisma } from "@/server/db/prisma";
+import { isSessionCurrent } from "@/server/auth/session-version";
+import { SessionExpired } from "@/features/platform/session-expired";
+
 import { auth } from "@/auth";
 import { PwaRegister } from "@/features/pwa/components/pwa-register";
 import { getOrganizationIssueCount } from "@/features/organize/server";
@@ -28,7 +35,7 @@ export const metadata: Metadata = {
     default: "SalonFlow",
     template: "%s · SalonFlow",
   },
-  description: "Planning et organisation du salon Le 7ème Sens Marrakech",
+  description: "SalonFlow — planning et gestion de votre salon",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -56,7 +63,30 @@ export default async function RootLayout({
   } | null = null;
   let organizationIssueCount = 0;
 
-  if (session?.user) {
+  const account = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          role: true,
+          isActive: true,
+          authVersion: true,
+          salon: { select: { isActive: true, name: true } },
+        },
+      })
+    : null;
+  const invalidSession = Boolean(
+    session?.user?.id &&
+    (!account ||
+      !account.isActive ||
+      !isSessionCurrent(account.authVersion, session.user.authVersion) ||
+      (account.role !== "SUPER_ADMIN" && !account.salon?.isActive)),
+  );
+  const platformUser =
+    !invalidSession && session?.user?.id
+      ? await getPlatformAccount(session.user.id, session.user.authVersion)
+      : null;
+
+  if (session?.user && !platformUser && !invalidSession) {
     const currentUser = await getCurrentUser();
     const user = await getAuthoritativeCurrentUser(currentUser);
     shellUser = { role: user.role, canManageSalon: user.canManageSalon };
@@ -66,12 +96,20 @@ export default async function RootLayout({
   return (
     <html
       lang="fr"
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} ${salonFlowDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <PwaRegister />
-        {shellUser ? (
+        {invalidSession ? (
+          <SessionExpired />
+        ) : platformUser ? (
+          <PlatformShell name={platformUser.firstName}>
+            {children}
+          </PlatformShell>
+        ) : shellUser ? (
           <AppShell
+            salonName={account?.salon?.name ?? "Votre salon"}
             user={shellUser}
             organizationIssueCount={organizationIssueCount}
           >

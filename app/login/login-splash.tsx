@@ -47,7 +47,7 @@ export function LoginSplash({ children }: { children: ReactNode }) {
               SalonFlow
             </p>
             <p className="mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-              Le 7ème Sens Marrakech
+              Votre espace professionnel
             </p>
             <div
               className="mt-8 h-1 w-24 overflow-hidden rounded-full bg-slate-200"

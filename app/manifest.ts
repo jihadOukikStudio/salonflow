@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SalonFlow",
     short_name: "SalonFlow",
-    description: "Planning et organisation du salon Le 7ème Sens Marrakech",
+    description: "SalonFlow — planning et gestion de votre salon",
     start_url: "/",
     scope: "/",
     display: "standalone",

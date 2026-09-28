@@ -556,14 +556,6 @@ export type ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput = {
     | Prisma.ServiceCategoryScalarWhereInput[];
 };
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
-};
-
 export type ServiceCategoryCreateNestedOneWithoutServicesInput = {
   create?: Prisma.XOR<
     Prisma.ServiceCategoryCreateWithoutServicesInput,

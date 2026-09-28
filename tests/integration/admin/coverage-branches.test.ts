@@ -48,7 +48,7 @@ async function createUser(
 
   const currentUser: CurrentUser = {
     id: user.id,
-    salonId: user.salonId,
+    salonId: user.salonId!,
     role: user.role,
     canManageSalon: user.canManageSalon,
     isActive: user.isActive,

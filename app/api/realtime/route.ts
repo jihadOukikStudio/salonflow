@@ -1,3 +1,6 @@
+import { auth } from "@/auth";
+import { prisma } from "@/server/db/prisma";
+import { isSessionCurrent } from "@/server/auth/session-version";
 import { getCurrentUser } from "@/server/auth/get-current-user";
 import {
   ensureRealtimeListener,
@@ -27,6 +30,8 @@ export async function GET(request: Request) {
       headers: { "Cache-Control": "no-store" },
     });
   }
+
+  const session = await auth();
 
   try {
     await ensureRealtimeListener();
@@ -65,7 +70,30 @@ export async function GET(request: Request) {
         safeEnqueue(encodeSseData(toRealtimeClientEvent(event), event.eventId));
       });
 
-      const heartbeat = setInterval(() => {
+      const heartbeat = setInterval(async () => {
+        try {
+          const account = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              isActive: true,
+              authVersion: true,
+              salonId: true,
+              salon: { select: { isActive: true } },
+            },
+          });
+          if (
+            !account?.isActive ||
+            !account.salon?.isActive ||
+            account.salonId !== user.salonId ||
+            !isSessionCurrent(account.authVersion, session?.user?.authVersion)
+          ) {
+            close();
+            return;
+          }
+        } catch {
+          close();
+          return;
+        }
         safeEnqueue(encoder.encode(": heartbeat\n\n"));
       }, HEARTBEAT_MS);
 

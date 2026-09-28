@@ -14,6 +14,7 @@ export type VerifiedCredentialsUser = {
   id: string;
   email: string;
   name: string;
+  authVersion: number;
 };
 
 export function normalizeLoginEmail(email: string): string {
@@ -57,6 +58,9 @@ export async function verifyCredentials(
       firstName: true,
       lastName: true,
       isActive: true,
+      role: true,
+      authVersion: true,
+      salonId: true,
 
       salon: {
         select: {
@@ -80,12 +84,20 @@ export async function verifyCredentials(
     user?.passwordHash ?? DUMMY_BCRYPT_HASH,
   );
 
-  if (!user || !passwordMatches || !user.isActive || !user.salon.isActive) {
+  if (
+    !user ||
+    !passwordMatches ||
+    !user.isActive ||
+    (user.role === "SUPER_ADMIN"
+      ? user.salonId !== null
+      : !user.salon?.isActive)
+  ) {
     return null;
   }
 
   return {
     id: user.id,
+    authVersion: user.authVersion,
     email: user.email,
     name: [user.firstName, user.lastName].filter(Boolean).join(" "),
   };

@@ -22,7 +22,7 @@ import { PermissionDeniedError } from "@/server/permissions/errors";
  */
 export async function getAuthoritativeCurrentUser(
   sessionUser: CurrentUser,
-): Promise<CurrentUser> {
+): Promise<CurrentUser & { role: "ADMIN" | "EMPLOYEE" }> {
   if (!sessionUser.isActive) {
     throw new PermissionDeniedError(
       "Votre compte n'est plus autorisé à effectuer cette action.",
@@ -49,7 +49,13 @@ export async function getAuthoritativeCurrentUser(
     },
   });
 
-  if (!user || !user.isActive || !user.salon.isActive) {
+  if (
+    !user ||
+    !user.isActive ||
+    !user.salon?.isActive ||
+    !user.salonId ||
+    user.role === "SUPER_ADMIN"
+  ) {
     throw new PermissionDeniedError(
       "Votre compte n'est plus autorisé à effectuer cette action.",
     );

@@ -15,14 +15,15 @@ export default function LoginPage() {
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Accédez au planning du salon avec votre compte individuel.
+              Connectez-vous avec votre compte individuel. Votre espace et votre
+              salon sont reconnus automatiquement.
             </p>
           </div>
 
           <LoginForm />
 
           <p className="mt-8 text-center text-xs text-slate-500">
-            Le 7ème Sens Marrakech
+            Votre espace professionnel
           </p>
         </section>
       </main>

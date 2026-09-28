@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  LifeBuoy,
   CalendarCheck2,
   CalendarDays,
   DoorOpen,
@@ -27,6 +28,7 @@ type ShellUser = {
 
 type AppShellProps = {
   user: ShellUser;
+  salonName: string;
   organizationIssueCount: number;
   children: ReactNode;
 };
@@ -38,7 +40,7 @@ type NavItem = {
   visible: boolean;
 };
 
-export function AppShell({ user, children }: AppShellProps) {
+export function AppShell({ user, children, salonName }: AppShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isAdmin = user.role === "ADMIN";
@@ -101,7 +103,7 @@ export function AppShell({ user, children }: AppShellProps) {
                 SalonFlow
               </span>
               <span className="mt-1 block text-[10px] font-medium tracking-wide text-slate-500">
-                Le 7ème Sens · Marrakech
+                {salonName}
               </span>
             </span>
           </Link>
@@ -130,9 +132,17 @@ export function AppShell({ user, children }: AppShellProps) {
 
           <div className="mt-auto pt-6">
             <div className="mb-4 h-px bg-slate-200" />
-            <p className="mb-4 px-3 text-xs text-slate-500">
-              Salon ouvert de 10h à 21h
-            </p>
+            <p className="mb-4 px-3 text-xs text-slate-500">{salonName}</p>
+            {isAdmin && (
+              <Link
+                href="/support"
+                aria-current={pathname === "/support" ? "page" : undefined}
+                className={`mb-2 flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold ${pathname === "/support" ? "bg-violet-600 text-white" : "text-slate-700 hover:bg-violet-50"}`}
+              >
+                <LifeBuoy className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
+                Aide et assistance
+              </Link>
+            )}
             <form action={logoutAction}>
               <button
                 type="submit"
@@ -156,8 +166,13 @@ export function AppShell({ user, children }: AppShellProps) {
                   className="h-4 w-4 text-violet-700"
                   strokeWidth={1.8}
                 />
-                <span className="font-[family-name:var(--font-salonflow-display)] text-xl font-semibold text-violet-900">
-                  SalonFlow
+                <span className="min-w-0">
+                  <span className="block text-xl font-semibold text-violet-900">
+                    SalonFlow
+                  </span>
+                  <span className="block max-w-[230px] truncate text-xs text-slate-600">
+                    {salonName}
+                  </span>
                 </span>
               </Link>
               <button
@@ -210,6 +225,17 @@ export function AppShell({ user, children }: AppShellProps) {
                     );
                   })}
                 </div>
+                {isAdmin && (
+                  <Link
+                    href="/support"
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-current={pathname === "/support" ? "page" : undefined}
+                    className={`mt-4 flex min-h-12 items-center gap-3 rounded-2xl border-t border-slate-200 px-3 text-sm font-semibold ${pathname === "/support" ? "bg-violet-600 text-white" : "bg-slate-50 text-slate-800"}`}
+                  >
+                    <LifeBuoy className="h-4.5 w-4.5" aria-hidden="true" />
+                    Aide et assistance
+                  </Link>
+                )}
                 <form action={logoutAction} className="mt-3">
                   <button
                     type="submit"

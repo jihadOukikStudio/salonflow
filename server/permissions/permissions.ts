@@ -73,7 +73,7 @@ const standardEmployeePermissions: Permission[] = [
 ];
 
 export function getPermissions(user: CurrentUser): Permission[] {
-  if (!user.isActive) {
+  if (!user.isActive || user.role === "SUPER_ADMIN") {
     return [];
   }
 

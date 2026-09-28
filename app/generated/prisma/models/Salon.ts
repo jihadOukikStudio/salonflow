@@ -32,6 +32,9 @@ export type SalonMinAggregateOutputType = {
   isActive: boolean | null;
   createdAt: Date | null;
   updatedAt: Date | null;
+  lifecycle: $Enums.SalonLifecycle | null;
+  timezone: string | null;
+  currency: string | null;
 };
 
 export type SalonMaxAggregateOutputType = {
@@ -42,6 +45,9 @@ export type SalonMaxAggregateOutputType = {
   isActive: boolean | null;
   createdAt: Date | null;
   updatedAt: Date | null;
+  lifecycle: $Enums.SalonLifecycle | null;
+  timezone: string | null;
+  currency: string | null;
 };
 
 export type SalonCountAggregateOutputType = {
@@ -52,6 +58,9 @@ export type SalonCountAggregateOutputType = {
   isActive: number;
   createdAt: number;
   updatedAt: number;
+  lifecycle: number;
+  timezone: number;
+  currency: number;
   _all: number;
 };
 
@@ -63,6 +72,9 @@ export type SalonMinAggregateInputType = {
   isActive?: true;
   createdAt?: true;
   updatedAt?: true;
+  lifecycle?: true;
+  timezone?: true;
+  currency?: true;
 };
 
 export type SalonMaxAggregateInputType = {
@@ -73,6 +85,9 @@ export type SalonMaxAggregateInputType = {
   isActive?: true;
   createdAt?: true;
   updatedAt?: true;
+  lifecycle?: true;
+  timezone?: true;
+  currency?: true;
 };
 
 export type SalonCountAggregateInputType = {
@@ -83,6 +98,9 @@ export type SalonCountAggregateInputType = {
   isActive?: true;
   createdAt?: true;
   updatedAt?: true;
+  lifecycle?: true;
+  timezone?: true;
+  currency?: true;
   _all?: true;
 };
 
@@ -173,6 +191,9 @@ export type SalonGroupByOutputType = {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  lifecycle: $Enums.SalonLifecycle;
+  timezone: string;
+  currency: string;
   _count: SalonCountAggregateOutputType | null;
   _min: SalonMinAggregateOutputType | null;
   _max: SalonMaxAggregateOutputType | null;
@@ -202,6 +223,9 @@ export type SalonWhereInput = {
   isActive?: Prisma.BoolFilter<"Salon"> | boolean;
   createdAt?: Prisma.DateTimeFilter<"Salon"> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<"Salon"> | Date | string;
+  lifecycle?: Prisma.EnumSalonLifecycleFilter<"Salon"> | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFilter<"Salon"> | string;
+  currency?: Prisma.StringFilter<"Salon"> | string;
   users?: Prisma.UserListRelationFilter;
   employees?: Prisma.EmployeeListRelationFilter;
   clients?: Prisma.ClientListRelationFilter;
@@ -210,6 +234,14 @@ export type SalonWhereInput = {
   rooms?: Prisma.RoomListRelationFilter;
   appointments?: Prisma.AppointmentListRelationFilter;
   activityLogs?: Prisma.ActivityLogListRelationFilter;
+  subscription?: Prisma.XOR<
+    Prisma.SalonSubscriptionNullableScalarRelationFilter,
+    Prisma.SalonSubscriptionWhereInput
+  > | null;
+  platformIncidents?: Prisma.PlatformIncidentListRelationFilter;
+  platformAuditLogs?: Prisma.PlatformAuditLogListRelationFilter;
+  subscriptionPayments?: Prisma.SubscriptionPaymentListRelationFilter;
+  subscriptionDues?: Prisma.SubscriptionDueListRelationFilter;
 };
 
 export type SalonOrderByWithRelationInput = {
@@ -220,6 +252,9 @@ export type SalonOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  lifecycle?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  currency?: Prisma.SortOrder;
   users?: Prisma.UserOrderByRelationAggregateInput;
   employees?: Prisma.EmployeeOrderByRelationAggregateInput;
   clients?: Prisma.ClientOrderByRelationAggregateInput;
@@ -228,6 +263,11 @@ export type SalonOrderByWithRelationInput = {
   rooms?: Prisma.RoomOrderByRelationAggregateInput;
   appointments?: Prisma.AppointmentOrderByRelationAggregateInput;
   activityLogs?: Prisma.ActivityLogOrderByRelationAggregateInput;
+  subscription?: Prisma.SalonSubscriptionOrderByWithRelationInput;
+  platformIncidents?: Prisma.PlatformIncidentOrderByRelationAggregateInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogOrderByRelationAggregateInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentOrderByRelationAggregateInput;
+  subscriptionDues?: Prisma.SubscriptionDueOrderByRelationAggregateInput;
 };
 
 export type SalonWhereUniqueInput = Prisma.AtLeast<
@@ -242,6 +282,10 @@ export type SalonWhereUniqueInput = Prisma.AtLeast<
     isActive?: Prisma.BoolFilter<"Salon"> | boolean;
     createdAt?: Prisma.DateTimeFilter<"Salon"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Salon"> | Date | string;
+    lifecycle?:
+      Prisma.EnumSalonLifecycleFilter<"Salon"> | $Enums.SalonLifecycle;
+    timezone?: Prisma.StringFilter<"Salon"> | string;
+    currency?: Prisma.StringFilter<"Salon"> | string;
     users?: Prisma.UserListRelationFilter;
     employees?: Prisma.EmployeeListRelationFilter;
     clients?: Prisma.ClientListRelationFilter;
@@ -250,6 +294,14 @@ export type SalonWhereUniqueInput = Prisma.AtLeast<
     rooms?: Prisma.RoomListRelationFilter;
     appointments?: Prisma.AppointmentListRelationFilter;
     activityLogs?: Prisma.ActivityLogListRelationFilter;
+    subscription?: Prisma.XOR<
+      Prisma.SalonSubscriptionNullableScalarRelationFilter,
+      Prisma.SalonSubscriptionWhereInput
+    > | null;
+    platformIncidents?: Prisma.PlatformIncidentListRelationFilter;
+    platformAuditLogs?: Prisma.PlatformAuditLogListRelationFilter;
+    subscriptionPayments?: Prisma.SubscriptionPaymentListRelationFilter;
+    subscriptionDues?: Prisma.SubscriptionDueListRelationFilter;
   },
   "id"
 >;
@@ -262,6 +314,9 @@ export type SalonOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  lifecycle?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  currency?: Prisma.SortOrder;
   _count?: Prisma.SalonCountOrderByAggregateInput;
   _max?: Prisma.SalonMaxOrderByAggregateInput;
   _min?: Prisma.SalonMinOrderByAggregateInput;
@@ -282,6 +337,11 @@ export type SalonScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"Salon"> | boolean;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Salon"> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Salon"> | Date | string;
+  lifecycle?:
+    | Prisma.EnumSalonLifecycleWithAggregatesFilter<"Salon">
+    | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringWithAggregatesFilter<"Salon"> | string;
+  currency?: Prisma.StringWithAggregatesFilter<"Salon"> | string;
 };
 
 export type SalonCreateInput = {
@@ -292,6 +352,9 @@ export type SalonCreateInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -300,6 +363,11 @@ export type SalonCreateInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateInput = {
@@ -310,6 +378,9 @@ export type SalonUncheckedCreateInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -318,6 +389,11 @@ export type SalonUncheckedCreateInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUpdateInput = {
@@ -328,6 +404,10 @@ export type SalonUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -336,6 +416,11 @@ export type SalonUpdateInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateInput = {
@@ -346,6 +431,10 @@ export type SalonUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -354,6 +443,11 @@ export type SalonUncheckedUpdateInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateManyInput = {
@@ -364,6 +458,9 @@ export type SalonCreateManyInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
 };
 
 export type SalonUpdateManyMutationInput = {
@@ -374,6 +471,10 @@ export type SalonUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
 };
 
 export type SalonUncheckedUpdateManyInput = {
@@ -384,6 +485,10 @@ export type SalonUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
 };
 
 export type SalonCountOrderByAggregateInput = {
@@ -394,6 +499,9 @@ export type SalonCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  lifecycle?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  currency?: Prisma.SortOrder;
 };
 
 export type SalonMaxOrderByAggregateInput = {
@@ -404,6 +512,9 @@ export type SalonMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  lifecycle?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  currency?: Prisma.SortOrder;
 };
 
 export type SalonMinOrderByAggregateInput = {
@@ -414,6 +525,14 @@ export type SalonMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  lifecycle?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  currency?: Prisma.SortOrder;
+};
+
+export type SalonNullableScalarRelationFilter = {
+  is?: Prisma.SalonWhereInput | null;
+  isNot?: Prisma.SalonWhereInput | null;
 };
 
 export type SalonScalarRelationFilter = {
@@ -437,6 +556,10 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string;
 };
 
+export type EnumSalonLifecycleFieldUpdateOperationsInput = {
+  set?: $Enums.SalonLifecycle;
+};
+
 export type SalonCreateNestedOneWithoutUsersInput = {
   create?: Prisma.XOR<
     Prisma.SalonCreateWithoutUsersInput,
@@ -446,13 +569,15 @@ export type SalonCreateNestedOneWithoutUsersInput = {
   connect?: Prisma.SalonWhereUniqueInput;
 };
 
-export type SalonUpdateOneRequiredWithoutUsersNestedInput = {
+export type SalonUpdateOneWithoutUsersNestedInput = {
   create?: Prisma.XOR<
     Prisma.SalonCreateWithoutUsersInput,
     Prisma.SalonUncheckedCreateWithoutUsersInput
   >;
   connectOrCreate?: Prisma.SalonCreateOrConnectWithoutUsersInput;
   upsert?: Prisma.SalonUpsertWithoutUsersInput;
+  disconnect?: Prisma.SalonWhereInput | boolean;
+  delete?: Prisma.SalonWhereInput | boolean;
   connect?: Prisma.SalonWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
@@ -645,6 +770,140 @@ export type SalonUpdateOneRequiredWithoutActivityLogsNestedInput = {
   >;
 };
 
+export type SalonCreateNestedOneWithoutSubscriptionInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+};
+
+export type SalonUpdateOneRequiredWithoutSubscriptionNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionInput;
+  upsert?: Prisma.SalonUpsertWithoutSubscriptionInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SalonUpdateToOneWithWhereWithoutSubscriptionInput,
+      Prisma.SalonUpdateWithoutSubscriptionInput
+    >,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionInput
+  >;
+};
+
+export type SalonCreateNestedOneWithoutPlatformIncidentsInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformIncidentsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutPlatformIncidentsInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+};
+
+export type SalonUpdateOneWithoutPlatformIncidentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformIncidentsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutPlatformIncidentsInput;
+  upsert?: Prisma.SalonUpsertWithoutPlatformIncidentsInput;
+  disconnect?: Prisma.SalonWhereInput | boolean;
+  delete?: Prisma.SalonWhereInput | boolean;
+  connect?: Prisma.SalonWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SalonUpdateToOneWithWhereWithoutPlatformIncidentsInput,
+      Prisma.SalonUpdateWithoutPlatformIncidentsInput
+    >,
+    Prisma.SalonUncheckedUpdateWithoutPlatformIncidentsInput
+  >;
+};
+
+export type SalonCreateNestedOneWithoutPlatformAuditLogsInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutPlatformAuditLogsInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+};
+
+export type SalonUpdateOneWithoutPlatformAuditLogsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutPlatformAuditLogsInput;
+  upsert?: Prisma.SalonUpsertWithoutPlatformAuditLogsInput;
+  disconnect?: Prisma.SalonWhereInput | boolean;
+  delete?: Prisma.SalonWhereInput | boolean;
+  connect?: Prisma.SalonWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SalonUpdateToOneWithWhereWithoutPlatformAuditLogsInput,
+      Prisma.SalonUpdateWithoutPlatformAuditLogsInput
+    >,
+    Prisma.SalonUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+};
+
+export type SalonCreateNestedOneWithoutSubscriptionPaymentsInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionPaymentsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionPaymentsInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+};
+
+export type SalonUpdateOneRequiredWithoutSubscriptionPaymentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionPaymentsInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionPaymentsInput;
+  upsert?: Prisma.SalonUpsertWithoutSubscriptionPaymentsInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SalonUpdateToOneWithWhereWithoutSubscriptionPaymentsInput,
+      Prisma.SalonUpdateWithoutSubscriptionPaymentsInput
+    >,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionPaymentsInput
+  >;
+};
+
+export type SalonCreateNestedOneWithoutSubscriptionDuesInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionDuesInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionDuesInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+};
+
+export type SalonUpdateOneRequiredWithoutSubscriptionDuesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionDuesInput
+  >;
+  connectOrCreate?: Prisma.SalonCreateOrConnectWithoutSubscriptionDuesInput;
+  upsert?: Prisma.SalonUpsertWithoutSubscriptionDuesInput;
+  connect?: Prisma.SalonWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SalonUpdateToOneWithWhereWithoutSubscriptionDuesInput,
+      Prisma.SalonUpdateWithoutSubscriptionDuesInput
+    >,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionDuesInput
+  >;
+};
+
 export type SalonCreateWithoutUsersInput = {
   id?: string;
   name: string;
@@ -653,6 +912,9 @@ export type SalonCreateWithoutUsersInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
@@ -660,6 +922,11 @@ export type SalonCreateWithoutUsersInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutUsersInput = {
@@ -670,6 +937,9 @@ export type SalonUncheckedCreateWithoutUsersInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
@@ -677,6 +947,11 @@ export type SalonUncheckedCreateWithoutUsersInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutUsersInput = {
@@ -715,6 +990,10 @@ export type SalonUpdateWithoutUsersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
@@ -722,6 +1001,11 @@ export type SalonUpdateWithoutUsersInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutUsersInput = {
@@ -732,6 +1016,10 @@ export type SalonUncheckedUpdateWithoutUsersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
@@ -739,6 +1027,11 @@ export type SalonUncheckedUpdateWithoutUsersInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutEmployeesInput = {
@@ -749,6 +1042,9 @@ export type SalonCreateWithoutEmployeesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
@@ -756,6 +1052,11 @@ export type SalonCreateWithoutEmployeesInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutEmployeesInput = {
@@ -766,6 +1067,9 @@ export type SalonUncheckedCreateWithoutEmployeesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
@@ -773,6 +1077,11 @@ export type SalonUncheckedCreateWithoutEmployeesInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutEmployeesInput = {
@@ -811,6 +1120,10 @@ export type SalonUpdateWithoutEmployeesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
@@ -818,6 +1131,11 @@ export type SalonUpdateWithoutEmployeesInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutEmployeesInput = {
@@ -828,6 +1146,10 @@ export type SalonUncheckedUpdateWithoutEmployeesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
@@ -835,6 +1157,11 @@ export type SalonUncheckedUpdateWithoutEmployeesInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutClientsInput = {
@@ -845,6 +1172,9 @@ export type SalonCreateWithoutClientsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
@@ -852,6 +1182,11 @@ export type SalonCreateWithoutClientsInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutClientsInput = {
@@ -862,6 +1197,9 @@ export type SalonUncheckedCreateWithoutClientsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
@@ -869,6 +1207,11 @@ export type SalonUncheckedCreateWithoutClientsInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutClientsInput = {
@@ -907,6 +1250,10 @@ export type SalonUpdateWithoutClientsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
@@ -914,6 +1261,11 @@ export type SalonUpdateWithoutClientsInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutClientsInput = {
@@ -924,6 +1276,10 @@ export type SalonUncheckedUpdateWithoutClientsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
@@ -931,6 +1287,11 @@ export type SalonUncheckedUpdateWithoutClientsInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutServiceCategoriesInput = {
@@ -941,6 +1302,9 @@ export type SalonCreateWithoutServiceCategoriesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -948,6 +1312,11 @@ export type SalonCreateWithoutServiceCategoriesInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutServiceCategoriesInput = {
@@ -958,6 +1327,9 @@ export type SalonUncheckedCreateWithoutServiceCategoriesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -965,6 +1337,11 @@ export type SalonUncheckedCreateWithoutServiceCategoriesInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutServiceCategoriesInput = {
@@ -1003,6 +1380,10 @@ export type SalonUpdateWithoutServiceCategoriesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -1010,6 +1391,11 @@ export type SalonUpdateWithoutServiceCategoriesInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutServiceCategoriesInput = {
@@ -1020,6 +1406,10 @@ export type SalonUncheckedUpdateWithoutServiceCategoriesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -1027,6 +1417,11 @@ export type SalonUncheckedUpdateWithoutServiceCategoriesInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutServicesInput = {
@@ -1037,6 +1432,9 @@ export type SalonCreateWithoutServicesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -1044,6 +1442,11 @@ export type SalonCreateWithoutServicesInput = {
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutServicesInput = {
@@ -1054,6 +1457,9 @@ export type SalonUncheckedCreateWithoutServicesInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -1061,6 +1467,11 @@ export type SalonUncheckedCreateWithoutServicesInput = {
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutServicesInput = {
@@ -1099,6 +1510,10 @@ export type SalonUpdateWithoutServicesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -1106,6 +1521,11 @@ export type SalonUpdateWithoutServicesInput = {
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutServicesInput = {
@@ -1116,6 +1536,10 @@ export type SalonUncheckedUpdateWithoutServicesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -1123,6 +1547,11 @@ export type SalonUncheckedUpdateWithoutServicesInput = {
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutAppointmentsInput = {
@@ -1133,6 +1562,9 @@ export type SalonCreateWithoutAppointmentsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -1140,6 +1572,11 @@ export type SalonCreateWithoutAppointmentsInput = {
   services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutAppointmentsInput = {
@@ -1150,6 +1587,9 @@ export type SalonUncheckedCreateWithoutAppointmentsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -1157,6 +1597,11 @@ export type SalonUncheckedCreateWithoutAppointmentsInput = {
   services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutAppointmentsInput = {
@@ -1195,6 +1640,10 @@ export type SalonUpdateWithoutAppointmentsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -1202,6 +1651,11 @@ export type SalonUpdateWithoutAppointmentsInput = {
   services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutAppointmentsInput = {
@@ -1212,6 +1666,10 @@ export type SalonUncheckedUpdateWithoutAppointmentsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -1219,6 +1677,11 @@ export type SalonUncheckedUpdateWithoutAppointmentsInput = {
   services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutRoomsInput = {
@@ -1229,6 +1692,9 @@ export type SalonCreateWithoutRoomsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -1236,6 +1702,11 @@ export type SalonCreateWithoutRoomsInput = {
   services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutRoomsInput = {
@@ -1246,6 +1717,9 @@ export type SalonUncheckedCreateWithoutRoomsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -1253,6 +1727,11 @@ export type SalonUncheckedCreateWithoutRoomsInput = {
   services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutRoomsInput = {
@@ -1291,6 +1770,10 @@ export type SalonUpdateWithoutRoomsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -1298,6 +1781,11 @@ export type SalonUpdateWithoutRoomsInput = {
   services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutRoomsInput = {
@@ -1308,6 +1796,10 @@ export type SalonUncheckedUpdateWithoutRoomsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -1315,6 +1807,11 @@ export type SalonUncheckedUpdateWithoutRoomsInput = {
   services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonCreateWithoutActivityLogsInput = {
@@ -1325,6 +1822,9 @@ export type SalonCreateWithoutActivityLogsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
@@ -1332,6 +1832,11 @@ export type SalonCreateWithoutActivityLogsInput = {
   services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
   rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonUncheckedCreateWithoutActivityLogsInput = {
@@ -1342,6 +1847,9 @@ export type SalonUncheckedCreateWithoutActivityLogsInput = {
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
   employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
   clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
@@ -1349,6 +1857,11 @@ export type SalonUncheckedCreateWithoutActivityLogsInput = {
   services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
   rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
 };
 
 export type SalonCreateOrConnectWithoutActivityLogsInput = {
@@ -1387,6 +1900,10 @@ export type SalonUpdateWithoutActivityLogsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
@@ -1394,6 +1911,11 @@ export type SalonUpdateWithoutActivityLogsInput = {
   services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
   rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
 };
 
 export type SalonUncheckedUpdateWithoutActivityLogsInput = {
@@ -1404,6 +1926,10 @@ export type SalonUncheckedUpdateWithoutActivityLogsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
   users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
   employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
   clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
@@ -1411,6 +1937,661 @@ export type SalonUncheckedUpdateWithoutActivityLogsInput = {
   services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
   rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonCreateWithoutSubscriptionInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonUncheckedCreateWithoutSubscriptionInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonCreateOrConnectWithoutSubscriptionInput = {
+  where: Prisma.SalonWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionInput
+  >;
+};
+
+export type SalonUpsertWithoutSubscriptionInput = {
+  update: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionInput
+  >;
+  where?: Prisma.SalonWhereInput;
+};
+
+export type SalonUpdateToOneWithWhereWithoutSubscriptionInput = {
+  where?: Prisma.SalonWhereInput;
+  data: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionInput
+  >;
+};
+
+export type SalonUpdateWithoutSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonUncheckedUpdateWithoutSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonCreateWithoutPlatformIncidentsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonUncheckedCreateWithoutPlatformIncidentsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonCreateOrConnectWithoutPlatformIncidentsInput = {
+  where: Prisma.SalonWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformIncidentsInput
+  >;
+};
+
+export type SalonUpsertWithoutPlatformIncidentsInput = {
+  update: Prisma.XOR<
+    Prisma.SalonUpdateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedUpdateWithoutPlatformIncidentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformIncidentsInput
+  >;
+  where?: Prisma.SalonWhereInput;
+};
+
+export type SalonUpdateToOneWithWhereWithoutPlatformIncidentsInput = {
+  where?: Prisma.SalonWhereInput;
+  data: Prisma.XOR<
+    Prisma.SalonUpdateWithoutPlatformIncidentsInput,
+    Prisma.SalonUncheckedUpdateWithoutPlatformIncidentsInput
+  >;
+};
+
+export type SalonUpdateWithoutPlatformIncidentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonUncheckedUpdateWithoutPlatformIncidentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonCreateWithoutPlatformAuditLogsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonUncheckedCreateWithoutPlatformAuditLogsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonCreateOrConnectWithoutPlatformAuditLogsInput = {
+  where: Prisma.SalonWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+};
+
+export type SalonUpsertWithoutPlatformAuditLogsInput = {
+  update: Prisma.XOR<
+    Prisma.SalonUpdateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  where?: Prisma.SalonWhereInput;
+};
+
+export type SalonUpdateToOneWithWhereWithoutPlatformAuditLogsInput = {
+  where?: Prisma.SalonWhereInput;
+  data: Prisma.XOR<
+    Prisma.SalonUpdateWithoutPlatformAuditLogsInput,
+    Prisma.SalonUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+};
+
+export type SalonUpdateWithoutPlatformAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonUncheckedUpdateWithoutPlatformAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonCreateWithoutSubscriptionPaymentsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonUncheckedCreateWithoutSubscriptionPaymentsInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonCreateOrConnectWithoutSubscriptionPaymentsInput = {
+  where: Prisma.SalonWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionPaymentsInput
+  >;
+};
+
+export type SalonUpsertWithoutSubscriptionPaymentsInput = {
+  update: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionPaymentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionPaymentsInput
+  >;
+  where?: Prisma.SalonWhereInput;
+};
+
+export type SalonUpdateToOneWithWhereWithoutSubscriptionPaymentsInput = {
+  where?: Prisma.SalonWhereInput;
+  data: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionPaymentsInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionPaymentsInput
+  >;
+};
+
+export type SalonUpdateWithoutSubscriptionPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonUncheckedUpdateWithoutSubscriptionPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionDues?: Prisma.SubscriptionDueUncheckedUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonCreateWithoutSubscriptionDuesInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonUncheckedCreateWithoutSubscriptionDuesInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lifecycle?: $Enums.SalonLifecycle;
+  timezone?: string;
+  currency?: string;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSalonInput;
+  employees?: Prisma.EmployeeUncheckedCreateNestedManyWithoutSalonInput;
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutSalonInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedCreateNestedManyWithoutSalonInput;
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutSalonInput;
+  rooms?: Prisma.RoomUncheckedCreateNestedManyWithoutSalonInput;
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutSalonInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedCreateNestedOneWithoutSalonInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedCreateNestedManyWithoutSalonInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutSalonInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedCreateNestedManyWithoutSalonInput;
+};
+
+export type SalonCreateOrConnectWithoutSubscriptionDuesInput = {
+  where: Prisma.SalonWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionDuesInput
+  >;
+};
+
+export type SalonUpsertWithoutSubscriptionDuesInput = {
+  update: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionDuesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SalonCreateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedCreateWithoutSubscriptionDuesInput
+  >;
+  where?: Prisma.SalonWhereInput;
+};
+
+export type SalonUpdateToOneWithWhereWithoutSubscriptionDuesInput = {
+  where?: Prisma.SalonWhereInput;
+  data: Prisma.XOR<
+    Prisma.SalonUpdateWithoutSubscriptionDuesInput,
+    Prisma.SalonUncheckedUpdateWithoutSubscriptionDuesInput
+  >;
+};
+
+export type SalonUpdateWithoutSubscriptionDuesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUpdateManyWithoutSalonNestedInput;
+};
+
+export type SalonUncheckedUpdateWithoutSubscriptionDuesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lifecycle?:
+    Prisma.EnumSalonLifecycleFieldUpdateOperationsInput | $Enums.SalonLifecycle;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  users?: Prisma.UserUncheckedUpdateManyWithoutSalonNestedInput;
+  employees?: Prisma.EmployeeUncheckedUpdateManyWithoutSalonNestedInput;
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutSalonNestedInput;
+  serviceCategories?: Prisma.ServiceCategoryUncheckedUpdateManyWithoutSalonNestedInput;
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutSalonNestedInput;
+  rooms?: Prisma.RoomUncheckedUpdateManyWithoutSalonNestedInput;
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutSalonNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscription?: Prisma.SalonSubscriptionUncheckedUpdateOneWithoutSalonNestedInput;
+  platformIncidents?: Prisma.PlatformIncidentUncheckedUpdateManyWithoutSalonNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutSalonNestedInput;
+  subscriptionPayments?: Prisma.SubscriptionPaymentUncheckedUpdateManyWithoutSalonNestedInput;
 };
 
 /**
@@ -1426,6 +2607,10 @@ export type SalonCountOutputType = {
   rooms: number;
   appointments: number;
   activityLogs: number;
+  platformIncidents: number;
+  platformAuditLogs: number;
+  subscriptionPayments: number;
+  subscriptionDues: number;
 };
 
 export type SalonCountOutputTypeSelect<
@@ -1440,6 +2625,11 @@ export type SalonCountOutputTypeSelect<
   rooms?: boolean | SalonCountOutputTypeCountRoomsArgs;
   appointments?: boolean | SalonCountOutputTypeCountAppointmentsArgs;
   activityLogs?: boolean | SalonCountOutputTypeCountActivityLogsArgs;
+  platformIncidents?: boolean | SalonCountOutputTypeCountPlatformIncidentsArgs;
+  platformAuditLogs?: boolean | SalonCountOutputTypeCountPlatformAuditLogsArgs;
+  subscriptionPayments?:
+    boolean | SalonCountOutputTypeCountSubscriptionPaymentsArgs;
+  subscriptionDues?: boolean | SalonCountOutputTypeCountSubscriptionDuesArgs;
 };
 
 /**
@@ -1535,6 +2725,46 @@ export type SalonCountOutputTypeCountActivityLogsArgs<
   where?: Prisma.ActivityLogWhereInput;
 };
 
+/**
+ * SalonCountOutputType without action
+ */
+export type SalonCountOutputTypeCountPlatformIncidentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PlatformIncidentWhereInput;
+};
+
+/**
+ * SalonCountOutputType without action
+ */
+export type SalonCountOutputTypeCountPlatformAuditLogsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PlatformAuditLogWhereInput;
+};
+
+/**
+ * SalonCountOutputType without action
+ */
+export type SalonCountOutputTypeCountSubscriptionPaymentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.SubscriptionPaymentWhereInput;
+};
+
+/**
+ * SalonCountOutputType without action
+ */
+export type SalonCountOutputTypeCountSubscriptionDuesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.SubscriptionDueWhereInput;
+};
+
 export type SalonSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -1547,6 +2777,9 @@ export type SalonSelect<
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    lifecycle?: boolean;
+    timezone?: boolean;
+    currency?: boolean;
     users?: boolean | Prisma.Salon$usersArgs<ExtArgs>;
     employees?: boolean | Prisma.Salon$employeesArgs<ExtArgs>;
     clients?: boolean | Prisma.Salon$clientsArgs<ExtArgs>;
@@ -1555,6 +2788,12 @@ export type SalonSelect<
     rooms?: boolean | Prisma.Salon$roomsArgs<ExtArgs>;
     appointments?: boolean | Prisma.Salon$appointmentsArgs<ExtArgs>;
     activityLogs?: boolean | Prisma.Salon$activityLogsArgs<ExtArgs>;
+    subscription?: boolean | Prisma.Salon$subscriptionArgs<ExtArgs>;
+    platformIncidents?: boolean | Prisma.Salon$platformIncidentsArgs<ExtArgs>;
+    platformAuditLogs?: boolean | Prisma.Salon$platformAuditLogsArgs<ExtArgs>;
+    subscriptionPayments?:
+      boolean | Prisma.Salon$subscriptionPaymentsArgs<ExtArgs>;
+    subscriptionDues?: boolean | Prisma.Salon$subscriptionDuesArgs<ExtArgs>;
     _count?: boolean | Prisma.SalonCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["salon"]
@@ -1572,6 +2811,9 @@ export type SalonSelectCreateManyAndReturn<
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    lifecycle?: boolean;
+    timezone?: boolean;
+    currency?: boolean;
   },
   ExtArgs["result"]["salon"]
 >;
@@ -1588,6 +2830,9 @@ export type SalonSelectUpdateManyAndReturn<
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    lifecycle?: boolean;
+    timezone?: boolean;
+    currency?: boolean;
   },
   ExtArgs["result"]["salon"]
 >;
@@ -1600,13 +2845,25 @@ export type SalonSelectScalar = {
   isActive?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
+  lifecycle?: boolean;
+  timezone?: boolean;
+  currency?: boolean;
 };
 
 export type SalonOmit<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
-  "id" | "name" | "phone" | "address" | "isActive" | "createdAt" | "updatedAt",
+  | "id"
+  | "name"
+  | "phone"
+  | "address"
+  | "isActive"
+  | "createdAt"
+  | "updatedAt"
+  | "lifecycle"
+  | "timezone"
+  | "currency",
   ExtArgs["result"]["salon"]
 >;
 export type SalonInclude<
@@ -1621,6 +2878,12 @@ export type SalonInclude<
   rooms?: boolean | Prisma.Salon$roomsArgs<ExtArgs>;
   appointments?: boolean | Prisma.Salon$appointmentsArgs<ExtArgs>;
   activityLogs?: boolean | Prisma.Salon$activityLogsArgs<ExtArgs>;
+  subscription?: boolean | Prisma.Salon$subscriptionArgs<ExtArgs>;
+  platformIncidents?: boolean | Prisma.Salon$platformIncidentsArgs<ExtArgs>;
+  platformAuditLogs?: boolean | Prisma.Salon$platformAuditLogsArgs<ExtArgs>;
+  subscriptionPayments?:
+    boolean | Prisma.Salon$subscriptionPaymentsArgs<ExtArgs>;
+  subscriptionDues?: boolean | Prisma.Salon$subscriptionDuesArgs<ExtArgs>;
   _count?: boolean | Prisma.SalonCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type SalonIncludeCreateManyAndReturn<
@@ -1646,6 +2909,11 @@ export type $SalonPayload<
     rooms: Prisma.$RoomPayload<ExtArgs>[];
     appointments: Prisma.$AppointmentPayload<ExtArgs>[];
     activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[];
+    subscription: Prisma.$SalonSubscriptionPayload<ExtArgs> | null;
+    platformIncidents: Prisma.$PlatformIncidentPayload<ExtArgs>[];
+    platformAuditLogs: Prisma.$PlatformAuditLogPayload<ExtArgs>[];
+    subscriptionPayments: Prisma.$SubscriptionPaymentPayload<ExtArgs>[];
+    subscriptionDues: Prisma.$SubscriptionDuePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1656,6 +2924,9 @@ export type $SalonPayload<
       isActive: boolean;
       createdAt: Date;
       updatedAt: Date;
+      lifecycle: $Enums.SalonLifecycle;
+      timezone: string;
+      currency: string;
     },
     ExtArgs["result"]["salon"]
   >;
@@ -2294,6 +3565,65 @@ export interface Prisma__SalonClient<
       >
     | Null
   >;
+  subscription<T extends Prisma.Salon$subscriptionArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Salon$subscriptionArgs<ExtArgs>>,
+  ): Prisma.Prisma__SalonSubscriptionClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$SalonSubscriptionPayload<ExtArgs>,
+      T,
+      "findUniqueOrThrow",
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  platformIncidents<T extends Prisma.Salon$platformIncidentsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Salon$platformIncidentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PlatformIncidentPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  platformAuditLogs<T extends Prisma.Salon$platformAuditLogsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Salon$platformAuditLogsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PlatformAuditLogPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  subscriptionPayments<
+    T extends Prisma.Salon$subscriptionPaymentsArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Salon$subscriptionPaymentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$SubscriptionPaymentPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  subscriptionDues<T extends Prisma.Salon$subscriptionDuesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Salon$subscriptionDuesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$SubscriptionDuePayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2337,6 +3667,9 @@ export interface SalonFieldRefs {
   readonly isActive: Prisma.FieldRef<"Salon", "Boolean">;
   readonly createdAt: Prisma.FieldRef<"Salon", "DateTime">;
   readonly updatedAt: Prisma.FieldRef<"Salon", "DateTime">;
+  readonly lifecycle: Prisma.FieldRef<"Salon", "SalonLifecycle">;
+  readonly timezone: Prisma.FieldRef<"Salon", "String">;
+  readonly currency: Prisma.FieldRef<"Salon", "String">;
 }
 
 // Custom InputTypes
@@ -3014,6 +4347,152 @@ export type Salon$activityLogsArgs<
   skip?: number;
   distinct?:
     Prisma.ActivityLogScalarFieldEnum | Prisma.ActivityLogScalarFieldEnum[];
+};
+
+/**
+ * Salon.subscription
+ */
+export type Salon$subscriptionArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SalonSubscription
+   */
+  select?: Prisma.SalonSubscriptionSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SalonSubscription
+   */
+  omit?: Prisma.SalonSubscriptionOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SalonSubscriptionInclude<ExtArgs> | null;
+  where?: Prisma.SalonSubscriptionWhereInput;
+};
+
+/**
+ * Salon.platformIncidents
+ */
+export type Salon$platformIncidentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PlatformIncident
+   */
+  select?: Prisma.PlatformIncidentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PlatformIncident
+   */
+  omit?: Prisma.PlatformIncidentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlatformIncidentInclude<ExtArgs> | null;
+  where?: Prisma.PlatformIncidentWhereInput;
+  orderBy?:
+    | Prisma.PlatformIncidentOrderByWithRelationInput
+    | Prisma.PlatformIncidentOrderByWithRelationInput[];
+  cursor?: Prisma.PlatformIncidentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.PlatformIncidentScalarFieldEnum
+    | Prisma.PlatformIncidentScalarFieldEnum[];
+};
+
+/**
+ * Salon.platformAuditLogs
+ */
+export type Salon$platformAuditLogsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PlatformAuditLog
+   */
+  select?: Prisma.PlatformAuditLogSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PlatformAuditLog
+   */
+  omit?: Prisma.PlatformAuditLogOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlatformAuditLogInclude<ExtArgs> | null;
+  where?: Prisma.PlatformAuditLogWhereInput;
+  orderBy?:
+    | Prisma.PlatformAuditLogOrderByWithRelationInput
+    | Prisma.PlatformAuditLogOrderByWithRelationInput[];
+  cursor?: Prisma.PlatformAuditLogWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.PlatformAuditLogScalarFieldEnum
+    | Prisma.PlatformAuditLogScalarFieldEnum[];
+};
+
+/**
+ * Salon.subscriptionPayments
+ */
+export type Salon$subscriptionPaymentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionPayment
+   */
+  select?: Prisma.SubscriptionPaymentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SubscriptionPayment
+   */
+  omit?: Prisma.SubscriptionPaymentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionPaymentInclude<ExtArgs> | null;
+  where?: Prisma.SubscriptionPaymentWhereInput;
+  orderBy?:
+    | Prisma.SubscriptionPaymentOrderByWithRelationInput
+    | Prisma.SubscriptionPaymentOrderByWithRelationInput[];
+  cursor?: Prisma.SubscriptionPaymentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.SubscriptionPaymentScalarFieldEnum
+    | Prisma.SubscriptionPaymentScalarFieldEnum[];
+};
+
+/**
+ * Salon.subscriptionDues
+ */
+export type Salon$subscriptionDuesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionDue
+   */
+  select?: Prisma.SubscriptionDueSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SubscriptionDue
+   */
+  omit?: Prisma.SubscriptionDueOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionDueInclude<ExtArgs> | null;
+  where?: Prisma.SubscriptionDueWhereInput;
+  orderBy?:
+    | Prisma.SubscriptionDueOrderByWithRelationInput
+    | Prisma.SubscriptionDueOrderByWithRelationInput[];
+  cursor?: Prisma.SubscriptionDueWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.SubscriptionDueScalarFieldEnum
+    | Prisma.SubscriptionDueScalarFieldEnum[];
 };
 
 /**

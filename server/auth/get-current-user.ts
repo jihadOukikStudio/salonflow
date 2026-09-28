@@ -1,3 +1,6 @@
+import { isSessionCurrent } from "./session-version";
+import { redirect } from "next/navigation";
+
 import type { CurrentUser } from "@/server/permissions";
 
 import { auth } from "@/auth";
@@ -29,6 +32,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
       role: true,
       canManageSalon: true,
       isActive: true,
+      authVersion: true,
 
       salon: {
         select: {
@@ -38,7 +42,19 @@ export async function getCurrentUser(): Promise<CurrentUser> {
     },
   });
 
-  if (!user || !user.isActive || !user.salon.isActive) {
+  if (user && !isSessionCurrent(user.authVersion, session?.user?.authVersion))
+    throw new PermissionDeniedError("Session expirée. Reconnectez-vous.");
+
+  if (user?.isActive && user.role === "SUPER_ADMIN" && user.salonId === null)
+    redirect("/superadmin");
+
+  if (
+    !user ||
+    !user.isActive ||
+    !user.salon?.isActive ||
+    !user.salonId ||
+    user.role === "SUPER_ADMIN"
+  ) {
     throw new PermissionDeniedError(
       "Votre compte n'est plus autorisé à accéder au salon.",
     );
@@ -72,6 +88,7 @@ export async function getOptionalCurrentUser(): Promise<CurrentUser | null> {
       role: true,
       canManageSalon: true,
       isActive: true,
+      authVersion: true,
 
       salon: {
         select: {
@@ -81,7 +98,19 @@ export async function getOptionalCurrentUser(): Promise<CurrentUser | null> {
     },
   });
 
-  if (!user || !user.isActive || !user.salon.isActive) {
+  if (user && !isSessionCurrent(user.authVersion, session?.user?.authVersion))
+    throw new PermissionDeniedError("Session expirée. Reconnectez-vous.");
+
+  if (user?.isActive && user.role === "SUPER_ADMIN" && user.salonId === null)
+    redirect("/superadmin");
+
+  if (
+    !user ||
+    !user.isActive ||
+    !user.salon?.isActive ||
+    !user.salonId ||
+    user.role === "SUPER_ADMIN"
+  ) {
     return null;
   }
 

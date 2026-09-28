@@ -70,6 +70,13 @@ export const ModelName = {
   EmployeeUnavailability: "EmployeeUnavailability",
   Payment: "Payment",
   ActivityLog: "ActivityLog",
+  SalonSubscription: "SalonSubscription",
+  PlatformIncident: "PlatformIncident",
+  PlatformAuditLog: "PlatformAuditLog",
+  SubscriptionPayment: "SubscriptionPayment",
+  PlatformIncidentMessage: "PlatformIncidentMessage",
+  LoginThrottle: "LoginThrottle",
+  SubscriptionDue: "SubscriptionDue",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -96,6 +103,9 @@ export const SalonScalarFieldEnum = {
   isActive: "isActive",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
+  lifecycle: "lifecycle",
+  timezone: "timezone",
+  currency: "currency",
 } as const;
 
 export type SalonScalarFieldEnum =
@@ -109,6 +119,7 @@ export const UserScalarFieldEnum = {
   firstName: "firstName",
   lastName: "lastName",
   role: "role",
+  authVersion: "authVersion",
   canManageSalon: "canManageSalon",
   isActive: "isActive",
   createdAt: "createdAt",
@@ -324,6 +335,108 @@ export const ActivityLogScalarFieldEnum = {
 export type ActivityLogScalarFieldEnum =
   (typeof ActivityLogScalarFieldEnum)[keyof typeof ActivityLogScalarFieldEnum];
 
+export const SalonSubscriptionScalarFieldEnum = {
+  id: "id",
+  salonId: "salonId",
+  planName: "planName",
+  status: "status",
+  monthlyPrice: "monthlyPrice",
+  currency: "currency",
+  periodEnd: "periodEnd",
+  note: "note",
+  updatedAt: "updatedAt",
+} as const;
+
+export type SalonSubscriptionScalarFieldEnum =
+  (typeof SalonSubscriptionScalarFieldEnum)[keyof typeof SalonSubscriptionScalarFieldEnum];
+
+export const PlatformIncidentScalarFieldEnum = {
+  id: "id",
+  salonId: "salonId",
+  title: "title",
+  description: "description",
+  priority: "priority",
+  status: "status",
+  resolution: "resolution",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+  reportedById: "reportedById",
+  resolvedAt: "resolvedAt",
+} as const;
+
+export type PlatformIncidentScalarFieldEnum =
+  (typeof PlatformIncidentScalarFieldEnum)[keyof typeof PlatformIncidentScalarFieldEnum];
+
+export const PlatformAuditLogScalarFieldEnum = {
+  id: "id",
+  actorId: "actorId",
+  salonId: "salonId",
+  action: "action",
+  entityId: "entityId",
+  details: "details",
+  createdAt: "createdAt",
+} as const;
+
+export type PlatformAuditLogScalarFieldEnum =
+  (typeof PlatformAuditLogScalarFieldEnum)[keyof typeof PlatformAuditLogScalarFieldEnum];
+
+export const SubscriptionPaymentScalarFieldEnum = {
+  id: "id",
+  salonId: "salonId",
+  amount: "amount",
+  currency: "currency",
+  paidAt: "paidAt",
+  periodStart: "periodStart",
+  periodEnd: "periodEnd",
+  method: "method",
+  reference: "reference",
+  recordedById: "recordedById",
+  voidedAt: "voidedAt",
+  voidReason: "voidReason",
+  createdAt: "createdAt",
+} as const;
+
+export type SubscriptionPaymentScalarFieldEnum =
+  (typeof SubscriptionPaymentScalarFieldEnum)[keyof typeof SubscriptionPaymentScalarFieldEnum];
+
+export const PlatformIncidentMessageScalarFieldEnum = {
+  id: "id",
+  incidentId: "incidentId",
+  authorId: "authorId",
+  internal: "internal",
+  body: "body",
+  createdAt: "createdAt",
+} as const;
+
+export type PlatformIncidentMessageScalarFieldEnum =
+  (typeof PlatformIncidentMessageScalarFieldEnum)[keyof typeof PlatformIncidentMessageScalarFieldEnum];
+
+export const LoginThrottleScalarFieldEnum = {
+  key: "key",
+  attempts: "attempts",
+  expiresAt: "expiresAt",
+} as const;
+
+export type LoginThrottleScalarFieldEnum =
+  (typeof LoginThrottleScalarFieldEnum)[keyof typeof LoginThrottleScalarFieldEnum];
+
+export const SubscriptionDueScalarFieldEnum = {
+  id: "id",
+  salonId: "salonId",
+  title: "title",
+  dueAt: "dueAt",
+  amount: "amount",
+  currency: "currency",
+  paymentId: "paymentId",
+  processedAt: "processedAt",
+  cancelledAt: "cancelledAt",
+  note: "note",
+  createdAt: "createdAt",
+} as const;
+
+export type SubscriptionDueScalarFieldEnum =
+  (typeof SubscriptionDueScalarFieldEnum)[keyof typeof SubscriptionDueScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -338,6 +451,13 @@ export const NullableJsonNullValueInput = {
 
 export type NullableJsonNullValueInput =
   (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull,
+} as const;
+
+export type JsonNullValueInput =
+  (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 
 export const QueryMode = {
   default: "default",

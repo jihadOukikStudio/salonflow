@@ -9,6 +9,7 @@
  */
 
 export const UserRole = {
+  SUPER_ADMIN: "SUPER_ADMIN",
   ADMIN: "ADMIN",
   EMPLOYEE: "EMPLOYEE",
 } as const;
@@ -64,3 +65,42 @@ export const PaymentStatus = {
 } as const;
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
+
+export const SubscriptionStatus = {
+  TRIAL: "TRIAL",
+  ACTIVE: "ACTIVE",
+  PAST_DUE: "PAST_DUE",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export type SubscriptionStatus =
+  (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
+
+export const IncidentStatus = {
+  OPEN: "OPEN",
+  IN_PROGRESS: "IN_PROGRESS",
+  RESOLVED: "RESOLVED",
+} as const;
+
+export type IncidentStatus =
+  (typeof IncidentStatus)[keyof typeof IncidentStatus];
+
+export const IncidentPriority = {
+  LOW: "LOW",
+  NORMAL: "NORMAL",
+  HIGH: "HIGH",
+  CRITICAL: "CRITICAL",
+} as const;
+
+export type IncidentPriority =
+  (typeof IncidentPriority)[keyof typeof IncidentPriority];
+
+export const SalonLifecycle = {
+  PREPARING: "PREPARING",
+  ACTIVE: "ACTIVE",
+  SUSPENDED: "SUSPENDED",
+  ARCHIVED: "ARCHIVED",
+} as const;
+
+export type SalonLifecycle =
+  (typeof SalonLifecycle)[keyof typeof SalonLifecycle];

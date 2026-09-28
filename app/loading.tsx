@@ -17,7 +17,7 @@ export default function Loading() {
           SalonFlow
         </p>
         <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-          Le 7ème Sens · Marrakech
+          Chargement de votre espace
         </p>
         <p className="mt-4 text-sm leading-6 text-slate-600">
           Préparation de votre espace de travail…

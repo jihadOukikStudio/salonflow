@@ -20,8 +20,18 @@ export type UserModel =
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null;
+  _avg: UserAvgAggregateOutputType | null;
+  _sum: UserSumAggregateOutputType | null;
   _min: UserMinAggregateOutputType | null;
   _max: UserMaxAggregateOutputType | null;
+};
+
+export type UserAvgAggregateOutputType = {
+  authVersion: number | null;
+};
+
+export type UserSumAggregateOutputType = {
+  authVersion: number | null;
 };
 
 export type UserMinAggregateOutputType = {
@@ -32,6 +42,7 @@ export type UserMinAggregateOutputType = {
   firstName: string | null;
   lastName: string | null;
   role: $Enums.UserRole | null;
+  authVersion: number | null;
   canManageSalon: boolean | null;
   isActive: boolean | null;
   createdAt: Date | null;
@@ -46,6 +57,7 @@ export type UserMaxAggregateOutputType = {
   firstName: string | null;
   lastName: string | null;
   role: $Enums.UserRole | null;
+  authVersion: number | null;
   canManageSalon: boolean | null;
   isActive: boolean | null;
   createdAt: Date | null;
@@ -60,11 +72,20 @@ export type UserCountAggregateOutputType = {
   firstName: number;
   lastName: number;
   role: number;
+  authVersion: number;
   canManageSalon: number;
   isActive: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
+};
+
+export type UserAvgAggregateInputType = {
+  authVersion?: true;
+};
+
+export type UserSumAggregateInputType = {
+  authVersion?: true;
 };
 
 export type UserMinAggregateInputType = {
@@ -75,6 +96,7 @@ export type UserMinAggregateInputType = {
   firstName?: true;
   lastName?: true;
   role?: true;
+  authVersion?: true;
   canManageSalon?: true;
   isActive?: true;
   createdAt?: true;
@@ -89,6 +111,7 @@ export type UserMaxAggregateInputType = {
   firstName?: true;
   lastName?: true;
   role?: true;
+  authVersion?: true;
   canManageSalon?: true;
   isActive?: true;
   createdAt?: true;
@@ -103,6 +126,7 @@ export type UserCountAggregateInputType = {
   firstName?: true;
   lastName?: true;
   role?: true;
+  authVersion?: true;
   canManageSalon?: true;
   isActive?: true;
   createdAt?: true;
@@ -152,6 +176,18 @@ export type UserAggregateArgs<
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    *
+   * Select which fields to average
+   **/
+  _avg?: UserAvgAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
+   * Select which fields to sum
+   **/
+  _sum?: UserSumAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
    * Select which fields to find the minimum value
    **/
   _min?: UserMinAggregateInputType;
@@ -184,23 +220,28 @@ export type UserGroupByArgs<
   take?: number;
   skip?: number;
   _count?: UserCountAggregateInputType | true;
+  _avg?: UserAvgAggregateInputType;
+  _sum?: UserSumAggregateInputType;
   _min?: UserMinAggregateInputType;
   _max?: UserMaxAggregateInputType;
 };
 
 export type UserGroupByOutputType = {
   id: string;
-  salonId: string;
+  salonId: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName: string | null;
   role: $Enums.UserRole;
+  authVersion: number;
   canManageSalon: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   _count: UserCountAggregateOutputType | null;
+  _avg: UserAvgAggregateOutputType | null;
+  _sum: UserSumAggregateOutputType | null;
   _min: UserMinAggregateOutputType | null;
   _max: UserMaxAggregateOutputType | null;
 };
@@ -223,17 +264,21 @@ export type UserWhereInput = {
   OR?: Prisma.UserWhereInput[];
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
   id?: Prisma.UuidFilter<"User"> | string;
-  salonId?: Prisma.UuidFilter<"User"> | string;
+  salonId?: Prisma.UuidNullableFilter<"User"> | string | null;
   email?: Prisma.StringFilter<"User"> | string;
   passwordHash?: Prisma.StringFilter<"User"> | string;
   firstName?: Prisma.StringFilter<"User"> | string;
   lastName?: Prisma.StringNullableFilter<"User"> | string | null;
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+  authVersion?: Prisma.IntFilter<"User"> | number;
   canManageSalon?: Prisma.BoolFilter<"User"> | boolean;
   isActive?: Prisma.BoolFilter<"User"> | boolean;
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
-  salon?: Prisma.XOR<Prisma.SalonScalarRelationFilter, Prisma.SalonWhereInput>;
+  salon?: Prisma.XOR<
+    Prisma.SalonNullableScalarRelationFilter,
+    Prisma.SalonWhereInput
+  > | null;
   employee?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
@@ -245,16 +290,18 @@ export type UserWhereInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityListRelationFilter;
   recordedPayments?: Prisma.PaymentListRelationFilter;
   activityLogs?: Prisma.ActivityLogListRelationFilter;
+  platformAuditLogs?: Prisma.PlatformAuditLogListRelationFilter;
 };
 
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
-  salonId?: Prisma.SortOrder;
+  salonId?: Prisma.SortOrderInput | Prisma.SortOrder;
   email?: Prisma.SortOrder;
   passwordHash?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrderInput | Prisma.SortOrder;
   role?: Prisma.SortOrder;
+  authVersion?: Prisma.SortOrder;
   canManageSalon?: Prisma.SortOrder;
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -268,6 +315,7 @@ export type UserOrderByWithRelationInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityOrderByRelationAggregateInput;
   recordedPayments?: Prisma.PaymentOrderByRelationAggregateInput;
   activityLogs?: Prisma.ActivityLogOrderByRelationAggregateInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogOrderByRelationAggregateInput;
 };
 
 export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -277,20 +325,21 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
     AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
-    salonId?: Prisma.UuidFilter<"User"> | string;
+    salonId?: Prisma.UuidNullableFilter<"User"> | string | null;
     email?: Prisma.StringFilter<"User"> | string;
     passwordHash?: Prisma.StringFilter<"User"> | string;
     firstName?: Prisma.StringFilter<"User"> | string;
     lastName?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+    authVersion?: Prisma.IntFilter<"User"> | number;
     canManageSalon?: Prisma.BoolFilter<"User"> | boolean;
     isActive?: Prisma.BoolFilter<"User"> | boolean;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     salon?: Prisma.XOR<
-      Prisma.SalonScalarRelationFilter,
+      Prisma.SalonNullableScalarRelationFilter,
       Prisma.SalonWhereInput
-    >;
+    > | null;
     employee?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
@@ -302,25 +351,29 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
     createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityListRelationFilter;
     recordedPayments?: Prisma.PaymentListRelationFilter;
     activityLogs?: Prisma.ActivityLogListRelationFilter;
+    platformAuditLogs?: Prisma.PlatformAuditLogListRelationFilter;
   },
   "id" | "salonId_email"
 >;
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
-  salonId?: Prisma.SortOrder;
+  salonId?: Prisma.SortOrderInput | Prisma.SortOrder;
   email?: Prisma.SortOrder;
   passwordHash?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrderInput | Prisma.SortOrder;
   role?: Prisma.SortOrder;
+  authVersion?: Prisma.SortOrder;
   canManageSalon?: Prisma.SortOrder;
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.UserCountOrderByAggregateInput;
+  _avg?: Prisma.UserAvgOrderByAggregateInput;
   _max?: Prisma.UserMaxOrderByAggregateInput;
   _min?: Prisma.UserMinOrderByAggregateInput;
+  _sum?: Prisma.UserSumOrderByAggregateInput;
 };
 
 export type UserScalarWhereWithAggregatesInput = {
@@ -332,12 +385,13 @@ export type UserScalarWhereWithAggregatesInput = {
     | Prisma.UserScalarWhereWithAggregatesInput
     | Prisma.UserScalarWhereWithAggregatesInput[];
   id?: Prisma.UuidWithAggregatesFilter<"User"> | string;
-  salonId?: Prisma.UuidWithAggregatesFilter<"User"> | string;
+  salonId?: Prisma.UuidNullableWithAggregatesFilter<"User"> | string | null;
   email?: Prisma.StringWithAggregatesFilter<"User"> | string;
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string;
   firstName?: Prisma.StringWithAggregatesFilter<"User"> | string;
   lastName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole;
+  authVersion?: Prisma.IntWithAggregatesFilter<"User"> | number;
   canManageSalon?: Prisma.BoolWithAggregatesFilter<"User"> | boolean;
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
@@ -351,11 +405,12 @@ export type UserCreateInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -364,16 +419,18 @@ export type UserCreateInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -386,6 +443,7 @@ export type UserUncheckedCreateInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserUpdateInput = {
@@ -395,11 +453,12 @@ export type UserUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -408,16 +467,18 @@ export type UserUpdateInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -430,16 +491,18 @@ export type UserUncheckedUpdateInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateManyInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -453,6 +516,7 @@ export type UserUpdateManyMutationInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -461,12 +525,13 @@ export type UserUpdateManyMutationInput = {
 
 export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -496,10 +561,15 @@ export type UserCountOrderByAggregateInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   role?: Prisma.SortOrder;
+  authVersion?: Prisma.SortOrder;
   canManageSalon?: Prisma.SortOrder;
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type UserAvgOrderByAggregateInput = {
+  authVersion?: Prisma.SortOrder;
 };
 
 export type UserMaxOrderByAggregateInput = {
@@ -510,6 +580,7 @@ export type UserMaxOrderByAggregateInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   role?: Prisma.SortOrder;
+  authVersion?: Prisma.SortOrder;
   canManageSalon?: Prisma.SortOrder;
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -524,10 +595,15 @@ export type UserMinOrderByAggregateInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   role?: Prisma.SortOrder;
+  authVersion?: Prisma.SortOrder;
   canManageSalon?: Prisma.SortOrder;
   isActive?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type UserSumOrderByAggregateInput = {
+  authVersion?: Prisma.SortOrder;
 };
 
 export type UserNullableScalarRelationFilter = {
@@ -628,6 +704,14 @@ export type UserUncheckedUpdateManyWithoutSalonNestedInput = {
 
 export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole;
+};
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
 };
 
 export type UserCreateNestedOneWithoutEmployeeInput = {
@@ -846,6 +930,32 @@ export type UserUpdateOneRequiredWithoutActivityLogsNestedInput = {
   >;
 };
 
+export type UserCreateNestedOneWithoutPlatformAuditLogsInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlatformAuditLogsInput;
+  connect?: Prisma.UserWhereUniqueInput;
+};
+
+export type UserUpdateOneRequiredWithoutPlatformAuditLogsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlatformAuditLogsInput;
+  upsert?: Prisma.UserUpsertWithoutPlatformAuditLogsInput;
+  connect?: Prisma.UserWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.UserUpdateToOneWithWhereWithoutPlatformAuditLogsInput,
+      Prisma.UserUpdateWithoutPlatformAuditLogsInput
+    >,
+    Prisma.UserUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+};
+
 export type UserCreateWithoutSalonInput = {
   id?: string;
   email: string;
@@ -853,6 +963,7 @@ export type UserCreateWithoutSalonInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -865,6 +976,7 @@ export type UserCreateWithoutSalonInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutSalonInput = {
@@ -874,6 +986,7 @@ export type UserUncheckedCreateWithoutSalonInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -886,6 +999,7 @@ export type UserUncheckedCreateWithoutSalonInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutSalonInput = {
@@ -934,12 +1048,13 @@ export type UserScalarWhereInput = {
   OR?: Prisma.UserScalarWhereInput[];
   NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
   id?: Prisma.UuidFilter<"User"> | string;
-  salonId?: Prisma.UuidFilter<"User"> | string;
+  salonId?: Prisma.UuidNullableFilter<"User"> | string | null;
   email?: Prisma.StringFilter<"User"> | string;
   passwordHash?: Prisma.StringFilter<"User"> | string;
   firstName?: Prisma.StringFilter<"User"> | string;
   lastName?: Prisma.StringNullableFilter<"User"> | string | null;
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+  authVersion?: Prisma.IntFilter<"User"> | number;
   canManageSalon?: Prisma.BoolFilter<"User"> | boolean;
   isActive?: Prisma.BoolFilter<"User"> | boolean;
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
@@ -953,11 +1068,12 @@ export type UserCreateWithoutEmployeeInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
   createdParallelGroups?: Prisma.ParallelGroupCreateNestedManyWithoutCreatedByUserInput;
@@ -965,16 +1081,18 @@ export type UserCreateWithoutEmployeeInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutEmployeeInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -986,6 +1104,7 @@ export type UserUncheckedCreateWithoutEmployeeInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutEmployeeInput = {
@@ -1023,11 +1142,12 @@ export type UserUpdateWithoutEmployeeInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
   createdParallelGroups?: Prisma.ParallelGroupUpdateManyWithoutCreatedByUserNestedInput;
@@ -1035,16 +1155,18 @@ export type UserUpdateWithoutEmployeeInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1056,6 +1178,7 @@ export type UserUncheckedUpdateWithoutEmployeeInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutCreatedAppointmentsInput = {
@@ -1065,11 +1188,12 @@ export type UserCreateWithoutCreatedAppointmentsInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
   createdParallelGroups?: Prisma.ParallelGroupCreateNestedManyWithoutCreatedByUserInput;
@@ -1077,16 +1201,18 @@ export type UserCreateWithoutCreatedAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutCreatedAppointmentsInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1098,6 +1224,7 @@ export type UserUncheckedCreateWithoutCreatedAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutCreatedAppointmentsInput = {
@@ -1115,11 +1242,12 @@ export type UserCreateWithoutCancelledAppointmentsInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   createdParallelGroups?: Prisma.ParallelGroupCreateNestedManyWithoutCreatedByUserInput;
@@ -1127,16 +1255,18 @@ export type UserCreateWithoutCancelledAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutCancelledAppointmentsInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1148,6 +1278,7 @@ export type UserUncheckedCreateWithoutCancelledAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutCancelledAppointmentsInput = {
@@ -1185,11 +1316,12 @@ export type UserUpdateWithoutCreatedAppointmentsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
   createdParallelGroups?: Prisma.ParallelGroupUpdateManyWithoutCreatedByUserNestedInput;
@@ -1197,16 +1329,18 @@ export type UserUpdateWithoutCreatedAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutCreatedAppointmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1218,6 +1352,7 @@ export type UserUncheckedUpdateWithoutCreatedAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUpsertWithoutCancelledAppointmentsInput = {
@@ -1247,11 +1382,12 @@ export type UserUpdateWithoutCancelledAppointmentsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   createdParallelGroups?: Prisma.ParallelGroupUpdateManyWithoutCreatedByUserNestedInput;
@@ -1259,16 +1395,18 @@ export type UserUpdateWithoutCancelledAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutCancelledAppointmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1280,6 +1418,7 @@ export type UserUncheckedUpdateWithoutCancelledAppointmentsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutCreatedParallelGroupsInput = {
@@ -1289,11 +1428,12 @@ export type UserCreateWithoutCreatedParallelGroupsInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -1301,16 +1441,18 @@ export type UserCreateWithoutCreatedParallelGroupsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutCreatedParallelGroupsInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1322,6 +1464,7 @@ export type UserUncheckedCreateWithoutCreatedParallelGroupsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutCreatedParallelGroupsInput = {
@@ -1359,11 +1502,12 @@ export type UserUpdateWithoutCreatedParallelGroupsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1371,16 +1515,18 @@ export type UserUpdateWithoutCreatedParallelGroupsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutCreatedParallelGroupsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1392,6 +1538,7 @@ export type UserUncheckedUpdateWithoutCreatedParallelGroupsInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutCreatedRoomUnavailabilitiesInput = {
@@ -1401,11 +1548,12 @@ export type UserCreateWithoutCreatedRoomUnavailabilitiesInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -1413,16 +1561,18 @@ export type UserCreateWithoutCreatedRoomUnavailabilitiesInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutCreatedRoomUnavailabilitiesInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1434,6 +1584,7 @@ export type UserUncheckedCreateWithoutCreatedRoomUnavailabilitiesInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutCreatedRoomUnavailabilitiesInput = {
@@ -1471,11 +1622,12 @@ export type UserUpdateWithoutCreatedRoomUnavailabilitiesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1483,16 +1635,18 @@ export type UserUpdateWithoutCreatedRoomUnavailabilitiesInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutCreatedRoomUnavailabilitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1504,6 +1658,7 @@ export type UserUncheckedUpdateWithoutCreatedRoomUnavailabilitiesInput = {
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutCreatedEmployeeUnavailabilitiesInput = {
@@ -1513,11 +1668,12 @@ export type UserCreateWithoutCreatedEmployeeUnavailabilitiesInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -1525,16 +1681,18 @@ export type UserCreateWithoutCreatedEmployeeUnavailabilitiesInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutCreatedEmployeeUnavailabilitiesInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1546,6 +1704,7 @@ export type UserUncheckedCreateWithoutCreatedEmployeeUnavailabilitiesInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutCreatedEmployeeUnavailabilitiesInput = {
@@ -1584,11 +1743,12 @@ export type UserUpdateWithoutCreatedEmployeeUnavailabilitiesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1596,16 +1756,18 @@ export type UserUpdateWithoutCreatedEmployeeUnavailabilitiesInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutCreatedEmployeeUnavailabilitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1617,6 +1779,7 @@ export type UserUncheckedUpdateWithoutCreatedEmployeeUnavailabilitiesInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutRecordedPaymentsInput = {
@@ -1626,11 +1789,12 @@ export type UserCreateWithoutRecordedPaymentsInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -1638,16 +1802,18 @@ export type UserCreateWithoutRecordedPaymentsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1659,6 +1825,7 @@ export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutRecordedPaymentsInput = {
@@ -1696,11 +1863,12 @@ export type UserUpdateWithoutRecordedPaymentsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1708,16 +1876,18 @@ export type UserUpdateWithoutRecordedPaymentsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1729,6 +1899,7 @@ export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
 export type UserCreateWithoutActivityLogsInput = {
@@ -1738,11 +1909,12 @@ export type UserCreateWithoutActivityLogsInput = {
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  salon: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
   createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
   cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
@@ -1750,16 +1922,18 @@ export type UserCreateWithoutActivityLogsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogCreateNestedManyWithoutActorInput;
 };
 
 export type UserUncheckedCreateWithoutActivityLogsInput = {
   id?: string;
-  salonId: string;
+  salonId?: string | null;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
@@ -1771,6 +1945,7 @@ export type UserUncheckedCreateWithoutActivityLogsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedCreateNestedManyWithoutActorInput;
 };
 
 export type UserCreateOrConnectWithoutActivityLogsInput = {
@@ -1808,11 +1983,12 @@ export type UserUpdateWithoutActivityLogsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  salon?: Prisma.SalonUpdateOneRequiredWithoutUsersNestedInput;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1820,16 +1996,18 @@ export type UserUpdateWithoutActivityLogsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutActivityLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salonId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1841,32 +2019,96 @@ export type UserUncheckedUpdateWithoutActivityLogsInput = {
   createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
 };
 
-export type UserCreateManySalonInput = {
+export type UserCreateWithoutPlatformAuditLogsInput = {
   id?: string;
   email: string;
   passwordHash: string;
   firstName: string;
   lastName?: string | null;
   role: $Enums.UserRole;
+  authVersion?: number;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  salon?: Prisma.SalonCreateNestedOneWithoutUsersInput;
+  employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput;
+  createdAppointments?: Prisma.AppointmentCreateNestedManyWithoutCreatedByUserInput;
+  cancelledAppointments?: Prisma.AppointmentCreateNestedManyWithoutCancelledByUserInput;
+  createdParallelGroups?: Prisma.ParallelGroupCreateNestedManyWithoutCreatedByUserInput;
+  createdRoomUnavailabilities?: Prisma.RoomUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
+  createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityCreateNestedManyWithoutCreatedByUserInput;
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByUserInput;
+  activityLogs?: Prisma.ActivityLogCreateNestedManyWithoutUserInput;
 };
 
-export type UserUpdateWithoutSalonInput = {
+export type UserUncheckedCreateWithoutPlatformAuditLogsInput = {
+  id?: string;
+  salonId?: string | null;
+  email: string;
+  passwordHash: string;
+  firstName: string;
+  lastName?: string | null;
+  role: $Enums.UserRole;
+  authVersion?: number;
+  canManageSalon?: boolean;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  employee?: Prisma.EmployeeUncheckedCreateNestedOneWithoutUserInput;
+  createdAppointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutCreatedByUserInput;
+  cancelledAppointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutCancelledByUserInput;
+  createdParallelGroups?: Prisma.ParallelGroupUncheckedCreateNestedManyWithoutCreatedByUserInput;
+  createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
+  createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedCreateNestedManyWithoutCreatedByUserInput;
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByUserInput;
+  activityLogs?: Prisma.ActivityLogUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutPlatformAuditLogsInput = {
+  where: Prisma.UserWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+};
+
+export type UserUpsertWithoutPlatformAuditLogsInput = {
+  update: Prisma.XOR<
+    Prisma.UserUpdateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedCreateWithoutPlatformAuditLogsInput
+  >;
+  where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutPlatformAuditLogsInput = {
+  where?: Prisma.UserWhereInput;
+  data: Prisma.XOR<
+    Prisma.UserUpdateWithoutPlatformAuditLogsInput,
+    Prisma.UserUncheckedUpdateWithoutPlatformAuditLogsInput
+  >;
+};
+
+export type UserUpdateWithoutPlatformAuditLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  salon?: Prisma.SalonUpdateOneWithoutUsersNestedInput;
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
   createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
   cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
@@ -1877,13 +2119,15 @@ export type UserUpdateWithoutSalonInput = {
   activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
 };
 
-export type UserUncheckedUpdateWithoutSalonInput = {
+export type UserUncheckedUpdateWithoutPlatformAuditLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1898,6 +2142,66 @@ export type UserUncheckedUpdateWithoutSalonInput = {
   activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
 };
 
+export type UserCreateManySalonInput = {
+  id?: string;
+  email: string;
+  passwordHash: string;
+  firstName: string;
+  lastName?: string | null;
+  role: $Enums.UserRole;
+  authVersion?: number;
+  canManageSalon?: boolean;
+  isActive?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type UserUpdateWithoutSalonInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
+  canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput;
+  createdAppointments?: Prisma.AppointmentUpdateManyWithoutCreatedByUserNestedInput;
+  cancelledAppointments?: Prisma.AppointmentUpdateManyWithoutCancelledByUserNestedInput;
+  createdParallelGroups?: Prisma.ParallelGroupUpdateManyWithoutCreatedByUserNestedInput;
+  createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
+  createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUpdateManyWithoutCreatedByUserNestedInput;
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByUserNestedInput;
+  activityLogs?: Prisma.ActivityLogUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUpdateManyWithoutActorNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutSalonInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
+  canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  employee?: Prisma.EmployeeUncheckedUpdateOneWithoutUserNestedInput;
+  createdAppointments?: Prisma.AppointmentUncheckedUpdateManyWithoutCreatedByUserNestedInput;
+  cancelledAppointments?: Prisma.AppointmentUncheckedUpdateManyWithoutCancelledByUserNestedInput;
+  createdParallelGroups?: Prisma.ParallelGroupUncheckedUpdateManyWithoutCreatedByUserNestedInput;
+  createdRoomUnavailabilities?: Prisma.RoomUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
+  createdEmployeeUnavailabilities?: Prisma.EmployeeUnavailabilityUncheckedUpdateManyWithoutCreatedByUserNestedInput;
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByUserNestedInput;
+  activityLogs?: Prisma.ActivityLogUncheckedUpdateManyWithoutUserNestedInput;
+  platformAuditLogs?: Prisma.PlatformAuditLogUncheckedUpdateManyWithoutActorNestedInput;
+};
+
 export type UserUncheckedUpdateManyWithoutSalonInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1905,6 +2209,7 @@ export type UserUncheckedUpdateManyWithoutSalonInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+  authVersion?: Prisma.IntFieldUpdateOperationsInput | number;
   canManageSalon?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1923,6 +2228,7 @@ export type UserCountOutputType = {
   createdEmployeeUnavailabilities: number;
   recordedPayments: number;
   activityLogs: number;
+  platformAuditLogs: number;
 };
 
 export type UserCountOutputTypeSelect<
@@ -1941,6 +2247,7 @@ export type UserCountOutputTypeSelect<
     boolean | UserCountOutputTypeCountCreatedEmployeeUnavailabilitiesArgs;
   recordedPayments?: boolean | UserCountOutputTypeCountRecordedPaymentsArgs;
   activityLogs?: boolean | UserCountOutputTypeCountActivityLogsArgs;
+  platformAuditLogs?: boolean | UserCountOutputTypeCountPlatformAuditLogsArgs;
 };
 
 /**
@@ -2026,6 +2333,16 @@ export type UserCountOutputTypeCountActivityLogsArgs<
   where?: Prisma.ActivityLogWhereInput;
 };
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPlatformAuditLogsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PlatformAuditLogWhereInput;
+};
+
 export type UserSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -2038,11 +2355,12 @@ export type UserSelect<
     firstName?: boolean;
     lastName?: boolean;
     role?: boolean;
+    authVersion?: boolean;
     canManageSalon?: boolean;
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+    salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
     employee?: boolean | Prisma.User$employeeArgs<ExtArgs>;
     createdAppointments?:
       boolean | Prisma.User$createdAppointmentsArgs<ExtArgs>;
@@ -2056,6 +2374,7 @@ export type UserSelect<
       boolean | Prisma.User$createdEmployeeUnavailabilitiesArgs<ExtArgs>;
     recordedPayments?: boolean | Prisma.User$recordedPaymentsArgs<ExtArgs>;
     activityLogs?: boolean | Prisma.User$activityLogsArgs<ExtArgs>;
+    platformAuditLogs?: boolean | Prisma.User$platformAuditLogsArgs<ExtArgs>;
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["user"]
@@ -2073,11 +2392,12 @@ export type UserSelectCreateManyAndReturn<
     firstName?: boolean;
     lastName?: boolean;
     role?: boolean;
+    authVersion?: boolean;
     canManageSalon?: boolean;
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+    salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
   },
   ExtArgs["result"]["user"]
 >;
@@ -2094,11 +2414,12 @@ export type UserSelectUpdateManyAndReturn<
     firstName?: boolean;
     lastName?: boolean;
     role?: boolean;
+    authVersion?: boolean;
     canManageSalon?: boolean;
     isActive?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+    salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
   },
   ExtArgs["result"]["user"]
 >;
@@ -2111,6 +2432,7 @@ export type UserSelectScalar = {
   firstName?: boolean;
   lastName?: boolean;
   role?: boolean;
+  authVersion?: boolean;
   canManageSalon?: boolean;
   isActive?: boolean;
   createdAt?: boolean;
@@ -2128,6 +2450,7 @@ export type UserOmit<
   | "firstName"
   | "lastName"
   | "role"
+  | "authVersion"
   | "canManageSalon"
   | "isActive"
   | "createdAt"
@@ -2138,7 +2461,7 @@ export type UserInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+  salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
   employee?: boolean | Prisma.User$employeeArgs<ExtArgs>;
   createdAppointments?: boolean | Prisma.User$createdAppointmentsArgs<ExtArgs>;
   cancelledAppointments?:
@@ -2151,19 +2474,20 @@ export type UserInclude<
     boolean | Prisma.User$createdEmployeeUnavailabilitiesArgs<ExtArgs>;
   recordedPayments?: boolean | Prisma.User$recordedPaymentsArgs<ExtArgs>;
   activityLogs?: boolean | Prisma.User$activityLogsArgs<ExtArgs>;
+  platformAuditLogs?: boolean | Prisma.User$platformAuditLogsArgs<ExtArgs>;
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type UserIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+  salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
 };
 export type UserIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  salon?: boolean | Prisma.SalonDefaultArgs<ExtArgs>;
+  salon?: boolean | Prisma.User$salonArgs<ExtArgs>;
 };
 
 export type $UserPayload<
@@ -2172,7 +2496,7 @@ export type $UserPayload<
 > = {
   name: "User";
   objects: {
-    salon: Prisma.$SalonPayload<ExtArgs>;
+    salon: Prisma.$SalonPayload<ExtArgs> | null;
     employee: Prisma.$EmployeePayload<ExtArgs> | null;
     createdAppointments: Prisma.$AppointmentPayload<ExtArgs>[];
     cancelledAppointments: Prisma.$AppointmentPayload<ExtArgs>[];
@@ -2181,16 +2505,18 @@ export type $UserPayload<
     createdEmployeeUnavailabilities: Prisma.$EmployeeUnavailabilityPayload<ExtArgs>[];
     recordedPayments: Prisma.$PaymentPayload<ExtArgs>[];
     activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[];
+    platformAuditLogs: Prisma.$PlatformAuditLogPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
-      salonId: string;
+      salonId: string | null;
       email: string;
       passwordHash: string;
       firstName: string;
       lastName: string | null;
       role: $Enums.UserRole;
+      authVersion: number;
       canManageSalon: boolean;
       isActive: boolean;
       createdAt: Date;
@@ -2745,17 +3071,16 @@ export interface Prisma__UserClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise";
-  salon<T extends Prisma.SalonDefaultArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.SalonDefaultArgs<ExtArgs>>,
+  salon<T extends Prisma.User$salonArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.User$salonArgs<ExtArgs>>,
   ): Prisma.Prisma__SalonClient<
-    | runtime.Types.Result.GetResult<
-        Prisma.$SalonPayload<ExtArgs>,
-        T,
-        "findUniqueOrThrow",
-        GlobalOmitOptions
-      >
-    | Null,
-    Null,
+    runtime.Types.Result.GetResult<
+      Prisma.$SalonPayload<ExtArgs>,
+      T,
+      "findUniqueOrThrow",
+      GlobalOmitOptions
+    > | null,
+    null,
     ExtArgs,
     GlobalOmitOptions
   >;
@@ -2865,6 +3190,17 @@ export interface Prisma__UserClient<
       >
     | Null
   >;
+  platformAuditLogs<T extends Prisma.User$platformAuditLogsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.User$platformAuditLogsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PlatformAuditLogPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2908,6 +3244,7 @@ export interface UserFieldRefs {
   readonly firstName: Prisma.FieldRef<"User", "String">;
   readonly lastName: Prisma.FieldRef<"User", "String">;
   readonly role: Prisma.FieldRef<"User", "UserRole">;
+  readonly authVersion: Prisma.FieldRef<"User", "Int">;
   readonly canManageSalon: Prisma.FieldRef<"User", "Boolean">;
   readonly isActive: Prisma.FieldRef<"User", "Boolean">;
   readonly createdAt: Prisma.FieldRef<"User", "DateTime">;
@@ -3363,6 +3700,28 @@ export type UserDeleteManyArgs<
 };
 
 /**
+ * User.salon
+ */
+export type User$salonArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Salon
+   */
+  select?: Prisma.SalonSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Salon
+   */
+  omit?: Prisma.SalonOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SalonInclude<ExtArgs> | null;
+  where?: Prisma.SalonWhereInput;
+};
+
+/**
  * User.employee
  */
 export type User$employeeArgs<
@@ -3593,6 +3952,37 @@ export type User$activityLogsArgs<
   skip?: number;
   distinct?:
     Prisma.ActivityLogScalarFieldEnum | Prisma.ActivityLogScalarFieldEnum[];
+};
+
+/**
+ * User.platformAuditLogs
+ */
+export type User$platformAuditLogsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PlatformAuditLog
+   */
+  select?: Prisma.PlatformAuditLogSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PlatformAuditLog
+   */
+  omit?: Prisma.PlatformAuditLogOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlatformAuditLogInclude<ExtArgs> | null;
+  where?: Prisma.PlatformAuditLogWhereInput;
+  orderBy?:
+    | Prisma.PlatformAuditLogOrderByWithRelationInput
+    | Prisma.PlatformAuditLogOrderByWithRelationInput[];
+  cursor?: Prisma.PlatformAuditLogWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.PlatformAuditLogScalarFieldEnum
+    | Prisma.PlatformAuditLogScalarFieldEnum[];
 };
 
 /**

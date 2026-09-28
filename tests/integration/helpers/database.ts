@@ -19,6 +19,13 @@ export async function cleanDatabase(): Promise<void> {
   }
 
   await testPrisma.$transaction([
+    testPrisma.subscriptionDue.deleteMany(),
+    testPrisma.loginThrottle.deleteMany(),
+    testPrisma.platformIncidentMessage.deleteMany(),
+    testPrisma.subscriptionPayment.deleteMany(),
+    testPrisma.platformAuditLog.deleteMany(),
+    testPrisma.platformIncident.deleteMany(),
+    testPrisma.salonSubscription.deleteMany(),
     // Tables enfants / dépendances les plus profondes
     testPrisma.parallelGroupService.deleteMany(),
     testPrisma.parallelGroup.deleteMany(),

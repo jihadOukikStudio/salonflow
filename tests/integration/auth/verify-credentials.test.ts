@@ -78,6 +78,7 @@ describe("verifyCredentials", () => {
     );
 
     expect(result).toEqual({
+      authVersion: 0,
       id: context.user.id,
       email: context.user.email,
       name: "Amina Test",

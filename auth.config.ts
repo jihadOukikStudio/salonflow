@@ -33,6 +33,7 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
+        token.authVersion = user.authVersion ?? 0;
       }
 
       return token;
@@ -41,6 +42,8 @@ export const authConfig = {
     session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.authVersion =
+          typeof token.authVersion === "number" ? token.authVersion : 0;
       }
 
       return session;

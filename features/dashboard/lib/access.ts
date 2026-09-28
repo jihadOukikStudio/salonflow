@@ -1,4 +1,7 @@
-type DashboardUser = { role: "ADMIN" | "EMPLOYEE"; canManageSalon: boolean };
+type DashboardUser = {
+  role: "ADMIN" | "EMPLOYEE" | "SUPER_ADMIN";
+  canManageSalon: boolean;
+};
 
 export function canAccessDashboard(user: DashboardUser) {
   return user.role === "ADMIN";
